@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Ideia Space Mission</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="node_modules/blockly/blockly_compressed.js"></script>
+  <script src="node_modules/blockly/blocks_compressed.js"></script>
+  <script src="node_modules/blockly/msg/en.js"></script>
+  <script src="node_modules/blockly/generators/arduino_compressed.js"></script>
+</head>
+<body>
+  <header class="header">
+    <img src="assets/logo.png" class="logo" alt="Logo Ideia">
+    <h1>Ideia Space Mission</h1>
+  </header>
+
+  <div class="container">
+    <div id="blocklyDiv" class="blockly-area"></div>
+    <div class="side-panel">
+      <h3>🧠 Código C++</h3>
+      <pre id="code-display" class="code-box">// Código C++ aparecerá aqui automaticamente</pre>
+      <div class="monitor-section">
+        <h3>🔧 Serial Monitor</h3>
+        <textarea readonly class="serial-box">// Monitor serial</textarea>
+        <h3>📈 Serial Plotter</h3>
+        <div class="plotter-box">// Plotter gráfico</div>
+      </div>
+    </div>
+  </div>
+
+  <xml id="toolbox" style="display: none">
+    <category name="Lógica" colour="#5C81A6">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_boolean"></block>
+    </category>
+    <category name="Loops" colour="#5CA65C">
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <shadow type="math_number"><field name="NUM">10</field></shadow>
+        </value>
+      </block>
+      <block type="controls_whileUntil"></block>
+    </category>
+    <category name="Matemática" colour="#5C68A6">
+      <block type="math_number"><field name="NUM">0</field></block>
+      <block type="math_arithmetic"></block>
+    </category>
+    <category name="Texto" colour="#5CA68D">
+      <block type="text"></block>
+      <block type="text_print"></block>
+    </category>
+    <category name="Variáveis" colour="#A65C81" custom="VARIABLE"></category>
+    <category name="Funções" colour="#9A5CA6" custom="PROCEDURE"></category>
+    <category name="Sensores" colour="#FFAA00">
+      <block type="init_dht"></block>
+      <block type="read_temp"></block>
+      <block type="read_humi"></block>
+      <block type="init_mpu"></block>
+      <block type="read_mpu"></block>
+    </category>
+  </xml>
+
+  <script src="./custom_blocks.js"></script>
+  <script src="./renderer.js"></script>
+</body>
+</html>
