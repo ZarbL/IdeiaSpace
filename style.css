@@ -2,27 +2,27 @@ body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
   background-color: #0e0e0e;
-  color: white;
+  color: white; /* cor do letreiro */
   overflow: hidden;
 }
 
 .header {
-  background-color: #1b1f3b;
+  background-color: #000000; /* Cor da barra encima */
   padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid #f107bf; /* Barra inferior do Ideia Space */
 }
 
 .header h1 {
-  font-size: 24px;
-  color: #fff;
+  font-size:italic 24px;
+  color: #fff; /* cor do letreiro do Ideia ao lado da logo */
   margin: 0;
 }
 
 .logo {
-  height: 40px;
+  height: 40px; /* Logo Ideia Space */
 }
 
 .container {
@@ -34,7 +34,7 @@ body {
 .blockly-area {
   flex: 1;
   height: 100%;
-  background-color: #121212;
+  background-color: #f00add;
   position: relative;
 }
 
@@ -65,9 +65,9 @@ button#generate-btn:hover {
 }
 
 .code-box {
-  background-color: #1e1e1e;
-  color: #474140;
-  border: 1px solid #555;
+  background-color: #545858fa; /* cor do terminal do codigo C++*/
+  color: #ffffff;            /* cor da mensagem dentro do terminal do codigo c++ */
+  border: 1px solid #000000; /* borda do terminal C++ */
   border-radius: 5px;
   padding: 10px;
   height: 200px;
