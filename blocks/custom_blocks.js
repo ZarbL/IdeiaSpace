@@ -50,31 +50,4 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-Blockly.Arduino['init_dht'] = function(block) {
-  const pin = block.getFieldValue('PIN');
-  Blockly.Arduino.includes_['dht'] = '#include <Adafruit_Sensor.h>\n#include <DHT.h>\n#include <DHT_U.h>';
-  Blockly.Arduino.definitions_['dht_obj'] = `#define DHTPIN ${pin}\n#define DHTTYPE DHT11\nDHT dht(DHTPIN, DHTTYPE);`;
-  Blockly.Arduino.setups_['dht_begin'] = 'dht.begin();';
-  return '';
-};
-
-Blockly.Arduino['read_temp'] = function() {
-  return ['dht.readTemperature()', Blockly.Arduino.ORDER_ATOMIC];
-};
-
-Blockly.Arduino['read_humi'] = function() {
-  return ['dht.readHumidity()', Blockly.Arduino.ORDER_ATOMIC];
-};
-
-Blockly.Arduino['init_mpu'] = function() {
-  Blockly.Arduino.includes_['mpu'] = '#include <Wire.h>\n#include <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>';
-  Blockly.Arduino.definitions_['mpu_obj'] = 'Adafruit_MPU6050 mpu;';
-  Blockly.Arduino.setups_['mpu_begin'] = 'Wire.begin();\n  mpu.begin();';
-  return '';
-};
-
-Blockly.Arduino['read_mpu'] = function() {
-  Blockly.Arduino.setups_['mpu_event'] = 'sensors_event_t a, g, temp;';
-  Blockly.Arduino.setups_['mpu_get_event'] = 'mpu.getEvent(&a, &g, &temp);';
-  return ['a.acceleration.x', Blockly.Arduino.ORDER_ATOMIC];
-};
+// Os geradores Arduino estão definidos no arquivo generators/arduino.js
