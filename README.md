@@ -6,7 +6,7 @@ Para solucionar esse problema, criamos uma **metodologia de ensino que conecta e
 
 Para isso, usamos o espaço como um meio de conexão para formar uma **educação criativa, com mão na massa** e que estimula a análise e resolução de problemas por meio de projetos. Nesse sentido, nossa metodologia provoca e engaja o aluno a identificar um problema e tentar solucioná-lo através da **criação de uma missão espacial e a construção de pequenos satélites**, empoderando os jovens a tomar a frente no seu processo de aprendizado.
 
-# 1.3.1 Objetivo Principal
+# 1.3.1 Objetivo principal do projeto
 
 Desenvolver uma **plataforma digital de programação em blocos** voltada para o **ensino de conceitos aeroespaciais**, com foco em **acessibilidade, interatividade e engajamento**. O objetivo é superar as limitações enfrentadas pela educação tradicional na área, que muitas vezes recorre a métodos teóricos e abstratos, resultando em dificuldade de compreensão, baixo engajamento e lacunas entre teoria e aplicação prática dos princípios de física e engenharia aeroespacial.
 
