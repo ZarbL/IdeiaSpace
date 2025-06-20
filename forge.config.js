@@ -1,7 +1,7 @@
 module.exports = {
   packagerConfig: {
     name: "IdeiaSpace Mission",
-    icon: "./assets/logo.png",
+    icon: 'src/assets/logo.png',
     asar: true,
     overwrite: true,
     ignore: [

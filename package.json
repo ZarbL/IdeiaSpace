@@ -2,14 +2,14 @@
   "name": "ideiaspace-mission",
   "version": "1.0.0",
   "description": "Plataforma digital de programação em blocos para ensino de conceitos aeroespaciais",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "author": {
     "name": "IdeiaSpace",
     "email": "contato@ideiaspace.com.br"
   },
   "license": "MIT",
   "scripts": {
-    "start": "electron .",
+    "start": "electron-forge start",
     "dev": "electron . --dev",
     "package": "electron-forge package",
     "make": "electron-forge make",

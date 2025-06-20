@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Ideia Space Mission</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="node_modules/blockly/blockly_compressed.js"></script>
-  <script src="node_modules/blockly/blocks_compressed.js"></script>
-  <script src="node_modules/blockly/msg/en.js"></script>
-  <script src="generators/cpp.js"></script>
+  <link rel="stylesheet" href="./style.css">
+  <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
+  <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
+  <script src="../../../node_modules/blockly/msg/en.js"></script>
+  <script src="../model/cpp_generator.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executar Blocos</title>
 
@@ -15,7 +15,7 @@
 </head>
 <body>
   <header class="header">
-    <img src="assets/logo.png" class="logo" alt="Logo Ideia">
+    <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
     <h1>Ideia Space Mission</h1>
   </header>
   <div class="container">
@@ -30,7 +30,7 @@
     </div>
   </div>
 
-  <xml id="toolbox" style="display: none">
+  <xml id="toolbox" class="toolbox">
     <category name="Lógica" colour="#5C81A6">
       <block type="controls_if"></block>
       <block type="logic_compare"></block>
@@ -62,7 +62,7 @@
     </category>
   </xml>
 
-  <script src="./blocks/custom_blocks.js"></script>
-  <script src="./renderer.js"></script>
+  <script src="../model/blocks.js"></script>
+  <script src="../controller/renderer.js"></script>
 </body>
 </html>

@@ -8,16 +8,11 @@
  * C++ code generator for Blockly.
  * @namespace Blockly.Cpp
  */
+'use strict';
 
-goog.provide('Blockly.Cpp');
-
-goog.require('Blockly.Generator');
-
-/**
- * C++ code generator.
- * @type {!Blockly.Generator}
- */
-Blockly.Cpp = new Blockly.Generator('C++');
+if (!Blockly.Cpp) {
+  Blockly.Cpp = new Blockly.Generator('C++');
+}
 
 /**
  * List of illegal variable names.
