@@ -7,7 +7,7 @@
   <script src="node_modules/blockly/blockly_compressed.js"></script>
   <script src="node_modules/blockly/blocks_compressed.js"></script>
   <script src="node_modules/blockly/msg/en.js"></script>
-  <script src="generators/arduino.js"></script>
+  <script src="generators/cpp.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executar Blocos</title>
 
@@ -55,12 +55,10 @@
     </category>
     <category name="Variáveis" colour="#A65C81" custom="VARIABLE"></category>
     <category name="Funções" colour="#9A5CA6" custom="PROCEDURE"></category>
-    <category name="Sensores" colour="#FFAA00">
-      <block type="init_dht"></block>
-      <block type="read_temp"></block>
-      <block type="read_humi"></block>
-      <block type="init_mpu"></block>
-      <block type="read_mpu"></block>
+    <category name="Controle" colour="#FFAA00">
+      <block type="delay_block"></block>
+      <block type="digital_write"></block>
+      <block type="digital_read"></block>
     </category>
   </xml>
 

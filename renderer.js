@@ -1,110 +1,85 @@
-window.addEventListener('DOMContentLoaded', () => {
-  // Inicializar o gerador Arduino
-  Blockly.Arduino.init();
-  
-  const workspace = Blockly.inject('blocklyDiv', {
-    toolbox: document.getElementById('toolbox'),
-    grid: {
-      spacing: 20,
-      length: 2,
-      colour: '#ccc',
-      snap: true
-    },
-    trashcan: true,
-    scrollbars: true,
-    sounds: true
-  });
+const { ipcRenderer } = require('electron');
 
-  const updateCode = () => {
-    try {
-      // Gerar código Arduino completo
-      const code = generateFullArduinoCode(workspace);
-      document.getElementById('code-display').textContent = code;
-    } catch (error) {
-      console.error('Erro ao gerar código:', error);
-      document.getElementById('code-display').textContent = '// Erro ao gerar código: ' + error.message; 
-    }
-  };
-
-  // Atualizar código quando o workspace mudar
-  workspace.addChangeListener(() => {
-    updateCode();
-  });
-
-  // Atualizar código inicial
-  updateCode();
-
-  // Botão de execução
-  document.getElementById('startButton').addEventListener('click', () => {
-    const messageEl = document.getElementById('message');
-    messageEl.textContent = 'Código gerado com sucesso!';
-    messageEl.style.color = 'green';
-    
-    setTimeout(() => {
-      messageEl.textContent = '';
-    }, 3000);
-  });
+// Inicializar Blockly
+const workspace = Blockly.inject('blocklyDiv', {
+  toolbox: document.getElementById('toolbox'),
+  scrollbars: true,
+  trashcan: true,
+  grid: {
+    spacing: 20,
+    length: 3,
+    colour: '#ccc',
+    snap: true
+  },
+  zoom: {
+    controls: true,
+    wheel: true,
+    startScale: 1.0,
+    maxScale: 3,
+    minScale: 0.3,
+    scaleSpeed: 1.2
+  }
 });
 
-// Gera o código completo com setup e loop
-function generateFullArduinoCode(workspace) {
+// Elementos da interface
+const codeDisplay = document.getElementById('code-display');
+const startButton = document.getElementById('startButton');
+const messageElement = document.getElementById('message');
+
+// Função para gerar código C++
+function generateCode() {
   try {
-    // Gerar código do loop principal
-    const loopCode = Blockly.Arduino.workspaceToCode(workspace);
+    // Inicializar o gerador C++
+    Blockly.Cpp.init();
     
-    // Gerar código completo com includes, definições, setup e loop
-    const fullCode = Blockly.Arduino.finish(loopCode);
+    // Gerar código C++ a partir dos blocos
+    const code = Blockly.Cpp.workspaceToCode(workspace);
     
-    // Adicionar loop principal se não existir
-    if (!fullCode.includes('void loop()')) {
-      const includes = fullCode.includes('#include') ? '' : '#include <Arduino.h>\n\n';
-      const setupSection = fullCode.includes('void setup()') ? '' : 'void setup() {\n  Serial.begin(9600);\n}\n\n';
-      const loopWrapper = 'void loop() {\n' + indentCode(loopCode) + '\n}';
-      return includes + fullCode + setupSection + loopWrapper;
-    }
+    // Exibir o código gerado
+    codeDisplay.textContent = code || '// Nenhum bloco para gerar código';
     
-    return fullCode;
+    return code;
   } catch (error) {
-    console.error('Erro na geração de código:', error);
-    return '// Erro na geração de código: ' + error.message;
+    console.error('Erro ao gerar código:', error);
+    codeDisplay.textContent = '// Erro ao gerar código: ' + error.message;
+    return null;
   }
 }
 
-// Função auxiliar para identar corretamente
-function indentCode(code) {
-  if (!code) return '';
-  return code.split('\n').map(line => '  ' + line).join('\n');
+// Função para executar o código
+function executeCode() {
+  const code = generateCode();
+  
+  if (!code || code === '// Nenhum bloco para gerar código') {
+    messageElement.textContent = 'Nenhum código para executar';
+    return;
+  }
+
+  // Enviar código para o processo principal
+  ipcRenderer.send('execute-code', code);
+  
+  messageElement.textContent = 'Executando código...';
+  startButton.disabled = true;
 }
 
-// Adicionar métodos auxiliares ao gerador Arduino se não existirem
-if (Blockly.Arduino) {
-  // Método para obter código de valor
-  Blockly.Arduino.valueToCode = function(block, name, order) {
-    if (order === undefined) {
-      order = Blockly.Arduino.ORDER_NONE;
-    }
-    var targetBlock = block.getInputTargetBlock(name);
-    var code = Blockly.Arduino.blockToCode(targetBlock);
-    if (Array.isArray(code)) {
-      return [code[0], code[1]];
-    }
-    return [code, order];
-  };
+// Event listeners
+startButton.addEventListener('click', executeCode);
 
-  // Método para obter código de statement
-  Blockly.Arduino.statementToCode = function(block, name) {
-    var targetBlock = block.getInputTargetBlock(name);
-    var code = Blockly.Arduino.blockToCode(targetBlock);
-    return code;
-  };
+// Listener para mudanças no workspace
+workspace.addChangeListener(function(event) {
+  if (event.type === Blockly.Events.BLOCK_CHANGE ||
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_MOVE) {
+    generateCode();
+  }
+});
 
-  // Método para prefixar linhas
-  Blockly.Arduino.prefixLines = function(text, prefix) {
-    return text.split('\n').map(function(line) {
-      return prefix + line;
-    }).join('\n');
-  };
+// Listener para resposta do processo principal
+ipcRenderer.on('execution-result', (event, result) => {
+  messageElement.textContent = result.success ? 'Código executado com sucesso!' : 'Erro: ' + result.error;
+  startButton.disabled = false;
+});
 
-  // Constante para indentação
-  Blockly.Arduino.INDENT = '  ';
-}
+// Gerar código inicial
+generateCode();

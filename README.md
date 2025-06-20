@@ -1,296 +1,239 @@
-# 🚀 IdeiaSpace Mission
+# IdeiaSpace Mission
 
-[![Electron Version](https://img.shields.io/badge/Electron-27.0.0-blue.svg)](https://electronjs.org/)
-[![Blockly Version](https://img.shields.io/badge/Blockly-10.4.3-green.svg)](https://developers.google.com/blockly)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Uma aplicação desktop desenvolvida com Electron que permite programação visual usando Blockly para gerar código C++.
 
-O **IdeiaSpace Mission** é uma plataforma digital de programação em blocos desenvolvida pela **IdeiaSpace**, uma startup brasileira focada em educação STEAM (Ciência, Tecnologia, Engenharia, Artes e Matemática).
+## 🚀 Visão Geral
 
-## 📋 Sobre o Projeto
+O IdeiaSpace Mission é uma ferramenta educacional que combina programação visual com geração de código C++. Usando blocos visuais do Blockly, os usuários podem criar programas C++ de forma intuitiva e visual, ideal para aprendizado de programação.
 
-### Missão
-Transformar a educação brasileira através de uma **metodologia inovadora que conecta espaço e educação**, formando um instrumento transformador e emancipador social. Nossa missão é tornar o aluno **protagonista no processo educacional** através do uso do fascínio inato pela temática espacial.
+### Características Principais
 
-### Objetivo Principal
-Desenvolver uma **plataforma digital de programação em blocos** voltada para o **ensino de conceitos aeroespaciais**, com foco em **acessibilidade, interatividade e engajamento**. A plataforma supera as limitações da educação tradicional, oferecendo:
+- **Interface Visual Intuitiva**: Programação por blocos usando Blockly
+- **Geração de Código C++**: Código C++ padrão e limpo
+- **Aplicação Desktop**: Interface nativa usando Electron
+- **Tempo Real**: Geração de código instantânea
+- **Educacional**: Ideal para ensino de programação
 
-- ✅ **Ambiente intuitivo** para simulação e programação de elementos aeroespaciais
-- ✅ **Recursos visuais** e desafios gamificados
-- ✅ **Solução especializada** e inspiradora para aprendizado prático
-- ✅ **Alinhamento** com padrões educacionais contemporâneos
-- ✅ **Estímulo** para carreiras STEM
+## 📋 Pré-requisitos
 
-## 🛠️ Tecnologias Utilizadas
+- Node.js (versão 16 ou superior)
+- npm ou yarn
+- Git
 
-- **Electron** (v27.0.0) - Framework para aplicações desktop multiplataforma
-- **Blockly** (v10.4.3) - Biblioteca Google para programação visual em blocos
-- **Electron Forge** - Ferramenta para empacotamento e distribuição
-- **HTML5/CSS3/JavaScript** - Interface e lógica da aplicação
+## 🛠️ Instalação
 
-## 📦 Instalação e Configuração
+1. **Clone o repositório**:
+```bash
+git clone https://github.com/seu-usuario/ideiaspace-mission.git
+cd ideiaspace-mission
+```
 
-### Pré-requisitos
+2. **Instale as dependências**:
+```bash
+npm install
+```
 
-- **Node.js** (versão 16 ou superior)
-- **npm** ou **yarn**
-- **Git**
+3. **Execute em modo de desenvolvimento**:
+```bash
+npm start
+```
 
-### Instalação Local
-
-1. **Clone o repositório**
-   ```bash
-   git clone https://github.com/ideiaspace/ideiaspace-mission.git
-   cd ideiaspace-mission
-   ```
-
-2. **Instale as dependências**
-   ```bash
-   npm install
-   ```
-
-3. **Execute em modo desenvolvimento**
-   ```bash
-   npm start
-   ```
-
-## 🚀 Scripts Disponíveis
-
-| Comando | Descrição |
-|---------|-----------|
-| `npm start` | Inicia a aplicação em modo desenvolvimento |
-| `npm run dev` | Inicia a aplicação com flags de desenvolvimento |
-| `npm run package` | Empacota a aplicação para distribuição |
-| `npm run make` | Cria instaladores para diferentes plataformas |
-| `npm run publish` | Publica a aplicação (requer configuração do GitHub) |
-| `npm run lint` | Executa verificação de código com ESLint |
-
-## 🏗️ Desenvolvimento
-
-### Estrutura do Projeto
+## 🏗️ Estrutura do Projeto
 
 ```
-ideiaspace-mission/
-├── assets/                 # Recursos estáticos (imagens, ícones)
-│   └── logo.png
-├── blocks/                 # Blocos customizados do Blockly
-│   ├── blocoesp32_init.js
-│   └── custom_blocks.js
+IdeiaSpace/
+├── assets/                 # Recursos estáticos (logo, imagens)
+├── blocks/                 # Definições dos blocos customizados
+│   └── custom_blocks.js    # Blocos C++ personalizados
 ├── generators/             # Geradores de código
-│   └── arduino.js          # 🎯 IMPLEMENTAÇÃO DO MÓDULO ARDUINO
-├── custom-generator-codelab/  # Exemplo de gerador customizado
-├── my-plugin/              # Plugin de exemplo
-├── main.js                 # Processo principal do Electron
-├── preload.js              # Script de pré-carregamento
-├── renderer.js             # Processo de renderização
-├── index.html              # Interface principal
-├── style.css               # Estilos da aplicação
-├── script.js               # Scripts da interface
-├── upload.js               # Funcionalidade de upload
-├── package.json            # Configurações do projeto
-├── forge.config.js         # Configuração Electron Forge
-├── env.example             # Exemplo de variáveis
-└── README.md               # Documentação principal
+│   └── cpp.js             # Gerador de código C++
+├── .github/               # Configurações do GitHub
+├── index.html             # Interface principal
+├── main.js                # Processo principal do Electron
+├── preload.js             # Script de pré-carregamento
+├── renderer.js            # Processo de renderização
+├── style.css              # Estilos da interface
+├── package.json           # Configurações do projeto
+├── forge.config.js        # Configuração do Electron Forge
+├── README.md              # Este arquivo
+├── DEVELOPMENT.md         # Guia de desenvolvimento
+├── CHANGELOG.md           # Histórico de mudanças
+└── CPP_MODULE.md          # Documentação do módulo C++
 ```
 
-### 🎯 Implementação do Módulo Arduino
+## 🎯 Funcionalidades
 
-O **módulo Arduino do Blockly** está implementado no arquivo `generators/arduino.js`. Esta é uma implementação completa e customizada que inclui:
+### Blocos Disponíveis
 
-#### 📁 Localização
-- **Arquivo Principal**: `generators/arduino.js`
-- **Blocos Customizados**: `blocks/custom_blocks.js`
-- **Integração**: `renderer.js`
+#### Lógica e Controle
+- **IF/ELSE**: Estruturas condicionais
+- **Comparações**: Operadores de comparação (==, !=, <, >, etc.)
+- **Operações Lógicas**: AND (&&), OR (||)
+- **Booleanos**: true/false
 
-#### 🔧 Funcionalidades Implementadas
+#### Loops
+- **Repeat**: Loop for com contador
+- **While/Until**: Loops condicionais
 
-##### **Geradores de Código Básicos**
-- ✅ **Lógica**: `if/else`, comparações, operações lógicas
-- ✅ **Loops**: `for`, `while`, `do-while`
-- ✅ **Matemática**: operações aritméticas, números
-- ✅ **Texto**: strings, `Serial.println()`
-- ✅ **Variáveis**: declaração e uso
-- ✅ **Funções**: definição e chamada
+#### Matemática
+- **Números**: Valores numéricos
+- **Operações Aritméticas**: +, -, *, /, ^
 
-##### **Geradores ESP32 Customizados**
-- ✅ **DHT Sensor**: inicialização e leitura de temperatura/umidade
-- ✅ **MPU6050**: inicialização e leitura de aceleração
-- ✅ **Digital I/O**: `digitalWrite()`, `digitalRead()`
-- ✅ **Delay**: `delay()` em milissegundos
+#### Texto
+- **String**: Texto literal
+- **Print**: Saída para console (std::cout)
 
-#### 🏗️ Arquitetura do Gerador
+#### Variáveis e Funções
+- **Get/Set**: Manipulação de variáveis
+- **Definir/Chamar**: Criação e uso de funções
 
-```javascript
-// Estrutura do gerador Arduino
-Blockly.Arduino = new Blockly.Generator('Arduino');
+#### Controle
+- **Delay**: Pausa em millisegundos
+- **Digital Write**: Controlar pino digital
+- **Digital Read**: Ler pino digital
 
-// Seções do código gerado
-Blockly.Arduino.includes_     // #include statements
-Blockly.Arduino.definitions_  // #define e declarações
-Blockly.Arduino.setups_       // void setup() content
-Blockly.Arduino.functionNames_ // funções customizadas
-```
+### Geração de Código
 
-#### 📝 Exemplo de Geração de Código
+O sistema gera código C++ estruturado com:
 
-```javascript
-// Bloco: "inicializar DHT11 no pino 2"
-Blockly.Arduino['init_dht'] = function(block) {
-  const pin = block.getFieldValue('PIN');
-  Blockly.Arduino.includes_['dht'] = '#include <DHT.h>';
-  Blockly.Arduino.definitions_['dht_obj'] = `DHT dht(${pin}, DHT11);`;
-  Blockly.Arduino.setups_['dht_begin'] = 'dht.begin();';
-  return '';
-};
-```
-
-**Código Gerado:**
 ```cpp
-#include <DHT.h>
+#include <iostream>
+#include <chrono>
+#include <thread>
 
-DHT dht(2, DHT11);
-
-void setup() {
-  dht.begin();
+void minhaFuncao() {
+  std::cout << "Hello World!" << std::endl;
 }
 
-void loop() {
-  // Código do usuário aqui
+int main() {
+  int contador = 0;
+  
+  for (int i = 0; i < 5; i++) {
+    std::cout << "Iteração: " << i << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    contador = contador + 1;
+  }
+  
+  if (contador > 3) {
+    std::cout << "Contador é maior que 3" << std::endl;
+  }
+  
+  return 0;
 }
 ```
 
-### Funcionalidades Principais
+## 🚀 Desenvolvimento
 
-#### 🧩 Blocos de Programação
-- **Lógica**: Controles condicionais, comparações, operações lógicas
-- **Loops**: Repetições e estruturas de controle
-- **Matemática**: Operações aritméticas e números
-- **Texto**: Manipulação e exibição de texto
-- **Variáveis**: Declaração e uso de variáveis
-- **Funções**: Criação de procedimentos customizados
-- **Sensores**: Blocos específicos para sensores ESP32
-  - DHT (Temperatura e Umidade)
-  - MPU (Acelerômetro/Giroscópio)
+### Scripts Disponíveis
 
-#### 🔧 Recursos Técnicos
-- **Geração de código C++** em tempo real
-- **Interface responsiva** e intuitiva
-- **Suporte a múltiplas plataformas** (Windows, macOS, Linux)
-- **Sistema de upload** para dispositivos ESP32
+```bash
+# Executar em modo de desenvolvimento
+npm start
 
-## 📦 Build e Distribuição
+# Construir para produção
+npm run make
+
+# Empacotar aplicação
+npm run package
+
+# Publicar distribuição
+npm run publish
+```
 
 ### Configuração do Electron Forge
 
-O projeto está configurado com **Electron Forge** para facilitar o processo de build e distribuição. A configuração inclui:
+O projeto usa Electron Forge para build e distribuição. A configuração está em `forge.config.js`:
 
-#### Makers Configurados
-- **Windows**: `.exe` (Squirrel) e `.zip`
-- **macOS**: `.dmg` e `.zip`
-- **Linux**: `.deb` (Debian/Ubuntu) e `.rpm` (Red Hat/Fedora)
-
-#### Configuração de Empacotamento
-```json
-{
-  "packagerConfig": {
-    "name": "IdeiaSpace Mission",
-    "icon": "./assets/logo.png",
-    "asar": true,
-    "overwrite": true
-  }
-}
+```javascript
+module.exports = {
+  packagerConfig: {
+    asar: true,
+    icon: './assets/icon.ico'
+  },
+  rebuildConfig: {},
+  makers: [
+    {
+      name: '@electron-forge/maker-squirrel',
+      config: {},
+    },
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['darwin'],
+    },
+    {
+      name: '@electron-forge/maker-deb',
+      config: {},
+    },
+    {
+      name: '@electron-forge/maker-rpm',
+      config: {},
+    },
+  ],
+};
 ```
 
-### Processo de Build
+## 📦 Build e Distribuição
 
-1. **Empacotar a aplicação**
-   ```bash
-   npm run package
-   ```
+### Build Local
 
-2. **Criar instaladores**
-   ```bash
-   npm run make
-   ```
+```bash
+# Instalar dependências
+npm install
 
-3. **Publicar (opcional)**
-   ```bash
-   npm run publish
-   ```
+# Construir aplicação
+npm run make
 
-### Arquivos Gerados
+# Os arquivos serão gerados em out/
+```
 
-Após o build, os arquivos serão gerados em:
-- `out/ideiaspace-mission-win32-x64/` - Windows
-- `out/ideiaspace-mission-darwin-x64/` - macOS
-- `out/ideiaspace-mission-linux-x64/` - Linux
+### Distribuição
 
-## 🔧 Configuração de Desenvolvimento
+```bash
+# Publicar para distribuição
+npm run publish
+
+# Isso irá:
+# 1. Construir a aplicação
+# 2. Criar instaladores
+# 3. Fazer upload para GitHub Releases
+```
+
+## 🔧 Configuração
 
 ### Variáveis de Ambiente
 
-Crie um arquivo `.env` na raiz do projeto:
-
-```env
-NODE_ENV=development
-ELECTRON_IS_DEV=true
-```
-
-### Debugging
-
-Para debuggar a aplicação:
-
-1. **Processo Principal**: Use `console.log()` no `main.js`
-2. **Processo de Renderização**: Use DevTools (Ctrl+Shift+I / Cmd+Option+I)
-3. **Preload**: Use `console.log()` no `preload.js`
-
-### Hot Reload
-
-Para desenvolvimento com hot reload:
+Crie um arquivo `.env` baseado no `env.example`:
 
 ```bash
-npm run dev
+# Configurações da aplicação
+APP_NAME=IdeiaSpace Mission
+APP_VERSION=1.0.0
+
+# Configurações do GitHub
+GITHUB_TOKEN=seu_token_aqui
+GITHUB_REPO=seu-usuario/ideiaspace-mission
+
+# Configurações de build
+BUILD_TARGET=win32,linux,darwin
 ```
 
-## 📚 Documentação da API
+## 🧪 Testes
 
-### Blocos Customizados
+```bash
+# Executar testes
+npm test
 
-#### Sensores DHT
-```javascript
-// Inicializar sensor DHT
-init_dht(pin, type)
-
-// Ler temperatura
-read_temp()
-
-// Ler umidade
-read_humi()
+# Executar testes com coverage
+npm run test:coverage
 ```
 
-#### Sensores MPU
-```javascript
-// Inicializar sensor MPU
-init_mpu()
+## 📚 Documentação
 
-// Ler dados do MPU
-read_mpu()
-```
-
-### Eventos da Aplicação
-
-```javascript
-// Evento de geração de código
-Blockly.Arduino.addReservedWords('code');
-
-// Evento de execução
-document.getElementById('startButton').addEventListener('click', function() {
-  // Lógica de execução
-});
-```
+- **[DEVELOPMENT.md](DEVELOPMENT.md)**: Guia completo para desenvolvedores
+- **[CPP_MODULE.md](CPP_MODULE.md)**: Documentação do módulo C++
+- **[CHANGELOG.md](CHANGELOG.md)**: Histórico de mudanças
 
 ## 🤝 Contribuição
-
-### Como Contribuir
 
 1. **Fork** o projeto
 2. **Crie** uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
@@ -300,29 +243,44 @@ document.getElementById('startButton').addEventListener('click', function() {
 
 ### Padrões de Código
 
-- Use **ESLint** para verificação de código
-- Siga as **convenções** do projeto
-- Documente **novas funcionalidades**
-- Teste suas **mudanças**
+- Use ESLint para linting
+- Siga as convenções do projeto
+- Adicione testes para novas funcionalidades
+- Documente mudanças importantes
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## 📞 Suporte
+## 🆘 Suporte
 
+- **Issues**: [GitHub Issues](https://github.com/seu-usuario/ideiaspace-mission/issues)
+- **Documentação**: [Wiki do Projeto](https://github.com/seu-usuario/ideiaspace-mission/wiki)
 - **Email**: contato@ideiaspace.com.br
-- **Website**: [ideiaspace.com.br](https://ideiaspace.com.br)
-- **GitHub Issues**: [Reportar Bug](https://github.com/ideiaspace/ideiaspace-mission/issues)
+
+## 🏆 Roadmap
+
+### Versão 1.1
+- [ ] Suporte a classes C++
+- [ ] Debugging visual
+- [ ] Mais blocos matemáticos
+
+### Versão 1.2
+- [ ] Suporte a bibliotecas externas
+- [ ] Templates C++
+- [ ] Análise estática de código
+
+### Versão 2.0
+- [ ] Suporte a múltiplas linguagens
+- [ ] Integração com IDEs
+- [ ] Colaboração em tempo real
 
 ## 🙏 Agradecimentos
 
-- **Google Blockly** - Biblioteca de programação visual
-- **Electron Team** - Framework para aplicações desktop
-- **Comunidade Open Source** - Contribuições e feedback
+- **Blockly Team**: Pela excelente biblioteca de programação visual
+- **Electron Team**: Pela plataforma desktop
+- **Comunidade Open Source**: Por todas as contribuições
 
 ---
 
 **Desenvolvido com ❤️ pela Equipe IdeiaSpace**
-
-*Transformando a educação através da tecnologia espacial*
