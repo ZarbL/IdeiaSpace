@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('code-display').textContent = code;
     } catch (error) {
       console.error('Erro ao gerar código:', error);
-      document.getElementById('code-display').textContent = '// Erro ao gerar código';
+      document.getElementById('code-display').textContent = '// Erro ao gerar código'; 
     }
   };
 

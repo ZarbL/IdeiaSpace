@@ -16,3 +16,4 @@ function uploadToESP32(binPath, port = 'COM3', baudRate = 115200) {
 }
 
 module.exports = { uploadToESP32 };
+
