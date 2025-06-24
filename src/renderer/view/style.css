@@ -178,7 +178,7 @@ button#generate-btn:hover {
 
 /* Alvos para o contêiner do toolbox gerado pelo Blockly */
 .blocklyToolboxDiv {
-  background-color: #000000 !important; /* Cor de fundo do toolbox - azul escuro moderno */
+  background-color: #000000 !important; /* Cor de fundo do toolbox */
   border-right: 1px solid #f107bf !important; /* Borda rosa para separar do workspace */
   color: #ffffff !important;
   padding-top: 10px !important;
