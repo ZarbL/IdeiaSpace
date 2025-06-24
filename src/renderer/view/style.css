@@ -112,7 +112,7 @@ button#generate-btn:hover {
 
 /* Estilos para as categorias do toolbox */
 .blocklyToolboxCategory {
-  background-color: #16213e !important; /* Azul mais escuro para categorias */
+  background-color: #000000 !important; /* Azul mais escuro para categorias */
   border: 1px solid #f107bf !important;
   border-radius: 6px !important;
   margin: 2px !important;
