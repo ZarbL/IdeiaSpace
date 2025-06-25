@@ -8,10 +8,8 @@
   <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
   <script src="../../../node_modules/blockly/msg/en.js"></script>
   <script src="../model/cpp_generator.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executar Blocos</title>
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executar Blocos</title>
 </head>
 <body>
   <header class="header">
@@ -21,23 +19,33 @@
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
     <div class="side-panel">
-      <h3>🧠 Código C++</h3>
+      <div class="code-header">
+        <h3>🧠 Código C++</h3>
+      </div>
       <pre id="code-display" class="code-box">// Código C++ aparecerá aqui automaticamente</pre>
       <div class="monitor-section">
-      <button id="startButton">&#9655; </button>
-      <p id="message"></p>
+        <div class="button-group">
+          <button id="startButton" class="icon-button tooltip" data-tooltip="Executar código">
+            ▶
+          </button>
+          <button id="copyButton" class="icon-button tooltip" data-tooltip="Copiar código">
+            ⧉
+          </button>
+        </div>
+        <div class="copy-feedback" id="copyFeedback">Código copiado para a área de transferência!</div>
+        <p id="message"></p>
       </div>
     </div>
   </div>
 
   <xml id="toolbox" class="toolbox">
-    <category name="Lógica" colour="#5C81A6"> <!--Bloco Matematica e cor do index lateral -->
+    <category name="Lógica" colour="#1d1856">
       <block type="controls_if"></block>
       <block type="logic_compare"></block>
       <block type="logic_operation"></block>
       <block type="logic_boolean"></block>
     </category>
-    <category name="Loops" colour="#5CA65C"> <!-- Bloco Loops e cor do index lateral -->
+    <category name="Loops" colour="#00cfe5">
       <block type="controls_repeat_ext">
         <value name="TIMES">
           <shadow type="math_number"><field name="NUM">10</field></shadow>
@@ -45,17 +53,17 @@
       </block>
       <block type="controls_whileUntil"></block>
     </category>
-    <category name="Matemática" colour="#5C68A6"> <!-- Bloco matematica e cor do index lateral-->
+    <category name="Matemática" colour="#e80074">
       <block type="math_number"><field name="NUM">0</field></block>
       <block type="math_arithmetic"></block>
     </category>
-    <category name="Texto" colour="#5CA68D"><!--Bloco texto e cor do index lateral -->
+    <category name="Texto" colour="#1d1856">
       <block type="text"></block>
       <block type="text_print"></block>
     </category>
-    <category name="Variáveis" colour="#A65C81" custom="VARIABLE"></category> <!-- Bloco Variavel e cor do index lateral -->
-    <category name="Funções" colour="#9A5CA6" custom="PROCEDURE"></category> <!--Bloco Função e cor do index lateral-->
-    <category name="Controle" colour="#FFAA00"> <!-- Bloco Controle e cor do index lateral-->
+    <category name="Variáveis" colour="#00cfe5" custom="VARIABLE"></category>
+    <category name="Funções" colour="#e80074" custom="PROCEDURE"></category>
+    <category name="Controle" colour="#0c0931">
       <block type="delay_block"></block>
       <block type="digital_write"></block>
       <block type="digital_read"></block>
@@ -64,5 +72,48 @@
 
   <script src="../model/blocks.js"></script>
   <script src="../controller/renderer.js"></script>
+  <script>
+    // Funcionalidade do botão copiar
+    document.addEventListener('DOMContentLoaded', function() {
+      const copyButton = document.getElementById('copyButton');
+      const codeDisplay = document.getElementById('code-display');
+      const copyFeedback = document.getElementById('copyFeedback');
+
+      copyButton.addEventListener('click', function() {
+        // Pega o texto do código
+        const codeText = codeDisplay.textContent || codeDisplay.innerText;
+        
+        // Copia para a área de transferência
+        navigator.clipboard.writeText(codeText).then(function() {
+          // Mostra feedback de sucesso
+          copyFeedback.classList.add('show');
+          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          
+          // Volta ao estado normal após 2 segundos
+          setTimeout(function() {
+            copyFeedback.classList.remove('show');
+            copyButton.setAttribute('data-tooltip', 'Copiar código');
+          }, 2000);
+        }).catch(function(err) {
+          // Fallback para navegadores mais antigos
+          const textArea = document.createElement('textarea');
+          textArea.value = codeText;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          
+          // Mostra feedback
+          copyFeedback.classList.add('show');
+          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          
+          setTimeout(function() {
+            copyFeedback.classList.remove('show');
+            copyButton.setAttribute('data-tooltip', 'Copiar código');
+          }, 2000);
+        });
+      });
+    });
+  </script>
 </body>
 </html>

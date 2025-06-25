@@ -1,28 +1,29 @@
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #0e0e0e;
-  color: white; /* cor do letreiro */
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f2f2f7; /* Cinza claro como fundo principal */
+  color: #1d1856; /* Azul escuro para texto */
   overflow: hidden;
 }
 
 .header {
-  background-color: #000000; /* Cor da barra encima */
+  background-color: #1d1856; /* Azul escuro para header */
   padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  border-bottom: 2px solid #f107bf; /* Barra inferior do Ideia Space */
+  border-bottom: 3px solid #e80074; /* Rosa como destaque */
 }
 
 .header h1 {
-  font-size:italic 24px;
-  color: #fff; /* cor do letreiro do Ideia ao lado da logo */
+  font-size: 24px;
+  font-style: italic;
+  color: #f2f2f7; /* Cinza claro para contraste no header */
   margin: 0;
 }
 
 .logo {
-  height: 40px; /* Logo Ideia Space */
+  height: 40px;
 }
 
 .container {
@@ -34,152 +35,301 @@ body {
 .blockly-area {
   flex: 1;
   height: 100%;
-  background-color: #000000; /* Cor da lateral do terminal C++ ESBOÇO */
+  background-color: #f2f2f7; /* Mantém cinza claro para área de trabalho */
   position: relative;
 }
 
 .side-panel {
   width: 400px;
-  background-color: #000000; /* Cor da lateral do terminal C++ ESBOÇO */
-  padding: 10px;
+  background-color: #f2f2f7; /* Cinza claro para consistência */
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   overflow-y: auto;
-  border-left: 2px solid #000000; /* cor da barria horizontal ao lado do terminal C++ */
+  border-left: 3px solid #00cfe5; /* Ciano como separador */
+  box-shadow: -2px 0 10px rgba(29, 24, 86, 0.1);
 }
 
 button#generate-btn {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px;
+  background-color: #1d1856; /* Azul escuro para botões secundários */
+  color: #f2f2f7;
+  padding: 12px;
   font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 button#generate-btn:hover {
-  background-color: #45a049;
+  background-color: #0c0931;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 24, 86, 0.3);
 }
 
 .code-box {
-  background-color: #545858fa; /* cor do terminal do codigo C++*/
-  color: #ffffff;            /* cor da mensagem dentro do terminal do codigo c++ */
-  border: 1px solid #000000; /* borda do terminal C++ */
-  border-radius: 5px;
-  padding: 10px;
+  background-color: #0c0931; /* Azul muito escuro para terminal */
+  color: #00cfe5; /* Ciano para código */
+  border: 2px solid #1d1856;
+  border-radius: 12px;
+  padding: 20px;
   height: 200px;
   overflow-y: auto;
   white-space: pre-wrap;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 14px;
+  box-shadow: 0 4px 15px rgba(12, 9, 49, 0.2);
+}
+
+.code-header {
+  margin-bottom: 10px;
+}
+
+.code-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1d1856;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .monitor-section {
-  margin-top: 10px;
+  margin-top: 8px; /* Diminuído de 15px para aproximar do terminal */
+}
+
+.button-group {
+  display: flex;
+  gap: 15px; /* Aumentado de 8px para separar mais os botões */
+  align-items: center;
+  margin-bottom: 15px;
+  margin-left: 20px; /* Adiciona margem à esquerda para mover os botões para a direita */
+}
+
+/* Botões minimalistas */
+.icon-button {
+  background-color: #000000; /* Cor preta */
+  color: #f2f2f7;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.icon-button:hover {
+  background-color: #333333; /* Cinza escuro no hover */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.icon-button:active {
+  transform: translateY(0);
+  background-color: #1a1a1a;
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #000000;
+  color: #f2f2f7;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #000000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.copy-feedback {
+  font-size: 0.9em;
+  color: #00cfe5;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+.copy-feedback.show {
+  opacity: 1;
 }
 
 .monitor-section h3 {
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #1d1856; /* Azul escuro para títulos */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .serial-box {
   width: 100%;
   height: 80px;
-  background-color: #111;
-  color: #00ff90;
+  background-color: #f2f2f7;
+  color: #1d1856;
   font-family: monospace;
-  border: 1px solid #555555;
-  padding: 5px;
-  border-radius: 5px;
+  border: 2px solid #00cfe5; /* Ciano para borda */
+  padding: 10px;
+  border-radius: 8px;
   resize: none;
+  font-size: 13px;
 }
 
 .toolbox {
   display: none;
-  background-color: #1a1a2e !important; /* Cor de fundo do toolbox - azul escuro moderno */
-  border: 1px solid #f107bf !important; /* Borda rosa para combinar com o tema */
-  border-radius: 8px !important;
-  padding: 10px !important;
-  color: #ffffff !important; /* Texto branco para melhor contraste */
+  background-color: #f2f2f7 !important;
+  border: 2px solid #1d1856 !important;
+  border-radius: 12px !important;
+  padding: 15px !important;
+  color: #1d1856 !important;
   font-style: normal;
   display: flex;
-  box-shadow: 0 4px 12px rgba(241, 7, 191, 0.2); /* Sombra rosa sutil */
+  box-shadow: 0 6px 20px rgba(29, 24, 86, 0.15);
 }
 
 /* Estilos para as categorias do toolbox */
 .blocklyToolboxCategory {
-  background-color: #000000 !important; /* Azul mais escuro para categorias */
-  border: 1px solid #f107bf !important;
-  border-radius: 6px !important;
-  margin: 2px !important;
-  padding: 8px !important;
-  color: #ffffff !important;
-  font-weight: 500 !important;
+  background-color: #f2f2f7 !important;
+  border: 2px solid #1d1856 !important;
+  border-radius: 8px !important;
+  margin: 3px !important;
+  padding: 10px !important;
+  color: #1d1856 !important;
+  font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyToolboxCategory:hover {
-  background-color: #0f3460 !important; /* Azul mais claro no hover */
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(241, 7, 191, 0.3) !important;
+  background-color: #1d1856 !important;
+  color: #f2f2f7 !important;
+  border-color: #e80074 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3) !important;
 }
 
 /* Estilo para o texto das categorias */
 .blocklyTreeLabel {
-  color: #ffffff !important;
-  font-weight: 500 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
 }
 
 .plotter-box {
   width: 100%;
   height: 80px;
-  background-color: #111111;
-  border: 1px solid #555555;
-  border-radius: 5px;
-  padding: 5px;
-  color: #999999;
+  background-color: #f2f2f7;
+  border: 2px solid #00cfe5;
+  border-radius: 8px;
+  padding: 10px;
+  color: #1d1856;
   font-style: italic;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-#startButton:hover {
-    background-color: #0056b3;  
-    transform: translateY(-2px);}
-
-#startButton {
-    background-color: #f107bf;  /* Cor do botão de Start do C++*/
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    font-size: 1.2em;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 4px 8px #f107bf(0, 123, 255, 0.3);}
-
-#startButton:active {
-    background-color: #004085;
-    transform: translateY(0);
+  font-size: 14px;
 }
 
 #message {
-    margin-top: 25px;
-    font-size: 1.1em;
-    color: #28a745; /* Cor verde para sucesso */
-    font-weight: bold;
+  margin-top: 20px;
+  font-size: 1.1em;
+  color: #e80074; /* Rosa para mensagens */
+  font-weight: 600;
 }
 
 /* Alvos para o contêiner do toolbox gerado pelo Blockly */
 .blocklyToolboxDiv {
-  background-color: #000000 !important; /* Cor de fundo do toolbox */
-  border-right: 1px solid #f107bf !important; /* Borda rosa para separar do workspace */
-  color: #ffffff !important;
-  padding-top: 10px !important;
+  background-color: #f2f2f7 !important;
+  border-right: 3px solid #1d1856 !important;
+  color: #1d1856 !important;
+  padding: 15px !important;
+}
+
+/* Estilos gerais melhorados */
+h3 {
+  color: #1d1856;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Scrollbar personalizada mais suave */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2f2f7;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #00cfe5, #e80074);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #e80074, #00cfe5);
+}
+
+/* Elementos focados */
+button:focus,
+input:focus,
+textarea:focus {
+  outline: 3px solid #e80074;
+  outline-offset: 2px;
+}
+
+/* Adicionar sombras suaves para profundidade */
+.code-box,
+.serial-box,
+.plotter-box {
+  box-shadow: 0 2px 10px rgba(29, 24, 86, 0.1);
+}
+
+/* Melhorar tipografia */
+body {
+  font-weight: 400;
+  line-height: 1.5;
 }
