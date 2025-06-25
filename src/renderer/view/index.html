@@ -15,6 +15,9 @@
   <header class="header">
     <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
     <h1>Ideia Space Mission</h1>
+    <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
+      🌙
+    </button>
   </header>
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
@@ -113,6 +116,32 @@
           }, 2000);
         });
       });
+    });
+
+    // Funcionalidade do dark mode
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    // Verificar se há preferência salva
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      darkModeToggle.textContent = '☀️';
+      darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
+    }
+
+    darkModeToggle.addEventListener('click', function() {
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = '☀️';
+        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        darkModeToggle.textContent = '🌙';
+        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema escuro');
+        localStorage.setItem('theme', 'light');
+      }
     });
   </script>
 </body>

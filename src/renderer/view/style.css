@@ -1,29 +1,63 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background-color: #0c0931; /* Azul muito escuro como fundo principal */
+  background-color: #050419; /* Azul muito escuro como fundo principal */
   color: #f2f2f7; /* Cinza claro para texto */
   overflow: hidden;
 }
 
+:root {
+  /* Tema claro com branco predominante */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f2f7;
+  --bg-terminal: #ffffff;
+  --text-primary: #0c0931;
+  --text-code: #1d1856;
+  --accent-pink: #e80074;
+  --accent-cyan: #00cfe5;
+  --workspace-bg: #ffffff;
+}
+
+.dark-mode {
+  /* Tema escuro harmonioso */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-terminal: #000000;
+  --text-primary: #e5e5e5;
+  --text-code: #b8b8b8;
+  --accent-pink: #e80074;
+  --accent-cyan: #00cfe5;
+  --workspace-bg: #1a1a1a;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 .header {
-  background-color: #1d1856; /* Azul escuro para header */
+  background-color: var(--bg-secondary);
   padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  border-bottom: 3px solid #e80074; /* Rosa como destaque */
+  border-bottom: 3px solid var(--accent-pink);
 }
 
 .header h1 {
   font-size: 24px;
   font-style: italic;
-  color: #f2f2f7; /* Cinza claro para contraste no header */
+  color: var(--text-primary);
   margin: 0;
 }
 
 .logo {
   height: 40px;
+  filter: brightness(0) saturate(100%);
+}
+
+.dark-mode .logo {
+  filter: brightness(1) saturate(100%);
 }
 
 .container {
@@ -35,25 +69,25 @@ body {
 .blockly-area {
   flex: 1;
   height: 100%;
-  background-color: #f2f2f7; /* Cinza claro para área de trabalho */
+  background-color: var(--workspace-bg);
   position: relative;
 }
 
 .side-panel {
   width: 400px;
-  background-color: #1d1856; /* Azul escuro para painel lateral */
+  background-color: var(--bg-secondary);
   padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 15px;
   overflow-y: auto;
-  border-left: 3px solid #e80074; /* Rosa como separador */
+  border-left: 3px solid var(--accent-pink);
   box-shadow: -2px 0 10px rgba(232, 0, 116, 0.2);
 }
 
 button#generate-btn {
-  background-color: #00cfe5; /* Ciano para botões secundários */
-  color: #0c0931;
+  background-color: var(--accent-cyan);
+  color: #ffffff;
   padding: 12px;
   font-size: 16px;
   border: none;
@@ -70,9 +104,9 @@ button#generate-btn:hover {
 }
 
 .code-box {
-  background-color: #0c0931; /* Azul muito escuro para terminal */
-  color: #00cfe5; /* Ciano para código */
-  border: 2px solid #e80074; /* Rosa para borda */
+  background-color: var(--bg-terminal);
+  color: var(--text-code);
+  border: 2px solid var(--accent-pink);
   border-radius: 12px;
   padding: 20px;
   height: 200px;
@@ -90,11 +124,40 @@ button#generate-btn:hover {
 .code-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #f2f2f7; /* Cinza claro para títulos */
+  color: var(--text-primary);
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.result-header {
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.result-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-box {
+  background-color: var(--bg-terminal);
+  color: var(--accent-cyan);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 12px;
+  padding: 20px;
+  height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3);
 }
 
 .monitor-section {
@@ -111,8 +174,8 @@ button#generate-btn:hover {
 
 /* Botões minimalistas */
 .icon-button {
-  background-color: #000000; /* Mantém cor preta dos botões */
-  color: #f2f2f7;
+  background-color: #1d1856;
+  color: #ffffff;
   border: none;
   padding: 10px;
   font-size: 16px;
@@ -125,17 +188,32 @@ button#generate-btn:hover {
   justify-content: center;
   width: 36px;
   height: 36px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.2);
 }
 
 .icon-button:hover {
-  background-color: #333333;
+  background-color: #0c0931;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(29, 24, 86, 0.3);
 }
 
 .icon-button:active {
   transform: translateY(0);
+  background-color: #1d1856;
+}
+
+.dark-mode .icon-button {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .icon-button:hover {
+  background-color: #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .icon-button:active {
   background-color: #1a1a1a;
 }
 
@@ -150,8 +228,8 @@ button#generate-btn:hover {
   bottom: 120%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #000000;
-  color: #f2f2f7;
+  background-color: #1d1856;
+  color: #ffffff;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 12px;
@@ -161,7 +239,7 @@ button#generate-btn:hover {
   visibility: hidden;
   transition: all 0.3s ease;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.3);
 }
 
 .tooltip::after {
@@ -171,7 +249,7 @@ button#generate-btn:hover {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: #000000;
+  border-top-color: #1d1856;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
@@ -181,6 +259,16 @@ button#generate-btn:hover {
 .tooltip:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+.dark-mode .tooltip::before {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .tooltip::after {
+  border-top-color: #000000;
 }
 
 .copy-feedback {
@@ -199,7 +287,7 @@ button#generate-btn:hover {
 .monitor-section h3 {
   font-size: 18px;
   margin-bottom: 12px;
-  color: #f2f2f7; /* Cinza claro para títulos */
+  color: var(--text-primary);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -209,10 +297,10 @@ button#generate-btn:hover {
 .serial-box {
   width: 100%;
   height: 80px;
-  background-color: #0c0931; /* Azul muito escuro */
-  color: #00cfe5; /* Ciano para texto */
+  background-color: var(--bg-primary);
+  color: var(--text-code);
   font-family: monospace;
-  border: 2px solid #e80074; /* Rosa para borda */
+  border: 2px solid var(--accent-pink);
   padding: 10px;
   border-radius: 8px;
   resize: none;
@@ -221,11 +309,11 @@ button#generate-btn:hover {
 
 .toolbox {
   display: none;
-  background-color: #1d1856 !important; /* Azul escuro para toolbox */
-  border: 2px solid #e80074 !important; /* Rosa para borda */
+  background-color: var(--bg-secondary) !important;
+  border: 2px solid var(--accent-pink) !important;
   border-radius: 12px !important;
   padding: 15px !important;
-  color: #f2f2f7 !important; /* Cinza claro para texto */
+  color: var(--text-primary) !important;
   font-style: normal;
   display: flex;
   box-shadow: 0 6px 20px rgba(232, 0, 116, 0.2);
@@ -233,20 +321,20 @@ button#generate-btn:hover {
 
 /* Estilos para as categorias do toolbox */
 .blocklyToolboxCategory {
-  background-color: #0c0931 !important; /* Azul muito escuro para categorias */
-  border: 2px solid #00cfe5 !important; /* Ciano para borda */
+  background-color: var(--bg-primary) !important;
+  border: 2px solid var(--accent-cyan) !important;
   border-radius: 8px !important;
   margin: 3px !important;
   padding: 10px !important;
-  color: #f2f2f7 !important; /* Cinza claro para texto */
+  color: var(--text-primary) !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyToolboxCategory:hover {
-  background-color: #e80074 !important; /* Rosa no hover */
-  color: #f2f2f7 !important;
-  border-color: #00cfe5 !important; /* Ciano para borda no hover */
+  background-color: var(--accent-pink) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--accent-cyan) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3) !important;
 }
@@ -260,11 +348,11 @@ button#generate-btn:hover {
 .plotter-box {
   width: 100%;
   height: 80px;
-  background-color: #0c0931; /* Azul muito escuro */
-  border: 2px solid #e80074; /* Rosa para borda */
+  background-color: var(--bg-primary);
+  border: 2px solid var(--accent-pink);
   border-radius: 8px;
   padding: 10px;
-  color: #00cfe5; /* Ciano para texto */
+  color: var(--text-code);
   font-style: italic;
   display: flex;
   align-items: center;
@@ -275,21 +363,21 @@ button#generate-btn:hover {
 #message {
   margin-top: 20px;
   font-size: 1.1em;
-  color: #e80074; /* Rosa para mensagens */
+  color: var(--accent-pink);
   font-weight: 600;
 }
 
 /* Alvos para o contêiner do toolbox gerado pelo Blockly */
 .blocklyToolboxDiv {
-  background-color: #1d1856 !important; /* Azul escuro */
-  border-right: 3px solid #e80074 !important; /* Rosa para separador */
-  color: #f2f2f7 !important; /* Cinza claro */
+  background-color: var(--bg-secondary) !important;
+  border-right: 3px solid var(--accent-pink) !important;
+  color: var(--text-primary) !important;
   padding: 15px !important;
 }
 
 /* Estilos gerais melhorados */
 h3 {
-  color: #f2f2f7; /* Cinza claro */
+  color: var(--text-primary);
   font-weight: 600;
   margin: 0;
 }
@@ -300,7 +388,7 @@ h3 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1d1856; /* Azul escuro */
+  background: var(--bg-secondary); /* Azul escuro */
   border-radius: 5px;
 }
 
@@ -332,4 +420,92 @@ textarea:focus {
 body {
   font-weight: 400;
   line-height: 1.5;
+}
+
+.dark-mode-toggle {
+  background-color: transparent;
+  border: 2px solid var(--accent-pink);
+  color: var(--text-primary);
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  position: relative;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--accent-pink);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.4);
+}
+
+.dark-mode-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Animação suave para transição de temas */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Remover TODOS os pseudo-elementos do dark-mode-toggle */
+.dark-mode-toggle::before,
+.dark-mode-toggle::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Tooltip específico para o dark mode - versão simplificada */
+.dark-mode-tooltip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+  background-color: #1d1856;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.3);
+  pointer-events: none;
+}
+
+/* Seta do tooltip */
+.dark-mode-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: #1d1856;
+}
+
+/* Mostrar tooltip no hover */
+.dark-mode-toggle:hover .dark-mode-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Estilo para tema escuro */
+.dark-mode .dark-mode-tooltip {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .dark-mode-tooltip::after {
+  border-left-color: #000000;
 }
