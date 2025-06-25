@@ -49,6 +49,7 @@ body {
   font-style: italic;
   color: var(--text-primary);
   margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
 }
 
 .logo {
