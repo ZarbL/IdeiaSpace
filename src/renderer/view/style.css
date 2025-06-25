@@ -1,8 +1,8 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background-color: #f2f2f7; /* Cinza claro como fundo principal */
-  color: #1d1856; /* Azul escuro para texto */
+  background-color: #0c0931; /* Azul muito escuro como fundo principal */
+  color: #f2f2f7; /* Cinza claro para texto */
   overflow: hidden;
 }
 
@@ -35,25 +35,25 @@ body {
 .blockly-area {
   flex: 1;
   height: 100%;
-  background-color: #f2f2f7; /* Mantém cinza claro para área de trabalho */
+  background-color: #f2f2f7; /* Cinza claro para área de trabalho */
   position: relative;
 }
 
 .side-panel {
   width: 400px;
-  background-color: #f2f2f7; /* Cinza claro para consistência */
+  background-color: #1d1856; /* Azul escuro para painel lateral */
   padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 15px;
   overflow-y: auto;
-  border-left: 3px solid #00cfe5; /* Ciano como separador */
-  box-shadow: -2px 0 10px rgba(29, 24, 86, 0.1);
+  border-left: 3px solid #e80074; /* Rosa como separador */
+  box-shadow: -2px 0 10px rgba(232, 0, 116, 0.2);
 }
 
 button#generate-btn {
-  background-color: #1d1856; /* Azul escuro para botões secundários */
-  color: #f2f2f7;
+  background-color: #00cfe5; /* Ciano para botões secundários */
+  color: #0c0931;
   padding: 12px;
   font-size: 16px;
   border: none;
@@ -64,15 +64,15 @@ button#generate-btn {
 }
 
 button#generate-btn:hover {
-  background-color: #0c0931;
+  background-color: #00b3cc;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(29, 24, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 207, 229, 0.3);
 }
 
 .code-box {
   background-color: #0c0931; /* Azul muito escuro para terminal */
   color: #00cfe5; /* Ciano para código */
-  border: 2px solid #1d1856;
+  border: 2px solid #e80074; /* Rosa para borda */
   border-radius: 12px;
   padding: 20px;
   height: 200px;
@@ -80,7 +80,7 @@ button#generate-btn:hover {
   white-space: pre-wrap;
   font-family: "Courier New", monospace;
   font-size: 14px;
-  box-shadow: 0 4px 15px rgba(12, 9, 49, 0.2);
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3);
 }
 
 .code-header {
@@ -90,7 +90,7 @@ button#generate-btn:hover {
 .code-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #1d1856;
+  color: #f2f2f7; /* Cinza claro para títulos */
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -98,20 +98,20 @@ button#generate-btn:hover {
 }
 
 .monitor-section {
-  margin-top: 8px; /* Diminuído de 15px para aproximar do terminal */
+  margin-top: 8px;
 }
 
 .button-group {
   display: flex;
-  gap: 15px; /* Aumentado de 8px para separar mais os botões */
+  gap: 15px;
   align-items: center;
   margin-bottom: 15px;
-  margin-left: 20px; /* Adiciona margem à esquerda para mover os botões para a direita */
+  margin-left: 20px;
 }
 
 /* Botões minimalistas */
 .icon-button {
-  background-color: #000000; /* Cor preta */
+  background-color: #000000; /* Mantém cor preta dos botões */
   color: #f2f2f7;
   border: none;
   padding: 10px;
@@ -129,7 +129,7 @@ button#generate-btn:hover {
 }
 
 .icon-button:hover {
-  background-color: #333333; /* Cinza escuro no hover */
+  background-color: #333333;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
@@ -199,7 +199,7 @@ button#generate-btn:hover {
 .monitor-section h3 {
   font-size: 18px;
   margin-bottom: 12px;
-  color: #1d1856; /* Azul escuro para títulos */
+  color: #f2f2f7; /* Cinza claro para títulos */
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -209,10 +209,10 @@ button#generate-btn:hover {
 .serial-box {
   width: 100%;
   height: 80px;
-  background-color: #f2f2f7;
-  color: #1d1856;
+  background-color: #0c0931; /* Azul muito escuro */
+  color: #00cfe5; /* Ciano para texto */
   font-family: monospace;
-  border: 2px solid #00cfe5; /* Ciano para borda */
+  border: 2px solid #e80074; /* Rosa para borda */
   padding: 10px;
   border-radius: 8px;
   resize: none;
@@ -221,34 +221,34 @@ button#generate-btn:hover {
 
 .toolbox {
   display: none;
-  background-color: #f2f2f7 !important;
-  border: 2px solid #1d1856 !important;
+  background-color: #1d1856 !important; /* Azul escuro para toolbox */
+  border: 2px solid #e80074 !important; /* Rosa para borda */
   border-radius: 12px !important;
   padding: 15px !important;
-  color: #1d1856 !important;
+  color: #f2f2f7 !important; /* Cinza claro para texto */
   font-style: normal;
   display: flex;
-  box-shadow: 0 6px 20px rgba(29, 24, 86, 0.15);
+  box-shadow: 0 6px 20px rgba(232, 0, 116, 0.2);
 }
 
 /* Estilos para as categorias do toolbox */
 .blocklyToolboxCategory {
-  background-color: #f2f2f7 !important;
-  border: 2px solid #1d1856 !important;
+  background-color: #0c0931 !important; /* Azul muito escuro para categorias */
+  border: 2px solid #00cfe5 !important; /* Ciano para borda */
   border-radius: 8px !important;
   margin: 3px !important;
   padding: 10px !important;
-  color: #1d1856 !important;
+  color: #f2f2f7 !important; /* Cinza claro para texto */
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyToolboxCategory:hover {
-  background-color: #1d1856 !important;
+  background-color: #e80074 !important; /* Rosa no hover */
   color: #f2f2f7 !important;
-  border-color: #e80074 !important;
+  border-color: #00cfe5 !important; /* Ciano para borda no hover */
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3) !important;
 }
 
 /* Estilo para o texto das categorias */
@@ -260,11 +260,11 @@ button#generate-btn:hover {
 .plotter-box {
   width: 100%;
   height: 80px;
-  background-color: #f2f2f7;
-  border: 2px solid #00cfe5;
+  background-color: #0c0931; /* Azul muito escuro */
+  border: 2px solid #e80074; /* Rosa para borda */
   border-radius: 8px;
   padding: 10px;
-  color: #1d1856;
+  color: #00cfe5; /* Ciano para texto */
   font-style: italic;
   display: flex;
   align-items: center;
@@ -281,51 +281,51 @@ button#generate-btn:hover {
 
 /* Alvos para o contêiner do toolbox gerado pelo Blockly */
 .blocklyToolboxDiv {
-  background-color: #f2f2f7 !important;
-  border-right: 3px solid #1d1856 !important;
-  color: #1d1856 !important;
+  background-color: #1d1856 !important; /* Azul escuro */
+  border-right: 3px solid #e80074 !important; /* Rosa para separador */
+  color: #f2f2f7 !important; /* Cinza claro */
   padding: 15px !important;
 }
 
 /* Estilos gerais melhorados */
 h3 {
-  color: #1d1856;
+  color: #f2f2f7; /* Cinza claro */
   font-weight: 600;
   margin: 0;
 }
 
-/* Scrollbar personalizada mais suave */
+/* Scrollbar personalizada */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f2f2f7;
+  background: #1d1856; /* Azul escuro */
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #00cfe5, #e80074);
+  background: linear-gradient(45deg, #e80074, #00cfe5); /* Gradiente rosa-ciano */
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #e80074, #00cfe5);
+  background: linear-gradient(45deg, #00cfe5, #e80074); /* Gradiente invertido */
 }
 
 /* Elementos focados */
 button:focus,
 input:focus,
 textarea:focus {
-  outline: 3px solid #e80074;
+  outline: 3px solid #e80074; /* Rosa para foco */
   outline-offset: 2px;
 }
 
-/* Adicionar sombras suaves para profundidade */
+/* Adicionar sombras com as novas cores */
 .code-box,
 .serial-box,
 .plotter-box {
-  box-shadow: 0 2px 10px rgba(29, 24, 86, 0.1);
+  box-shadow: 0 2px 10px rgba(232, 0, 116, 0.2);
 }
 
 /* Melhorar tipografia */
