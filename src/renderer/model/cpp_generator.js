@@ -10,8 +10,41 @@
  */
 'use strict';
 
+// Verificar se Blockly está disponível
+if (typeof Blockly === 'undefined') {
+  throw new Error('Blockly não está disponível');
+}
+
+// Verificar se Blockly.Generator está disponível
+if (typeof Blockly.Generator === 'undefined') {
+  // Criar um gerador básico se necessário
+  Blockly.Generator = function(name) {
+    this.name_ = name;
+  };
+  
+  Blockly.Generator.prototype.workspaceToCode = function(workspace) {
+    return '// Gerador básico - implementação simplificada\n';
+  };
+}
+
 if (!Blockly.Cpp) {
-  Blockly.Cpp = new Blockly.Generator('C++');
+  try {
+    Blockly.Cpp = new Blockly.Generator('C++');
+  } catch (error) {
+    // Fallback: criar objeto básico
+    Blockly.Cpp = {
+      name_: 'C++',
+      init: function() {
+        this.includes_ = {};
+        this.definitions_ = {};
+        this.functionNames_ = {};
+        this.variableDeclarations_ = {};
+      },
+      workspaceToCode: function(workspace) {
+        return '// Gerador C++ básico\n';
+      }
+    };
+  }
 }
 
 /**
@@ -65,11 +98,7 @@ Blockly.Cpp.init = function() {
   Blockly.Cpp.includes_ = Object.create(null);
   Blockly.Cpp.definitions_ = Object.create(null);
   Blockly.Cpp.functionNames_ = Object.create(null);
-
-  if (!Blockly.Cpp.variableDB_) {
-    Blockly.Cpp.variableDB_ = new Blockly.Names(Blockly.Cpp.RESERVED_WORDS_);
-  }
-  Blockly.Cpp.variableDB_.reset();
+  Blockly.Cpp.variableDeclarations_ = Object.create(null);
 };
 
 /**
@@ -97,6 +126,13 @@ Blockly.Cpp.finish = function(code) {
   }
   var definitionsText = definitions.length ? definitions.join('\n') + '\n\n' : '';
 
+  // Create variable declarations section.
+  var variableDeclarations = [];
+  for (var name in Blockly.Cpp.variableDeclarations_) {
+    variableDeclarations.push(Blockly.Cpp.variableDeclarations_[name]);
+  }
+  var variableDeclarationsText = variableDeclarations.length ? variableDeclarations.join('\n') + '\n\n' : '';
+
   // Create the functions section.
   var functions = [];
   for (var name in Blockly.Cpp.functionNames_) {
@@ -107,7 +143,7 @@ Blockly.Cpp.finish = function(code) {
   // Create main function
   var mainFunction = 'int main() {\n' + Blockly.Cpp.prefixLines(code, Blockly.Cpp.INDENT) + '\n  return 0;\n}\n';
 
-  var allCode = includesText + definitionsText + functionsText + mainFunction;
+  var allCode = includesText + definitionsText + variableDeclarationsText + functionsText + mainFunction;
   return allCode;
 };
 
@@ -134,6 +170,40 @@ Blockly.Cpp.quote_ = function(string) {
                  .replace(/\$/g, '\\$')
                  .replace(/"/g, '\\"');
   return '"' + string + '"';
+};
+
+/**
+ * Declare a variable with auto type detection.
+ * @param {string} varName The variable name.
+ * @param {string} value The initial value (optional).
+ * @return {string} The variable name.
+ * @private
+ */
+Blockly.Cpp.declareVariable_ = function(varName, value) {
+  if (!Blockly.Cpp.variableDeclarations_[varName]) {
+    var declaration;
+    if (value) {
+      // Try to detect type from value
+      if (value === 'true' || value === 'false') {
+        declaration = 'bool ' + varName + ' = ' + value + ';';
+      } else if (/^".*"$/.test(value)) {
+        Blockly.Cpp.includes_['string'] = '#include <string>';
+        declaration = 'std::string ' + varName + ' = ' + value + ';';
+      } else if (/^\d+\.\d+$/.test(value)) {
+        declaration = 'double ' + varName + ' = ' + value + ';';
+      } else if (/^\d+$/.test(value)) {
+        declaration = 'int ' + varName + ' = ' + value + ';';
+      } else {
+        // Default to auto type
+        declaration = 'auto ' + varName + ' = ' + value + ';';
+      }
+    } else {
+      // Default to int if no value provided
+      declaration = 'int ' + varName + ' = 0;';
+    }
+    Blockly.Cpp.variableDeclarations_[varName] = declaration;
+  }
+  return varName;
 };
 
 /**
@@ -402,8 +472,46 @@ Blockly.Cpp['text_print'] = function(block) {
  * @return {array} Generated C++ code and the operator order.
  */
 Blockly.Cpp['variables_get'] = function(block) {
-  var varName = Blockly.Cpp.variableDB_.getName(block.getFieldValue('VAR'),
-    Blockly.Variables.NAME_TYPE);
+  var fieldValue = block.getFieldValue('VAR');
+  
+  // Tentar obter o nome real da variável a partir do workspace
+  var realVariableName = fieldValue;
+  
+  try {
+    // Se fieldValue é um ID, tentar obter o nome real
+    if (block.workspace) {
+      const variable = block.workspace.getVariableById(fieldValue);
+      if (variable && variable.name) {
+        realVariableName = variable.name;
+      }
+    }
+    
+    // Se ainda não temos um nome válido, tentar outras abordagens
+    if (realVariableName === fieldValue) {
+      const field = block.getField('VAR');
+      if (field && field.getText) {
+        const fieldText = field.getText();
+        if (fieldText && fieldText !== fieldValue) {
+          realVariableName = fieldText;
+        }
+      }
+    }
+    
+  } catch (error) {
+    // Silencioso em caso de erro, usar fieldValue como fallback
+  }
+  
+  // Usar o nome real diretamente para variáveis simples
+  var varName = realVariableName;
+  
+  // Apenas sanitizar se realmente necessário (nomes inválidos para C++)
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(realVariableName)) {
+    varName = Blockly.Cpp.variableDB_.getName(fieldValue, Blockly.Variables.NAME_TYPE);
+  }
+  
+  // Ensure variable is declared
+  Blockly.Cpp.declareVariable_(varName);
+  
   return [varName, Blockly.Cpp.ORDER_ATOMIC];
 };
 
@@ -413,11 +521,42 @@ Blockly.Cpp['variables_get'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['variables_set'] = function(block) {
-  var varName = Blockly.Cpp.variableDB_.getName(block.getFieldValue('VAR'),
-    Blockly.Variables.NAME_TYPE);
+  var fieldValue = block.getFieldValue('VAR');
+  
+  // Usar a mesma lógica do variables_get para obter o nome real
+  var realVariableName = fieldValue;
+  
+  try {
+    if (block.workspace) {
+      const variable = block.workspace.getVariableById(fieldValue);
+      if (variable && variable.name) {
+        realVariableName = variable.name;
+      }
+    }
+  } catch (error) {
+    // Silencioso em caso de erro
+  }
+  
+  // Usar o nome real diretamente para variáveis simples
+  var varName = realVariableName;
+  
+  // Apenas sanitizar se realmente necessário (nomes inválidos para C++)
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(realVariableName)) {
+    varName = Blockly.Cpp.variableDB_.getName(fieldValue, Blockly.Variables.NAME_TYPE);
+  }
+  
   var argument0 = Blockly.Cpp.valueToCode(block, 'VALUE',
     Blockly.Cpp.ORDER_ASSIGNMENT) || '0';
-  return varName + ' = ' + argument0 + ';\n';
+  
+  // Check if this is the first assignment (declaration)
+  if (!Blockly.Cpp.variableDeclarations_[varName]) {
+    // Declare and initialize the variable
+    Blockly.Cpp.declareVariable_(varName, argument0);
+    return ''; // Declaration is handled globally, no code needed here
+  } else {
+    // Just assignment
+    return varName + ' = ' + argument0 + ';\n';
+  }
 };
 
 /**
@@ -479,4 +618,36 @@ Blockly.Cpp['digital_write'] = function(block) {
 Blockly.Cpp['digital_read'] = function(block) {
   var pin = block.getFieldValue('PIN');
   return [`digitalRead(${pin})`, Blockly.Cpp.ORDER_ATOMIC];
-}; 
+};
+
+/**
+ * C++ code generator for variable declaration block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['variable_declaration'] = function(block) {
+  var varType = block.getFieldValue('TYPE');
+  var originalName = block.getFieldValue('VAR');
+  
+  // CORREÇÃO: Usar o nome original diretamente para variáveis simples
+  var varName = originalName;
+  
+  // Apenas sanitizar se realmente necessário (nomes inválidos para C++)
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(originalName)) {
+    varName = Blockly.Cpp.variableDB_.getName(originalName, Blockly.Variables.NAME_TYPE);
+  }
+  
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE',
+    Blockly.Cpp.ORDER_ASSIGNMENT) || '0';
+  
+  // Add string include if needed
+  if (varType === 'std::string') {
+    Blockly.Cpp.includes_['string'] = '#include <string>';
+  }
+  
+  // Add explicit variable declaration
+  var declaration = varType + ' ' + varName + ' = ' + value + ';';
+  Blockly.Cpp.variableDeclarations_[varName] = declaration;
+  
+  return ''; // Declaration is handled globally
+};

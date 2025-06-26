@@ -98,3 +98,29 @@ Blockly.Blocks['digital_read'] = {
     this.setHelpUrl("");
   }
 };
+
+/**
+ * Block for variable declaration with type.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['variable_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("declarar")
+        .appendField(new Blockly.FieldDropdown([
+          ["int", "int"],
+          ["double", "double"],
+          ["string", "std::string"],
+          ["bool", "bool"]
+        ]), "TYPE")
+        .appendField(new Blockly.FieldVariable("variavel"), "VAR");
+    this.appendValueInput("VALUE")
+        .setCheck(null)
+        .appendField("=");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma nova variável com tipo específico");
+    this.setHelpUrl("");
+  }
+};
