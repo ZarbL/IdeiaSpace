@@ -124,3 +124,26 @@ Blockly.Blocks['variable_declaration'] = {
     this.setHelpUrl("");
   }
 };
+
+/**
+ * Block for reading MPU6050 sensor values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_read'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Ler MPU6050')
+        .appendField(new Blockly.FieldDropdown([
+          ['Aceleração X', 'ACCEL_X'],
+          ['Aceleração Y', 'ACCEL_Y'],
+          ['Aceleração Z', 'ACCEL_Z'],
+          ['Giro X', 'GYRO_X'],
+          ['Giro Y', 'GYRO_Y'],
+          ['Giro Z', 'GYRO_Z']
+        ]), 'MPU6050_AXIS');
+    this.setOutput(true, 'Number');
+    this.setColour(210);
+    this.setTooltip('Lê um valor do sensor MPU6050');
+    this.setHelpUrl('https://bipes.net.br');
+  }
+};

@@ -54,11 +54,11 @@ body {
 
 .logo {
   height: 40px;
-  filter: brightness(0) saturate(100%);
+  color: var(--text-primary);
 }
 
 .dark-mode .logo {
-  filter: brightness(1) saturate(100%);
+  color: var(--text-primary);
 }
 
 .container {
@@ -593,7 +593,8 @@ body {
   justify-content: flex-end;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -638,9 +639,15 @@ body {
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
 }
 
 .btn-secondary {
@@ -696,16 +703,17 @@ body {
     width: 95%;
     margin: 10% auto;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
-  
+
   .modal-buttons {
     flex-direction: column;
   }
-  
-  .btn-primary, .btn-secondary {
+
+  .btn-primary,
+  .btn-secondary {
     width: 100%;
     margin-bottom: 5px;
   }

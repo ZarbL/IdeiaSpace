@@ -167,10 +167,16 @@ function updateVariableToolbox() {
           <block type="procedures_defnoreturn"></block>
           <block type="procedures_callnoreturn"></block>
         </category>
-        <category name="Controle" colour="#0c0931">
-          <block type="delay_block"></block>
-          <block type="digital_write"></block>
-          <block type="digital_read"></block>
+        <category name="Sensores" colour="#0c0931">
+          <category name="Medidas Inerciais" colour="#2e2e8a">
+            <block type="mpu6050_read"></block>
+          </category>
+          <category name="Ultrasond" colour="#2e8a5c">
+            <block type="ultrasond"></block>
+          </category>
+          <category name="Pressão" colour="#8a2e2e">
+            <block type="pressao"></block>
+          </category>
         </category>
       </xml>
     `;

@@ -651,3 +651,22 @@ Blockly.Cpp['variable_declaration'] = function(block) {
   
   return ''; // Declaration is handled globally
 };
+
+// Gerador de código para o bloco MPU6050
+Blockly.Cpp['mpu6050_read'] = function(block) {
+  var axis = block.getFieldValue('MPU6050_AXIS');
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  var code = '';
+  switch(axis) {
+    case 'ACCEL_X': code = 'mpu.getAccelX()'; break;
+    case 'ACCEL_Y': code = 'mpu.getAccelY()'; break;
+    case 'ACCEL_Z': code = 'mpu.getAccelZ()'; break;
+    case 'GYRO_X': code = 'mpu.getGyroX()'; break;
+    case 'GYRO_Y': code = 'mpu.getGyroY()'; break;
+    case 'GYRO_Z': code = 'mpu.getGyroZ()'; break;
+  }
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
