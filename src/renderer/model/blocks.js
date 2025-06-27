@@ -98,3 +98,52 @@ Blockly.Blocks['digital_read'] = {
     this.setHelpUrl("");
   }
 };
+
+/**
+ * Block for variable declaration with type.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['variable_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("declarar")
+        .appendField(new Blockly.FieldDropdown([
+          ["int", "int"],
+          ["double", "double"],
+          ["string", "std::string"],
+          ["bool", "bool"]
+        ]), "TYPE")
+        .appendField(new Blockly.FieldVariable("variavel"), "VAR");
+    this.appendValueInput("VALUE")
+        .setCheck(null)
+        .appendField("=");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma nova variável com tipo específico");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for reading MPU6050 sensor values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_read'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Ler MPU6050')
+        .appendField(new Blockly.FieldDropdown([
+          ['Aceleração X', 'ACCEL_X'],
+          ['Aceleração Y', 'ACCEL_Y'],
+          ['Aceleração Z', 'ACCEL_Z'],
+          ['Giro X', 'GYRO_X'],
+          ['Giro Y', 'GYRO_Y'],
+          ['Giro Z', 'GYRO_Z']
+        ]), 'MPU6050_AXIS');
+    this.setOutput(true, 'Number');
+    this.setColour(210);
+    this.setTooltip('Lê um valor do sensor MPU6050');
+    this.setHelpUrl('https://bipes.net.br');
+  }
+};

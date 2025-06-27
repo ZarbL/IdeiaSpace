@@ -402,7 +402,7 @@ graph LR
   <category name="Variáveis" colour="#A65C81" custom="VARIABLE"></category>
   <category name="Funções" colour="#9A5CA6" custom="PROCEDURE"></category>
   
-  <category name="Controle" colour="#FFAA00">
+  <category name="Sensores" colour="#FFAA00">
     <block type="delay_block"></block>
     <block type="digital_write"></block>
     <block type="digital_read"></block>
@@ -809,7 +809,7 @@ BUILD_TARGET=win32,linux,darwin
   - Cores adaptativas para Blockly
 
 - [ ] **Zoom e Navegação Melhorada**
-  - Controles de zoom mais intuitivos
+  - Sensores de zoom mais intuitivos
   - Mini-map do workspace
   - Navegação por teclado
 
@@ -1121,4 +1121,4 @@ Para contribuir com o projeto:
 
 **Desenvolvido com ❤️ pela Equipe IdeiaSpace**
 
-*Transformando a educação através da tecnologia espacial* 
+*Transformando a educação através da tecnologia espacial*

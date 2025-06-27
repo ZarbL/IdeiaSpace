@@ -74,7 +74,7 @@ A interface principal inclui:
 - **Definir**: Criar funções sem retorno
 - **Chamar**: Executar funções
 
-#### Controle
+#### Sensores
 - **Delay**: Pausa em millisegundos
 - **Digital Write**: Controlar pino digital
 - **Digital Read**: Ler pino digital
@@ -312,4 +312,4 @@ Para contribuir com o módulo C++:
 
 ## Licença
 
-Este módulo está licenciado sob a licença MIT. Veja o arquivo LICENSE para mais detalhes. 
+Este módulo está licenciado sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.

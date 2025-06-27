@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Atualizar a interface com os resultados ou saídas.
 
         // Exemplo simples:
-        console.log('Botão "Start" clicado! Executando os blocos...');
         messageDisplay.textContent = 'Blocos de programação em execução!';
 
         // Simula um tempo de execução e depois mostra uma mensagem de "concluído"
