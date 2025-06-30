@@ -54,11 +54,12 @@ body {
 
 .logo {
   height: 40px;
-  color: var(--text-primary);
+  filter: brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(7000%) hue-rotate(322deg) brightness(100%)
+    contrast(100%);
 }
 
 .dark-mode .logo {
-  color: var(--text-primary);
+  filter: brightness(1) saturate(100%);
 }
 
 .container {
