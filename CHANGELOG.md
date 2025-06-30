@@ -22,8 +22,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Sistema de versionamento** semântico
 
 #### 🧩 Blocos de Programação
-- **Lógica**: Controles condicionais, comparações, operações lógicas
-- **Loops**: Repetições e estruturas de controle
+- **Lógica**: Sensores condicionais, comparações, operações lógicas
+- **Loops**: Repetições e estruturas de sensores
 - **Matemática**: Operações aritméticas e números
 - **Texto**: Manipulação e exibição de texto
 - **Variáveis**: Declaração e uso de variáveis
@@ -107,4 +107,4 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
-**Desenvolvido com ❤️ pela Equipe IdeiaSpace** 
+**Desenvolvido com ❤️ pela Equipe IdeiaSpace**

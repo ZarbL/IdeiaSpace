@@ -65,7 +65,7 @@ IdeiaSpace/
 
 ### Blocos Disponíveis
 
-#### Lógica e Controle
+#### Lógica e Sensores
 - **IF/ELSE**: Estruturas condicionais
 - **Comparações**: Operadores de comparação (==, !=, <, >, etc.)
 - **Operações Lógicas**: AND (&&), OR (||)
@@ -87,7 +87,7 @@ IdeiaSpace/
 - **Get/Set**: Manipulação de variáveis
 - **Definir/Chamar**: Criação e uso de funções
 
-#### Controle
+#### Sensores
 - **Delay**: Pausa em millisegundos
 - **Digital Write**: Controlar pino digital
 - **Digital Read**: Ler pino digital

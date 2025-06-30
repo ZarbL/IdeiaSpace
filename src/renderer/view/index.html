@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="./style.css">
   <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
   <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
+  <script src="../../../node_modules/blockly/javascript_compressed.js"></script>
   <script src="../../../node_modules/blockly/msg/en.js"></script>
-  <script src="../model/cpp_generator.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Executar Blocos</title>
 </head>
@@ -15,6 +15,9 @@
   <header class="header">
     <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
     <h1>Ideia Space Mission</h1>
+    <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
+      🌙
+    </button>
   </header>
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
@@ -34,6 +37,22 @@
         </div>
         <div class="copy-feedback" id="copyFeedback">Código copiado para a área de transferência!</div>
         <p id="message"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para criar variáveis -->
+  <div id="variable-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>🚀 Criar Nova Variável</h2>
+      <div class="modal-body">
+        <label for="variable-name">Nome da variável:</label>
+        <input type="text" id="variable-name" placeholder="Digite o nome da variável..." maxlength="50">
+        <div class="modal-buttons">
+          <button id="create-variable-btn" class="btn-primary variable-create">✅ Criar</button>
+          <button id="cancel-variable-btn" class="btn-secondary">❌ Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -61,16 +80,35 @@
       <block type="text"></block>
       <block type="text_print"></block>
     </category>
-    <category name="Variáveis" colour="#00cfe5" custom="VARIABLE"></category>
-    <category name="Funções" colour="#e80074" custom="PROCEDURE"></category>
-    <category name="Controle" colour="#0c0931">
-      <block type="delay_block"></block>
-      <block type="digital_write"></block>
-      <block type="digital_read"></block>
+    <category name="Variáveis" colour="#00cfe5">
+      <button text="➕ Criar Nova Variável" callbackKey="CREATE_VARIABLE"></button>
+    </category>
+    <category name="Listas" colour="#00cfe5">
+      <block type="variable_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+    </category>
+    <category name="Funções" colour="#e80074" custom="PROCEDURE">
+      <block type="procedures_defnoreturn"></block>
+      <block type="procedures_callnoreturn"></block>
+    </category>
+    <category name="Sensores" colour="#0c0931">
+      <category name="Medidas Inerciais" colour="#2e2e8a">
+        <block type="mpu6050_read"></block>
+      </category>
+      <category name="Ultrasond" colour="#2e8a5c">
+        <block type="ultrasond"></block>
+      </category>
+      <category name="Pressão" colour="#8a2e2e">
+        <block type="pressao"></block>
+      </category>
     </category>
   </xml>
 
   <script src="../model/blocks.js"></script>
+  <script src="../model/cpp_generator.js"></script>
   <script src="../controller/renderer.js"></script>
   <script>
     // Funcionalidade do botão copiar
@@ -113,6 +151,75 @@
           }, 2000);
         });
       });
+    });
+
+    // Funcionalidade do dark mode
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    // Verificar se há preferência salva
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      darkModeToggle.textContent = '☀️';
+      darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
+    }
+
+    darkModeToggle.addEventListener('click', function() {
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = '☀️';
+        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        darkModeToggle.textContent = '🌙';
+        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema escuro');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Funcionalidade do modal de variáveis
+    const variableModal = document.getElementById('variable-modal');
+    const createVariableBtn = document.getElementById('create-variable-btn');
+    const cancelVariableBtn = document.getElementById('cancel-variable-btn');
+    const closeModalSpan = document.getElementsByClassName('close')[0];
+
+    // Quando o usuário clica no botão de criar nova variável
+    document.querySelector('button[callbackKey="CREATE_VARIABLE"]').addEventListener('click', function() {
+      variableModal.style.display = 'block';
+    });
+
+    // Quando o usuário clica no botão de criar variável no modal
+    createVariableBtn.addEventListener('click', function() {
+      const variableName = document.getElementById('variable-name').value.trim();
+      
+      if (variableName) {
+        // Fecha o modal
+        variableModal.style.display = 'none';
+        
+        // Limpa o campo de entrada
+        document.getElementById('variable-name').value = '';
+      } else {
+        alert('Por favor, digite um nome válido para a variável.');
+      }
+    });
+
+    // Quando o usuário clica no botão de cancelar no modal
+    cancelVariableBtn.addEventListener('click', function() {
+      variableModal.style.display = 'none';
+    });
+
+    // Quando o usuário clica no "x" para fechar o modal
+    closeModalSpan.addEventListener('click', function() {
+      variableModal.style.display = 'none';
+    });
+
+    // Fecha o modal se o usuário clicar fora dele
+    window.addEventListener('click', function(event) {
+      if (event.target == variableModal) {
+        variableModal.style.display = 'none';
+      }
     });
   </script>
 </body>
