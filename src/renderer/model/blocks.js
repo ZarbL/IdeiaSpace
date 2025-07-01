@@ -268,3 +268,82 @@ Blockly.Blocks['mpu6050_read'] = {
 };
 
 // Blocos MPU6050 definidos com sucesso
+
+// ============================================================================
+// BMP180 BLOCKS - Sensor de Pressão, Temperatura e Altitude
+// ============================================================================
+
+/**
+ * Block for BMP180 initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bmp180_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔧 Inicializar BMP180")
+        .appendField("SCL:")
+        .appendField(new Blockly.FieldDropdown([
+          ["5", "5"],
+          ["21", "21"],
+          ["22", "22"]
+        ]), "SCL_PIN")
+        .appendField("SDA:")
+        .appendField(new Blockly.FieldDropdown([
+          ["4", "4"],
+          ["20", "20"],
+          ["21", "21"]
+        ]), "SDA_PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip("Inicializa o sensor BMP180 com os pinos SCL e SDA especificados");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for reading BMP180 pressure values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bmp180_pressure'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📊 Pressão");
+    this.setOutput(true, 'Number');
+    this.setColour(200);
+    this.setTooltip('Lê o valor de pressão do BMP180 em Pascals');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading BMP180 temperature values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bmp180_temperature'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️ Temperatura");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Lê o valor de temperatura do BMP180 em graus Celsius');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading BMP180 altitude values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bmp180_altitude'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📏 Altura");
+    this.setOutput(true, 'Number');
+    this.setColour(260);
+    this.setTooltip('Lê o valor de altitude do BMP180 em metros');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos BMP180 definidos com sucesso

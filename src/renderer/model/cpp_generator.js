@@ -414,7 +414,7 @@ Blockly.Cpp['controls_repeat_ext'] = function(block) {
 Blockly.Cpp['controls_whileUntil'] = function(block) {
   var until = block.getFieldValue('MODE') == 'UNTIL';
   var argument0 = Blockly.Cpp.valueToCode(block, 'BOOL',
-    until ? Blockly.Cpp.ORDER_LOGICAL_NOT :
+    until ? Blockly.Cpp.ORDER_UNARY_PREFIX :
     Blockly.Cpp.ORDER_NONE) || 'false';
   var branch = Blockly.Cpp.statementToCode(block, 'DO');
   if (until) {
@@ -768,5 +768,61 @@ Blockly.Cpp['mpu6050_gyro_z'] = function(block) {
   Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
   
   var code = 'mpu.getGyroZ()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// ============================================================================
+// BMP180 CODE GENERATORS - Sensor de Pressão, Temperatura e Altitude
+// ============================================================================
+
+// Gerador de código para inicialização do BMP180
+Blockly.Cpp['bmp180_init'] = function(block) {
+  var sclPin = block.getFieldValue('SCL_PIN');
+  var sdaPin = block.getFieldValue('SDA_PIN');
+  
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['bmp180'] = '#include <Adafruit_BMP085.h>';
+  Blockly.Cpp.definitions_['bmp180_obj'] = 'Adafruit_BMP085 bmp;';
+  
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
+  Blockly.Cpp.setups_['bmp180_begin'] = 'if (!bmp.begin()) {\n    Serial.println("BMP180 sensor não encontrado!");\n    while (1) {}\n  }';
+  
+  return '';
+};
+
+// Gerador de código para leitura de pressão do BMP180
+Blockly.Cpp['bmp180_pressure'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['bmp180'] = '#include <Adafruit_BMP085.h>';
+  Blockly.Cpp.definitions_['bmp180_obj'] = 'Adafruit_BMP085 bmp;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['bmp180_begin'] = 'if (!bmp.begin()) {\n    Serial.println("BMP180 sensor não encontrado!");\n    while (1) {}\n  }';
+  
+  var code = 'bmp.readPressure()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Gerador de código para leitura de temperatura do BMP180
+Blockly.Cpp['bmp180_temperature'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['bmp180'] = '#include <Adafruit_BMP085.h>';
+  Blockly.Cpp.definitions_['bmp180_obj'] = 'Adafruit_BMP085 bmp;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['bmp180_begin'] = 'if (!bmp.begin()) {\n    Serial.println("BMP180 sensor não encontrado!");\n    while (1) {}\n  }';
+  
+  var code = 'bmp.readTemperature()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Gerador de código para leitura de altitude do BMP180
+Blockly.Cpp['bmp180_altitude'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['bmp180'] = '#include <Adafruit_BMP085.h>';
+  Blockly.Cpp.definitions_['bmp180_obj'] = 'Adafruit_BMP085 bmp;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['bmp180_begin'] = 'if (!bmp.begin()) {\n    Serial.println("BMP180 sensor não encontrado!");\n    while (1) {}\n  }';
+  
+  var code = 'bmp.readAltitude()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
