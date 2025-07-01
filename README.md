@@ -88,6 +88,19 @@ IdeiaSpace/
 - **Definir/Chamar**: Criação e uso de funções
 
 #### Sensores
+- **MPU6050**: Acelerômetro e giroscópio (medidas inerciais)
+- **BMP180**: Pressão, temperatura e altitude
+- **DHT11/DHT22**: Temperatura e umidade
+- **Ultrasound**: Sensor ultrassônico
+
+#### Bibliotecas 📚 **[NOVO]**
+- **Arduino Básico**: Bibliotecas essenciais do Arduino
+- **Wire (I2C)**: Comunicação I2C para sensores
+- **BMP180**: Bibliotecas para sensor de pressão
+- **MPU6050**: Bibliotecas para sensor inercial  
+- **DHT**: Bibliotecas para sensores de temperatura/umidade
+
+#### Controle
 - **Delay**: Pausa em millisegundos
 - **Digital Write**: Controlar pino digital
 - **Digital Read**: Ler pino digital

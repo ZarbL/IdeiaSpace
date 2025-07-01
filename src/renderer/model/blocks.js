@@ -347,3 +347,173 @@ Blockly.Blocks['bmp180_altitude'] = {
 };
 
 // Blocos BMP180 definidos com sucesso
+
+// ============================================================================
+// LIBRARY BLOCKS - BIBLIOTECAS
+// ============================================================================
+
+/**
+ * Block for including BMP180 library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_bmp180'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir biblioteca BMP180");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui as bibliotecas necessárias para o sensor BMP180 (pressão, temperatura, altitude)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including MPU6050 library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_mpu6050'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir biblioteca MPU6050");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui as bibliotecas necessárias para o sensor MPU6050 (acelerômetro e giroscópio)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including DHT library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_dht'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir biblioteca DHT")
+        .appendField(new Blockly.FieldDropdown([
+          ["DHT11", "DHT11"],
+          ["DHT22", "DHT22"]
+        ]), "TYPE");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui as bibliotecas necessárias para sensores DHT11/DHT22 (temperatura e umidade)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including Wire library (I2C).
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_wire'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir biblioteca Wire (I2C)");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui a biblioteca Wire para comunicação I2C');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including basic Arduino libraries.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_arduino_basic'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir bibliotecas básicas Arduino");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui as bibliotecas básicas do Arduino (pinMode, digitalWrite, digitalRead, etc.)');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos de biblioteca definidos com sucesso
+// ============================================================================
+// DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
+// ============================================================================
+
+/**
+ * Block for initializing DHT sensor.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔧")
+        .appendField("Inicializar DHT")
+        .appendField(new Blockly.FieldDropdown([
+          ["DHT11", "DHT11"],
+          ["DHT22", "DHT22"]
+        ]), "TYPE")
+        .appendField("no pino")
+        .appendField(new Blockly.FieldDropdown([
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"],
+          ["5", "5"],
+          ["6", "6"],
+          ["7", "7"],
+          ["8", "8"],
+          ["9", "9"],
+          ["10", "10"],
+          ["11", "11"],
+          ["12", "12"],
+          ["13", "13"],
+          ["14", "14"],
+          ["15", "15"]
+        ]), "PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT temperature.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_temperature'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️")
+        .appendField("Temperatura DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT humidity.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_humidity'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("💧")
+        .appendField("Umidade DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(200);
+    this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos DHT definidos com sucesso

@@ -190,6 +190,95 @@ Blockly.Cpp.quote_ = function(string) {
 };
 
 /**
+ * Indent string by 2 spaces.
+ */
+Blockly.Cpp.INDENT = '  ';
+
+/**
+ * Add a prefix to each line.
+ * @param {string} text The text to modify.
+ * @param {string} prefix The prefix to add.
+ * @return {string} The modified text.
+ */
+Blockly.Cpp.prefixLines = function(text, prefix) {
+  return prefix + text.replace(/\n/g, '\n' + prefix);
+};
+
+/**
+ * Generate code for a statement block.
+ * @param {Blockly.Block} block The block to generate code for.
+ * @param {string} name The input name for the statement.
+ * @return {string} Generated code.
+ */
+Blockly.Cpp.statementToCode = function(block, name) {
+  var targetBlock = block.getInputTargetBlock(name);
+  var code = Blockly.Cpp.blockToCode(targetBlock);
+  if (!code) {
+    return '';
+  }
+  if (typeof code === 'string') {
+    return code;
+  }
+  throw 'Expecting code from statement block, but got array.';
+};
+
+/**
+ * Generate code for a value block.
+ * @param {Blockly.Block} block The block to generate code for.
+ * @param {string} name The input name for the value.
+ * @param {number} order The order of operations for the code.
+ * @return {string} Generated code.
+ */
+Blockly.Cpp.valueToCode = function(block, name, order) {
+  if (isNaN(order)) {
+    throw 'Expecting valid order for valueToCode, got: ' + order;
+  }
+  var targetBlock = block.getInputTargetBlock(name);
+  if (!targetBlock) {
+    return '';
+  }
+  var tuple = Blockly.Cpp.blockToCode(targetBlock);
+  if (typeof tuple === 'string') {
+    // Promote string to tuple.
+    tuple = [tuple, Blockly.Cpp.ORDER_ATOMIC];
+  }
+  var code = tuple[0];
+  var innerOrder = tuple[1];
+  if (!code) {
+    return '';
+  }
+  // Wrap the code in parentheses if the outer operation has higher precedence.
+  if (innerOrder && order <= innerOrder) {
+    code = '(' + code + ')';
+  }
+  return code;
+};
+
+/**
+ * Collect all nested comments.
+ * @param {Blockly.Block} block The block to collect comments from.
+ * @return {string} All nested comments.
+ */
+Blockly.Cpp.allNestedComments = function(block) {
+  var comments = [];
+  var comment = block.getCommentText();
+  if (comment) {
+    comments.push(comment);
+  }
+  // Recursively collect comments from child blocks
+  for (var i = 0; i < block.inputList.length; i++) {
+    var input = block.inputList[i];
+    if (input.connection && input.connection.targetBlock()) {
+      var childComments = Blockly.Cpp.allNestedComments(input.connection.targetBlock());
+      if (childComments) {
+        comments.push(childComments);
+      }
+    }
+  }
+  return comments.join('\n');
+};
+
+/**
  * Declare a variable with auto type detection.
  * @param {string} varName The variable name.
  * @param {string} value The initial value (optional).
@@ -274,14 +363,23 @@ Blockly.Cpp.blockToCode = function(block) {
 
   var func = Blockly.Cpp[block.type];
   if (!func) {
+    console.error('❌ Gerador não encontrado para bloco:', block.type);
+    console.log('🔍 Geradores disponíveis:', Object.keys(Blockly.Cpp).filter(key => typeof Blockly.Cpp[key] === 'function' && key.startsWith('library_')));
     throw 'Language "C++" does not know how to generate code for block type "' + block.type + '".';
   }
 
   var code = func.call(block, block);
+  
   if (Array.isArray(code)) {
     // Value blocks return tuples of code and operator order.
     return [code[0], code[1]];
   }
+  
+  // Para statement blocks, usar scrub_ para conectar com próximos blocos
+  if (typeof code === 'string') {
+    return Blockly.Cpp.scrub_(block, code);
+  }
+  
   return code;
 };
 
@@ -294,6 +392,9 @@ Blockly.Cpp.workspaceToCode = function(workspace) {
   if (!workspace) {
     return '';
   }
+
+  // Initialize the code generator
+  Blockly.Cpp.init();
 
   var code = [];
   var blocks = workspace.getTopBlocks(true);
@@ -311,12 +412,16 @@ Blockly.Cpp.workspaceToCode = function(workspace) {
     }
   }
 
+  // Join the code and finish with proper Arduino structure
+  var allCode = code.join('\n');
+  var finishedCode = Blockly.Cpp.finish(allCode);
+
   // Clean up temporary data.
   if (Blockly.Cpp.variableDB_) {
     Blockly.Cpp.variableDB_.reset();
   }
 
-  return code.join('\n');
+  return finishedCode;
 };
 
 // ============================================================================
@@ -826,3 +931,172 @@ Blockly.Cpp['bmp180_altitude'] = function(block) {
   var code = 'bmp.readAltitude()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
+
+// ============================================================================
+// LIBRARY GENERATORS - GERADORES PARA BIBLIOTECAS
+// ============================================================================
+
+/**
+ * C++ code generator for BMP180 library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_bmp180'] = function(block) {
+  // Retorna o código das bibliotecas diretamente visível no editor
+  var code = '#include <Wire.h>\n';
+  code += '#include <Adafruit_BMP085.h>\n';
+  code += '// Bibliotecas para sensor BMP180 (pressão, temperatura, altitude)\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for MPU6050 library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_mpu6050'] = function(block) {
+  // Retorna o código das bibliotecas diretamente visível no editor
+  var code = '#include <Wire.h>\n';
+  code += '#include <MPU6050.h>\n';
+  code += '// Bibliotecas para sensor MPU6050 (acelerômetro e giroscópio)\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for DHT library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_dht'] = function(block) {
+  var dht_type = block.getFieldValue('TYPE');
+  
+  // Retorna o código das bibliotecas diretamente visível no editor
+  var code = '#include <DHT.h>\n';
+  code += '// Biblioteca para sensor ' + dht_type + ' (temperatura e umidade)\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for Wire library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_wire'] = function(block) {
+  // Retorna o código da biblioteca diretamente visível no editor
+  var code = '#include <Wire.h>\n';
+  code += '// Biblioteca Wire para comunicação I2C\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for basic Arduino libraries inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_arduino_basic'] = function(block) {
+  // Retorna o código das bibliotecas diretamente visível no editor
+  var code = '#include <Arduino.h>\n';
+  code += '// Bibliotecas básicas do Arduino\n\n';
+  return code;
+};
+
+// ============================================================================
+// DHT SENSOR GENERATORS - GERADORES PARA SENSORES DHT
+// ============================================================================
+
+/**
+ * C++ code generator for DHT sensor initialization.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['dht_init'] = function(block) {
+  var dht_type = block.getFieldValue('TYPE');
+  var pin = block.getFieldValue('PIN');
+  
+  // Adiciona as bibliotecas necessárias
+  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
+  
+  // Define o tipo de sensor
+  if (dht_type === 'DHT11') {
+    Blockly.Cpp.definitions_['dht_type'] = '#define DHTTYPE DHT11';
+  } else {
+    Blockly.Cpp.definitions_['dht_type'] = '#define DHTTYPE DHT22';
+  }
+  
+  // Define o pino e cria o objeto DHT
+  Blockly.Cpp.definitions_['dht_pin'] = '#define DHTPIN ' + pin;
+  Blockly.Cpp.definitions_['dht_obj'] = 'DHT dht(DHTPIN, DHTTYPE);';
+  
+  // Inicializa o sensor no setup
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['dht_begin'] = 'dht.begin();';
+  
+  var code = '// Sensor ' + dht_type + ' inicializado no pino ' + pin + '\n';
+  return code;
+};
+
+/**
+ * C++ code generator for DHT temperature reading.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['dht_temperature'] = function(block) {
+  // Garante que as bibliotecas estão incluídas
+  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
+  
+  var code = 'dht.readTemperature()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for DHT humidity reading.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['dht_humidity'] = function(block) {
+  // Garante que as bibliotecas estão incluídas
+  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
+  
+  var code = 'dht.readHumidity()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Geradores DHT definidos com sucesso
+
+// ============================================================================
+// VERIFICATION AND INITIALIZATION - VERIFICAÇÃO E INICIALIZAÇÃO
+// ============================================================================
+
+/**
+ * Ensure all library generators are properly defined
+ */
+function ensureLibraryGenerators() {
+  console.log('🔧 Verificando geradores de biblioteca...');
+  
+  // Lista de geradores de biblioteca que devem existir
+  var libraryGenerators = [
+    'library_arduino_basic',
+    'library_wire', 
+    'library_bmp180',
+    'library_mpu6050',
+    'library_dht'
+  ];
+  
+  libraryGenerators.forEach(function(generatorName) {
+    if (!Blockly.Cpp[generatorName]) {
+      console.error('❌ Gerador não encontrado:', generatorName);
+    } else {
+      console.log('✅ Gerador OK:', generatorName);
+    }
+  });
+}
+
+// Chamar verificação quando o documento estiver pronto
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(ensureLibraryGenerators, 100);
+  });
+}
+
+// Verificação imediata também
+setTimeout(ensureLibraryGenerators, 50);

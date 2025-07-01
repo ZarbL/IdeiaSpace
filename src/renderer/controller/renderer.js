@@ -129,6 +129,12 @@ function generateCode() {
       throw new Error('Blockly não está carregado');
     }
     
+    console.log('🔍 Gerando código...');
+    console.log('📊 Blocos no workspace:', workspace.getTopBlocks(true).length);
+    workspace.getTopBlocks(true).forEach((block, index) => {
+      console.log(`   Bloco ${index + 1}: ${block.type}`);
+    });
+    
     // Verificar se o gerador C++ está disponível
     if (!Blockly.Cpp) {
       // Tentar recriar o gerador
@@ -143,16 +149,15 @@ function generateCode() {
     if (!Blockly.Cpp.init) {
       throw new Error('Blockly.Cpp.init não está definido');
     }
-    
-    // Inicializar o gerador C++
-    Blockly.Cpp.init();
-    
-    // Gerar código C++ a partir dos blocos
+
+    // Gerar código C++ a partir dos blocos (não chama init manualmente porque workspaceToCode já chama)
     const code = Blockly.Cpp.workspaceToCode(workspace);
-    
+
+    console.log('📝 Código gerado:', code);
+
     // Exibir o código gerado
     codeDisplay.textContent = code || '// Nenhum bloco para gerar código';
-    
+
     return code;
   } catch (error) {
     console.error('❌ Erro ao gerar código:', error);
