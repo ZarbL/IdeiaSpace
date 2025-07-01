@@ -517,3 +517,62 @@ Blockly.Blocks['dht_humidity'] = {
 };
 
 // Blocos DHT definidos com sucesso
+// ============================================================================
+// ARDUINO STRUCTURE BLOCKS - BLOCOS DE ESTRUTURA ARDUINO
+// ============================================================================
+
+/**
+ * Block for void setup() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ void setup()");
+    this.appendStatementInput("SETUP_CODE")
+        .setCheck(null);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(230);
+    this.setTooltip('Função setup() do Arduino - executa uma vez no início');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for void loop() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_loop'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔁 void loop()");
+    this.appendStatementInput("LOOP_CODE")
+        .setCheck(null);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(230);
+    this.setTooltip('Função loop() do Arduino - executa continuamente');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for Serial.begin() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_serial_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📡 Serial.begin(")
+        .appendField(new Blockly.FieldNumber(9600, 300, 115200, 100), "BAUD_RATE")
+        .appendField(")");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(230);
+    this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos de estrutura Arduino definidos com sucesso

@@ -108,11 +108,6 @@ Blockly.Cpp.init = function() {
  * @return {string} Completed code.
  */
 Blockly.Cpp.finish = function(code) {
-  // Indent every line.
-  if (code) {
-    code = Blockly.Cpp.prefixLines(code, Blockly.Cpp.INDENT);
-  }
-
   // Create the includes section.
   var includes = [];
   for (var name in Blockly.Cpp.includes_) {
@@ -141,27 +136,20 @@ Blockly.Cpp.finish = function(code) {
   }
   var functionsText = functions.length ? functions.join('\n\n') + '\n\n' : '';
 
-  // Create setup section from setups_
-  var setups = [];
-  if (Blockly.Cpp.setups_) {
-    for (var name in Blockly.Cpp.setups_) {
-      setups.push('  ' + Blockly.Cpp.setups_[name]);
-    }
+  // Não gerar mais setup() e loop() automaticamente
+  // O usuário deve usar os blocos manuais da aba "Loops"
+  var finalCode = '';
+  
+  if (!code || code.trim() === '') {
+    // Se não há código, mostrar mensagem orientativa
+    finalCode = includesText + definitionsText + variableDeclarationsText + functionsText + 
+                '// Arraste os blocos "void setup()" e "void loop()" da aba "Loops" para criar seu programa\n';
+  } else {
+    // Usar exatamente o código dos blocos manuais
+    finalCode = includesText + definitionsText + variableDeclarationsText + functionsText + code;
   }
-  var setupText = setups.length ? setups.join('\n') + '\n' : '';
 
-  // Create Arduino-style code structure
-  var setupFunction = 'void setup() {\n' + 
-                     '  Serial.begin(9600);\n' + 
-                     setupText + 
-                     '}\n\n';
-
-  var loopFunction = 'void loop() {\n' + 
-                    (code ? Blockly.Cpp.prefixLines(code, Blockly.Cpp.INDENT) : '  // Código principal aqui\n') + 
-                    '\n}\n';
-
-  var allCode = includesText + definitionsText + variableDeclarationsText + functionsText + setupFunction + loopFunction;
-  return allCode;
+  return finalCode;
 };
 
 /**
@@ -1062,6 +1050,45 @@ Blockly.Cpp['dht_humidity'] = function(block) {
 };
 
 // Geradores DHT definidos com sucesso
+
+// ============================================================================
+// ARDUINO STRUCTURE GENERATORS - GERADORES PARA ESTRUTURA ARDUINO
+// ============================================================================
+
+/**
+ * C++ code generator for Arduino setup function.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['arduino_setup'] = function(block) {
+  var setupCode = Blockly.Cpp.statementToCode(block, 'SETUP_CODE');
+  var code = 'void setup() {\n' + setupCode + '}\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for Arduino loop function.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['arduino_loop'] = function(block) {
+  var loopCode = Blockly.Cpp.statementToCode(block, 'LOOP_CODE');
+  var code = 'void loop() {\n' + loopCode + '}\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for Serial.begin() function.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['arduino_serial_begin'] = function(block) {
+  var baudRate = block.getFieldValue('BAUD_RATE');
+  var code = 'Serial.begin(' + baudRate + ');\n';
+  return code;
+};
+
+// Geradores de estrutura Arduino definidos com sucesso
 
 // ============================================================================
 // VERIFICATION AND INITIALIZATION - VERIFICAÇÃO E INICIALIZAÇÃO
