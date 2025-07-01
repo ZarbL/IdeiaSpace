@@ -345,6 +345,7 @@ button#generate-btn:hover {
 .blocklyTreeLabel {
   font-weight: 600 !important;
   font-size: 14px !important;
+  font-family: "Segoe UI", sans-serif !important;
 }
 
 .plotter-box {
@@ -718,4 +719,47 @@ body {
     width: 100%;
     margin-bottom: 5px;
   }
+}
+
+/* Estilos específicos para blocos MPU6050 */
+.blocklyTreeLabel {
+  font-family: "Segoe UI", sans-serif !important;
+}
+
+/* Estilos para os blocos de sensores */
+.blocklyTreeRow {
+  cursor: pointer;
+}
+
+.blocklyTreeRow:hover {
+  background-color: var(--accent-cyan) !important;
+  color: white !important;
+}
+
+/* Estilos para categorias de sensores */
+.blocklyTreeIcon {
+  margin-right: 8px;
+}
+
+/* Garantir que os separadores funcionem */
+.blocklyFlyoutSeparator {
+  height: 8px !important;
+  background-color: transparent !important;
+}
+
+/* Estilos para blocos MPU6050 específicos */
+.blocklyBlock[data-type="mpu6050_init"] {
+  border: 2px solid #4CAF50 !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_accel"] {
+  border: 2px solid #2196F3 !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_gyro"] {
+  border: 2px solid #9C27B0 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_read"] {
+  border: 2px solid #00BCD4 !important;
 }

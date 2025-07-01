@@ -1,5 +1,63 @@
 const { ipcRenderer } = require('electron');
 
+// Função para garantir que os blocos MPU6050 estejam definidos
+function ensureMPU6050Blocks() {
+  console.log('🔧 Verificando e forçando definição dos blocos MPU6050...');
+  
+  // Definir blocos MPU6050 diretamente se não existirem
+  if (!Blockly.Blocks['mpu6050_read']) {
+    console.log('⚠️ Bloco mpu6050_read não encontrado, definindo diretamente...');
+    
+    Blockly.Blocks['mpu6050_read'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField('📡 Ler MPU6050')
+            .appendField(new Blockly.FieldDropdown([
+              ['Aceleração X', 'ACCEL_X'],
+              ['Aceleração Y', 'ACCEL_Y'],
+              ['Aceleração Z', 'ACCEL_Z'],
+              ['Giro X', 'GYRO_X'],
+              ['Giro Y', 'GYRO_Y'],
+              ['Giro Z', 'GYRO_Z']
+            ]), 'MPU6050_AXIS');
+        this.setOutput(true, 'Number');
+        this.setColour(210);
+        this.setTooltip('Lê um valor do sensor MPU6050');
+        this.setHelpUrl('');
+      }
+    };
+    
+    // Definir gerador se não existir
+    if (Blockly.Cpp && !Blockly.Cpp['mpu6050_read']) {
+      Blockly.Cpp['mpu6050_read'] = function(block) {
+        var axis = block.getFieldValue('MPU6050_AXIS');
+        Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+        Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+        Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+        Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+        Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+        var code = '';
+        switch(axis) {
+          case 'ACCEL_X': code = 'mpu.getAccelX()'; break;
+          case 'ACCEL_Y': code = 'mpu.getAccelY()'; break;
+          case 'ACCEL_Z': code = 'mpu.getAccelZ()'; break;
+          case 'GYRO_X': code = 'mpu.getGyroX()'; break;
+          case 'GYRO_Y': code = 'mpu.getGyroY()'; break;
+          case 'GYRO_Z': code = 'mpu.getGyroZ()'; break;
+        }
+        return [code, Blockly.Cpp.ORDER_ATOMIC];
+      };
+    }
+    
+    console.log('✅ Bloco mpu6050_read definido com sucesso');
+  }
+}
+
+// Aguardar carregamento completo e então definir blocos
+setTimeout(() => {
+  ensureMPU6050Blocks();
+}, 1000);
+
 // Inicializar Blockly
 const workspace = Blockly.inject('blocklyDiv', {
   toolbox: document.getElementById('toolbox'),
@@ -169,6 +227,16 @@ function updateVariableToolbox() {
         </category>
         <category name="Sensores" colour="#0c0931">
           <category name="Medidas Inerciais" colour="#2e2e8a">
+            <block type="mpu6050_init"></block>
+            <sep></sep>
+            <block type="mpu6050_accel_x"></block>
+            <block type="mpu6050_accel_y"></block>
+            <block type="mpu6050_accel_z"></block>
+            <sep></sep>
+            <block type="mpu6050_gyro_x"></block>
+            <block type="mpu6050_gyro_y"></block>
+            <block type="mpu6050_gyro_z"></block>
+            <sep></sep>
             <block type="mpu6050_read"></block>
           </category>
           <category name="Ultrasond" colour="#2e8a5c">

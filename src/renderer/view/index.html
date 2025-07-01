@@ -96,10 +96,20 @@
     </category>
     <category name="Sensores" colour="#0c0931">
       <category name="Medidas Inerciais" colour="#2e2e8a">
+        <block type="mpu6050_init"></block>
+        <sep></sep>
+        <block type="mpu6050_accel_x"></block>
+        <block type="mpu6050_accel_y"></block>
+        <block type="mpu6050_accel_z"></block>
+        <sep></sep>
+        <block type="mpu6050_gyro_x"></block>
+        <block type="mpu6050_gyro_y"></block>
+        <block type="mpu6050_gyro_z"></block>
+        <sep></sep>
         <block type="mpu6050_read"></block>
       </category>
-      <category name="Ultrasond" colour="#2e8a5c">
-        <block type="ultrasond"></block>
+      <category name="Ultrasound" colour="#2e8a5c">
+        <block type="ultrasound"></block>
       </category>
       <category name="Pressão" colour="#8a2e2e">
         <block type="pressao"></block>
@@ -109,7 +119,9 @@
 
   <script src="../model/blocks.js"></script>
   <script src="../model/cpp_generator.js"></script>
+  
   <script src="../controller/renderer.js"></script>
+  <script src="../../../manual_mpu6050.js"></script>
   <script>
     // Funcionalidade do botão copiar
     document.addEventListener('DOMContentLoaded', function() {

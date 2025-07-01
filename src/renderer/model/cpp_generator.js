@@ -99,6 +99,7 @@ Blockly.Cpp.init = function() {
   Blockly.Cpp.definitions_ = Object.create(null);
   Blockly.Cpp.functionNames_ = Object.create(null);
   Blockly.Cpp.variableDeclarations_ = Object.create(null);
+  Blockly.Cpp.setups_ = Object.create(null);
 };
 
 /**
@@ -140,10 +141,26 @@ Blockly.Cpp.finish = function(code) {
   }
   var functionsText = functions.length ? functions.join('\n\n') + '\n\n' : '';
 
-  // Create main function
-  var mainFunction = 'int main() {\n' + Blockly.Cpp.prefixLines(code, Blockly.Cpp.INDENT) + '\n  return 0;\n}\n';
+  // Create setup section from setups_
+  var setups = [];
+  if (Blockly.Cpp.setups_) {
+    for (var name in Blockly.Cpp.setups_) {
+      setups.push('  ' + Blockly.Cpp.setups_[name]);
+    }
+  }
+  var setupText = setups.length ? setups.join('\n') + '\n' : '';
 
-  var allCode = includesText + definitionsText + variableDeclarationsText + functionsText + mainFunction;
+  // Create Arduino-style code structure
+  var setupFunction = 'void setup() {\n' + 
+                     '  Serial.begin(9600);\n' + 
+                     setupText + 
+                     '}\n\n';
+
+  var loopFunction = 'void loop() {\n' + 
+                    (code ? Blockly.Cpp.prefixLines(code, Blockly.Cpp.INDENT) : '  // Código principal aqui\n') + 
+                    '\n}\n';
+
+  var allCode = includesText + definitionsText + variableDeclarationsText + functionsText + setupFunction + loopFunction;
   return allCode;
 };
 
@@ -460,10 +477,9 @@ Blockly.Cpp['text'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['text_print'] = function(block) {
-  Blockly.Cpp.includes_['iostream'] = '#include <iostream>';
   var msg = Blockly.Cpp.valueToCode(block, 'TEXT',
     Blockly.Cpp.ORDER_NONE) || '""';
-  return 'std::cout << ' + msg + ' << std::endl;\n';
+  return 'Serial.println(' + msg + ');\n';
 };
 
 /**
@@ -593,10 +609,8 @@ Blockly.Cpp['procedures_callnoreturn'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['delay_block'] = function(block) {
-  Blockly.Cpp.includes_['chrono'] = '#include <chrono>';
-  Blockly.Cpp.includes_['thread'] = '#include <thread>';
   var delayTime = block.getFieldValue('DELAY_TIME');
-  return 'std::this_thread::sleep_for(std::chrono::milliseconds(' + delayTime + '));\n';
+  return 'delay(' + delayTime + ');\n';
 };
 
 /**
@@ -655,6 +669,7 @@ Blockly.Cpp['variable_declaration'] = function(block) {
 // Gerador de código para o bloco MPU6050
 Blockly.Cpp['mpu6050_read'] = function(block) {
   var axis = block.getFieldValue('MPU6050_AXIS');
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
   Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
   Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
   Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
@@ -668,5 +683,90 @@ Blockly.Cpp['mpu6050_read'] = function(block) {
     case 'GYRO_Y': code = 'mpu.getGyroY()'; break;
     case 'GYRO_Z': code = 'mpu.getGyroZ()'; break;
   }
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Gerador de código para inicialização do MPU6050
+Blockly.Cpp['mpu6050_init'] = function(block) {
+  var sclPin = block.getFieldValue('SCL_PIN');
+  var sdaPin = block.getFieldValue('SDA_PIN');
+  
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  Blockly.Cpp.setups_['mpu6050_config'] = 'mpu.setAccelSens(0);\n  mpu.setGyroSens(0);';
+  
+  return '';
+};
+
+// Geradores específicos para cada eixo de aceleração
+Blockly.Cpp['mpu6050_accel_x'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getAccelX()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+Blockly.Cpp['mpu6050_accel_y'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getAccelY()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+Blockly.Cpp['mpu6050_accel_z'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getAccelZ()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Geradores específicos para cada eixo de giroscópio
+Blockly.Cpp['mpu6050_gyro_x'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getGyroX()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+Blockly.Cpp['mpu6050_gyro_y'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getGyroY()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+Blockly.Cpp['mpu6050_gyro_z'] = function(block) {
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
+  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  
+  var code = 'mpu.getGyroZ()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };

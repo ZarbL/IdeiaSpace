@@ -9,9 +9,10 @@
  * @namespace Blockly.Blocks
  */
 
-goog.provide('Blockly.Blocks');
-
-goog.require('Blockly.Blocks');
+// Verificar se Blockly está disponível
+if (typeof Blockly === 'undefined') {
+  console.error('Blockly não está disponível quando blocks.js foi carregado');
+}
 
 // ============================================================================
 // CUSTOM BLOCKS FOR C++
@@ -126,13 +127,131 @@ Blockly.Blocks['variable_declaration'] = {
 };
 
 /**
- * Block for reading MPU6050 sensor values.
+ * Block for MPU6050 initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔧 Inicializar MPU6050")
+        .appendField("SCL:")
+        .appendField(new Blockly.FieldDropdown([
+          ["5", "5"],
+          ["21", "21"],
+          ["22", "22"]
+        ]), "SCL_PIN")
+        .appendField("SDA:")
+        .appendField(new Blockly.FieldDropdown([
+          ["4", "4"],
+          ["20", "20"],
+          ["21", "21"]
+        ]), "SDA_PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip("Inicializa o sensor MPU6050 com os pinos SCL e SDA especificados");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for reading MPU6050 acceleration values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_accel_x'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📊 Aceleração - X");
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Lê o valor de aceleração no eixo X do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 acceleration Y values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_accel_y'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📊 Aceleração - Y");
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Lê o valor de aceleração no eixo Y do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 acceleration Z values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_accel_z'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📊 Aceleração - Z");
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Lê o valor de aceleração no eixo Z do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 gyroscope X values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_gyro_x'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌀 Giro - X");
+    this.setOutput(true, 'Number');
+    this.setColour(270);
+    this.setTooltip('Lê o valor de rotação no eixo X do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 gyroscope Y values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_gyro_y'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌀 Giro - Y");
+    this.setOutput(true, 'Number');
+    this.setColour(270);
+    this.setTooltip('Lê o valor de rotação no eixo Y do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 gyroscope Z values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_gyro_z'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌀 Giro - Z");
+    this.setOutput(true, 'Number');
+    this.setColour(270);
+    this.setTooltip('Lê o valor de rotação no eixo Z do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading MPU6050 sensor values (generic).
  * @this {Blockly.Block}
  */
 Blockly.Blocks['mpu6050_read'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField('Ler MPU6050')
+        .appendField('📡 Ler MPU6050')
         .appendField(new Blockly.FieldDropdown([
           ['Aceleração X', 'ACCEL_X'],
           ['Aceleração Y', 'ACCEL_Y'],
@@ -147,3 +266,5 @@ Blockly.Blocks['mpu6050_read'] = {
     this.setHelpUrl('https://bipes.net.br');
   }
 };
+
+// Blocos MPU6050 definidos com sucesso
