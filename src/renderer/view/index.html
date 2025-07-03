@@ -64,7 +64,7 @@
       <block type="logic_operation"></block>
       <block type="logic_boolean"></block>
     </category>
-    <category name="Loops" colour="#00cfe5">
+    <category name="Controle" colour="#00cfe5">
       <block type="arduino_setup"></block>
       <block type="arduino_loop"></block>
       <sep></sep>
@@ -109,7 +109,7 @@
       <block type="library_dht"></block>
     </category>
     <category name="Sensores" colour="#0c0931">
-      <category name="Medidas Inerciais" colour="#2e2e8a">
+      <category name="MPU6050" colour="#2e2e8a">
         <block type="mpu6050_init"></block>
         <sep></sep>
         <block type="mpu6050_accel_x"></block>
@@ -122,17 +122,14 @@
         <sep></sep>
         <block type="mpu6050_read"></block>
       </category>
-      <category name="Ultrasound" colour="#2e8a5c">
-        <block type="ultrasound"></block>
-      </category>
-      <category name="Pressão" colour="#8a2e2e">
+      <category name="BMP180" colour="#8a2e2e">
         <block type="bmp180_init"></block>
         <sep></sep>
         <block type="bmp180_temperature"></block>
         <block type="bmp180_pressure"></block>
         <block type="bmp180_altitude"></block>
       </category>
-      <category name="Temperatura e Umidade" colour="#2e8a2e">
+      <category name="DHT" colour="#2e8a2e">
         <block type="dht_init"></block>
         <sep></sep>
         <block type="dht_temperature"></block>
@@ -145,7 +142,6 @@
   <script src="../model/cpp_generator.js"></script>
   
   <script src="../controller/renderer.js"></script>
-  <script src="../../../manual_mpu6050.js"></script>
   <script>
     // Funcionalidade do botão copiar
     document.addEventListener('DOMContentLoaded', function() {

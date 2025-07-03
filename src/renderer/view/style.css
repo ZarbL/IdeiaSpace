@@ -1,33 +1,33 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background-color: #050419; /* Azul muito escuro como fundo principal */
-  color: #f2f2f7; /* Cinza claro para texto */
+  background-color: #1e1e1e; /* Cor do VS Code como padrão */
+  color: #cccccc; /* Texto padrão do VS Code */
   overflow: hidden;
 }
 
 :root {
-  /* Tema claro com branco predominante */
+  /* Tema claro do VS Code */
   --bg-primary: #ffffff;
-  --bg-secondary: #f2f2f7;
+  --bg-secondary: #f3f3f3;
   --bg-terminal: #ffffff;
-  --text-primary: #0c0931;
-  --text-code: #1d1856;
+  --text-primary: #3c3c3c;
+  --text-code: #1e1e1e;
   --accent-pink: #e80074;
   --accent-cyan: #00cfe5;
   --workspace-bg: #ffffff;
 }
 
 .dark-mode {
-  /* Tema escuro harmonioso */
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-terminal: #000000;
-  --text-primary: #e5e5e5;
-  --text-code: #b8b8b8;
+  /* Tema escuro do VS Code */
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-terminal: #1e1e1e;
+  --text-primary: #cccccc;
+  --text-code: #d4d4d4;
   --accent-pink: #e80074;
   --accent-cyan: #00cfe5;
-  --workspace-bg: #1a1a1a;
+  --workspace-bg: #1e1e1e;
 }
 
 body {
@@ -762,4 +762,94 @@ body {
 
 .blocklyBlock[data-type="mpu6050_read"] {
   border: 2px solid #00BCD4 !important;
+}
+
+/* Estilos específicos para o workspace do Blockly no modo escuro */
+.dark-mode .blocklyMainBackground {
+  fill: #1e1e1e !important;
+}
+
+.dark-mode .blocklyScrollbarBackground {
+  fill: #252526 !important;
+}
+
+.dark-mode .blocklyScrollbarHandle {
+  fill: #3e3e42 !important;
+}
+
+.dark-mode .blocklyFlyoutBackground {
+  fill: #252526 !important;
+}
+
+.dark-mode .blocklyToolboxDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyTreeLabel {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyTreeRow:hover {
+  background-color: #3e3e42 !important;
+}
+
+.dark-mode .blocklyWidgetDiv {
+  background-color: #1e1e1e !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyDropDownContent {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownArrow {
+  fill: #cccccc !important;
+}
+
+/* Forçar o fundo do workspace para escuro, mas NÃO o toolbox */
+.dark-mode .blockly-area {
+  background-color: #1e1e1e !important;
+}
+
+/* Apenas workspace principal - evitar afetar toolbox */
+.dark-mode .blocklyMainWorkspace {
+  background-color: #1e1e1e !important;
+}
+
+/* SVG específico do workspace principal, não do toolbox */
+.dark-mode .blockly-area svg.blocklySvg {
+  background-color: #1e1e1e !important;
+}
+
+.dark-mode .blockly-area .blocklySvg .blocklyMainBackground {
+  fill: #1e1e1e !important;
+}
+
+/* Garantir que apenas retângulos brancos do workspace mudem de cor */
+.dark-mode .blockly-area [class*="blockly"] rect[fill="#ffffff"],
+.dark-mode .blockly-area [class*="blockly"] rect[fill="white"] {
+  fill: #1e1e1e !important;
+}
+
+/* Garantir que o toolbox não seja afetado pelos estilos do workspace */
+.dark-mode .blocklyToolboxDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyToolboxDiv .blocklySvg {
+  background-color: #252526 !important;
+}
+
+.dark-mode .blocklyToolboxDiv rect[fill="#ffffff"],
+.dark-mode .blocklyToolboxDiv rect[fill="white"] {
+  fill: #252526 !important;
 }
