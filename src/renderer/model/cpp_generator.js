@@ -944,7 +944,7 @@ Blockly.Cpp['library_bmp180'] = function(block) {
 Blockly.Cpp['library_mpu6050'] = function(block) {
   // Retorna o código das bibliotecas diretamente visível no editor
   var code = '#include <Wire.h>\n';
-  code += '#include <MPU6050.h>\n';
+  code += '#include <Adafruit_MPU6050.h>\n';
   code += '// Bibliotecas para sensor MPU6050 (acelerômetro e giroscópio)\n\n';
   return code;
 };
@@ -984,6 +984,19 @@ Blockly.Cpp['library_arduino_basic'] = function(block) {
   // Retorna o código das bibliotecas diretamente visível no editor
   var code = '#include <Arduino.h>\n';
   code += '// Bibliotecas básicas do Arduino\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for AdaFruit library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_adafruit'] = function(block) {
+  // Retorna o código das bibliotecas diretamente visível no editor
+  var code = '#include <Adafruit_Sensor.h>\n';
+  code += 'Adafruit_MPU6050 mpu;\n';
+  code += '// Biblioteca AdaFruit para sensor MPU6050\n\n';
   return code;
 };
 

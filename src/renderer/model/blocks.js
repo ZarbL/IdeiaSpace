@@ -441,6 +441,23 @@ Blockly.Blocks['library_arduino_basic'] = {
   }
 };
 
+/**
+ * Block for including AdaFruit library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_adafruit'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Biblioteca AdaFruit");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui a biblioteca AdaFruit para sensores MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos de biblioteca definidos com sucesso
 // ============================================================================
 // DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
