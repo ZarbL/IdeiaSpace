@@ -79,6 +79,77 @@ const workspace = Blockly.inject('blocklyDiv', {
   }
 });
 
+// ============================================================================
+// GARANTIR QUE O BLOCO DELAY_FUNCTION EXISTE - DEFINIÇÃO FORÇADA
+// ============================================================================
+
+console.log('🔧 Forçando definição do bloco delay_function após inicialização do Blockly...');
+
+// Definir bloco delay_function diretamente aqui
+if (!Blockly.Blocks['delay_function']) {
+  console.log('⚠️ Bloco delay_function não encontrado, definindo diretamente...');
+  
+  Blockly.Blocks['delay_function'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("⏱️ Delay");
+      this.appendValueInput("DELAY_TIME")
+          .setCheck("Number")
+          .appendField("ms");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour("#e80074");
+      this.setTooltip('Pausa a execução por um número específico de milissegundos');
+      this.setHelpUrl('');
+    }
+  };
+  
+  console.log('✅ Bloco delay_function definido com sucesso!');
+} else {
+  console.log('✅ Bloco delay_function já existe!');
+}
+
+// Definir gerador também
+if (!Blockly.Cpp['delay_function']) {
+  console.log('⚠️ Gerador delay_function não encontrado, definindo diretamente...');
+  
+  Blockly.Cpp['delay_function'] = function(block) {
+    var delayTime = Blockly.Cpp.valueToCode(block, 'DELAY_TIME', Blockly.Cpp.ORDER_ATOMIC);
+    if (!delayTime) {
+      delayTime = '1000';
+    }
+    return 'delay(' + delayTime + ');\n';
+  };
+  
+  console.log('✅ Gerador delay_function definido com sucesso!');
+} else {
+  console.log('✅ Gerador delay_function já existe!');
+}
+
+// Forçar atualização do toolbox
+setTimeout(function() {
+  console.log('🔄 Atualizando toolbox...');
+  workspace.updateToolbox(document.getElementById('toolbox'));
+}, 100);
+
+// Verificação final após carregamento
+setTimeout(function() {
+  console.log('🔍 Verificação final dos blocos...');
+  console.log('📋 Blocos disponíveis:', Object.keys(Blockly.Blocks));
+  console.log('🎯 Blocos delay:', Object.keys(Blockly.Blocks).filter(key => key.includes('delay')));
+  
+  // Verificar se o bloco está no toolbox
+  const toolboxXml = document.getElementById('toolbox');
+  const delayBlocks = toolboxXml.querySelectorAll('block[type="delay_function"]');
+  console.log('🔧 Blocos delay_function no toolbox:', delayBlocks.length);
+  
+  if (delayBlocks.length > 0) {
+    console.log('✅ Bloco delay_function encontrado no toolbox!');
+  } else {
+    console.error('❌ Bloco delay_function NÃO encontrado no toolbox!');
+  }
+}, 1000);
+
 // Elementos da interface
 const codeDisplay = document.getElementById('code-display');
 const startButton = document.getElementById('startButton');
@@ -281,8 +352,15 @@ function updateVariableToolboxFallback() {
           </block>
         </category>
         <category name="Funções" colour="#e80074" custom="PROCEDURE">
-          <block type="procedures_defnoreturn"></block>
-          <block type="procedures_callnoreturn"></block>
+        </category>
+        <category name="Tempo" colour="#e80074">
+          <block type="delay_function">
+            <value name="DELAY_TIME">
+              <shadow type="math_number">
+                <field name="NUM">1000</field>
+              </shadow>
+            </value>
+          </block>
         </category>
         <category name="Bibliotecas" colour="#3c3c3c">
           <block type="library_arduino_basic"></block>
@@ -628,3 +706,52 @@ function showNotification(message, type = 'info') {
     }, 300);
   }, 3000);
 }
+
+// ============================================================================
+// VERIFICAÇÃO FINAL DOS BLOCOS DELAY
+// ============================================================================
+
+// Verificar se todos os blocos estão funcionando após o carregamento
+setTimeout(function() {
+  console.log('🔍 Verificação final dos blocos...');
+  
+  // Verificar se o bloco delay está definido
+  if (Blockly.Blocks['delay_function']) {
+    console.log('✅ Bloco delay_function está definido');
+  } else {
+    console.error('❌ Bloco delay_function NÃO está definido');
+  }
+  
+  if (Blockly.Cpp['delay_function']) {
+    console.log('✅ Gerador delay_function está definido');
+  } else {
+    console.error('❌ Gerador delay_function NÃO está definido');
+  }
+  
+  // Verificar se estão no toolbox
+  const toolboxXml = document.getElementById('toolbox');
+  if (toolboxXml) {
+    const functionsCategory = toolboxXml.querySelector('category[name="Funções"]');
+    const tempoCategory = toolboxXml.querySelector('category[name="Tempo"]');
+    
+    if (functionsCategory) {
+      console.log('✅ Categoria Funções encontrada no toolbox');
+    } else {
+      console.error('❌ Categoria Funções não encontrada no toolbox');
+    }
+    
+    if (tempoCategory) {
+      console.log('✅ Categoria Tempo encontrada no toolbox');
+      
+      const delayFunctionBlock = tempoCategory.querySelector('block[type="delay_function"]');
+      
+      if (delayFunctionBlock) {
+        console.log('✅ Bloco delay_function encontrado na categoria Tempo');
+      } else {
+        console.error('❌ Bloco delay_function NÃO encontrado na categoria Tempo');
+      }
+    } else {
+      console.error('❌ Categoria Tempo não encontrada no toolbox');
+    }
+  }
+}, 2000);

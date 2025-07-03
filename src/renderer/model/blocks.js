@@ -593,3 +593,94 @@ Blockly.Blocks['arduino_serial_begin'] = {
 };
 
 // Blocos de estrutura Arduino definidos com sucesso
+
+// ============================================================================
+// DELAY BLOCK - BLOCO DE DELAY COM VALOR CONECTÁVEL
+// ============================================================================
+
+/**
+ * Block for delay function that accepts a connectable numeric value.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['delay_function'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⏱️ Delay");
+    this.appendValueInput("DELAY_TIME")
+        .setCheck("Number")
+        .appendField("ms");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#e80074");
+    this.setTooltip('Pausa a execução por um número específico de milissegundos');
+    this.setHelpUrl('');
+  }
+};
+
+// Bloco Delay definido com sucesso
+
+// ============================================================================
+// TESTE ALTERNATIVO - BLOCO DELAY SIMPLES
+// ============================================================================
+
+/**
+ * Bloco de teste simples para delay
+ */
+if (typeof Blockly !== 'undefined' && Blockly.Blocks) {
+  console.log('🔧 Definindo bloco delay_test...');
+  
+  Blockly.Blocks['delay_test'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("⏱️ Delay Teste")
+          .appendField(new Blockly.FieldNumber(1000, 0, 60000, 100), "DELAY_TIME")
+          .appendField("ms");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip('Bloco de teste para delay');
+      this.setHelpUrl('');
+    }
+  };
+  
+  console.log('✅ Bloco delay_test definido com sucesso!');
+  
+  // Definir gerador também
+  if (Blockly.Cpp) {
+    Blockly.Cpp['delay_test'] = function(block) {
+      var delayTime = block.getFieldValue('DELAY_TIME');
+      return 'delay(' + delayTime + ');\n';
+    };
+    console.log('✅ Gerador delay_test definido com sucesso!');
+  }
+} else {
+  console.error('❌ Blockly não está disponível para definir delay_test');
+}
+
+// ============================================================================
+// BLOCK VERIFICATION - VERIFICAÇÃO DE BLOCOS
+// ============================================================================
+
+// Verificar se o bloco delay_function foi registrado corretamente
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      console.log('🔧 Verificando bloco delay_function...');
+      if (Blockly.Blocks['delay_function']) {
+        console.log('✅ Bloco delay_function registrado com sucesso!');
+      } else {
+        console.error('❌ Bloco delay_function não encontrado!');
+      }
+    }, 500);
+  });
+}
+
+// Verificação imediata também
+setTimeout(function() {
+  console.log('🔧 Verificação imediata do bloco delay_function...');
+  if (typeof Blockly !== 'undefined' && Blockly.Blocks && Blockly.Blocks['delay_function']) {
+    console.log('✅ Bloco delay_function OK!');
+  } else {
+    console.error('❌ Bloco delay_function não disponível ainda!');
+  }
+}, 100);

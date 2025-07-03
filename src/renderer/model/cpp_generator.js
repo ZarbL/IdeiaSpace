@@ -1139,3 +1139,20 @@ if (typeof document !== 'undefined') {
 
 // Verificação imediata também
 setTimeout(ensureLibraryGenerators, 50);
+
+// ============================================================================
+// DELAY FUNCTION GENERATOR - GERADOR PARA BLOCO DE DELAY COM VALOR CONECTÁVEL
+// ============================================================================
+
+/**
+ * C++ code generator for delay function block with connectable value.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['delay_function'] = function(block) {
+  var delayTime = Blockly.Cpp.valueToCode(block, 'DELAY_TIME', Blockly.Cpp.ORDER_ATOMIC);
+  if (!delayTime) {
+    delayTime = '1000'; // Valor padrão se nenhum valor for conectado
+  }
+  return 'delay(' + delayTime + ');\n';
+};

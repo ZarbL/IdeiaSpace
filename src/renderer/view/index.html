@@ -14,7 +14,7 @@
 <body>
   <header class="header">
     <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
-    <h1>Ideia Space Mission</h1>
+    <h1>Mission Programming Tool</h1>
     <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
       🌙
     </button>
@@ -96,8 +96,15 @@
       </block>
     </category>
     <category name="Funções" colour="#e80074" custom="PROCEDURE">
-      <block type="procedures_defnoreturn"></block>
-      <block type="procedures_callnoreturn"></block>
+    </category>
+    <category name="Tempo" colour="#e80074">
+      <block type="delay_function">
+        <value name="DELAY_TIME">
+          <shadow type="math_number">
+            <field name="NUM">1000</field>
+          </shadow>
+        </value>
+      </block>
     </category>
     <category name="Bibliotecas" colour="#3c3c3c">
       <block type="library_arduino_basic"></block>
@@ -143,6 +150,7 @@
   <script src="../model/cpp_generator.js"></script>
   
   <script src="../controller/renderer.js"></script>
+  <script src="../../../debug_delay_block.js"></script>
   <script>
     // Funcionalidade do botão copiar
     document.addEventListener('DOMContentLoaded', function() {
