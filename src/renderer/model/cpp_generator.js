@@ -115,14 +115,14 @@ Blockly.Cpp.finish = function(code) {
   }
   var includesText = includes.length ? includes.join('\n') + '\n\n' : '';
 
-  // Create the definitions section.
+  // Create the definitions section (objects, constants, etc.).
   var definitions = [];
   for (var name in Blockly.Cpp.definitions_) {
     definitions.push(Blockly.Cpp.definitions_[name]);
   }
   var definitionsText = definitions.length ? definitions.join('\n') + '\n\n' : '';
 
-  // Create variable declarations section.
+  // Create variable declarations section - DEVE VIR ANTES DO CÓDIGO PRINCIPAL.
   var variableDeclarations = [];
   for (var name in Blockly.Cpp.variableDeclarations_) {
     variableDeclarations.push(Blockly.Cpp.variableDeclarations_[name]);
@@ -136,8 +136,7 @@ Blockly.Cpp.finish = function(code) {
   }
   var functionsText = functions.length ? functions.join('\n\n') + '\n\n' : '';
 
-  // Não gerar mais setup() e loop() automaticamente
-  // O usuário deve usar os blocos manuais da aba "Loops"
+  // Ordem correta: includes → definitions → variáveis globais → funções → setup/loop
   var finalCode = '';
   
   if (!code || code.trim() === '') {
@@ -145,7 +144,7 @@ Blockly.Cpp.finish = function(code) {
     finalCode = includesText + definitionsText + variableDeclarationsText + functionsText + 
                 '// Arraste os blocos "void setup()" e "void loop()" da aba "Loops" para criar seu programa\n';
   } else {
-    // Usar exatamente o código dos blocos manuais
+    // Ordem correta: includes → definitions → variáveis → funções → código principal (setup/loop)
     finalCode = includesText + definitionsText + variableDeclarationsText + functionsText + code;
   }
 

@@ -110,14 +110,26 @@ if (Blockly.Variables) {
 // Adicionar listener para criação de variáveis
 workspace.addChangeListener(function(event) {
   if (event.type === Blockly.Events.VAR_CREATE) {
+    console.log('🆕 Variável criada via evento:', event.varName);
     // Atualizar o código quando variável for criada
     generateCode();
+    // NÃO atualizar toolbox aqui para evitar conflito com a atualização manual
   }
   if (event.type === Blockly.Events.VAR_DELETE) {
+    console.log('🗑️ Variável deletada via evento:', event.varName);
     generateCode();
+    // Atualizar toolbox automaticamente apenas para deleção
+    setTimeout(() => {
+      updateVariableToolbox();
+    }, 100);
   }
   if (event.type === Blockly.Events.VAR_RENAME) {
+    console.log('📝 Variável renomeada via evento:', event.oldName, '→', event.newName);
     generateCode();
+    // Atualizar toolbox automaticamente apenas para renomeação
+    setTimeout(() => {
+      updateVariableToolbox();
+    }, 100);
   }
 });
 
@@ -181,9 +193,46 @@ function executeCode() {
 // Função para atualizar o toolbox com variáveis existentes
 function updateVariableToolbox() {
   try {
+    console.log('🔄 Iniciando atualização do toolbox...');
     const variables = workspace.getAllVariables();
+    console.log('📊 Variáveis encontradas:', variables.map(v => v.name));
     
-    // Criar XML para o toolbox atualizado
+    // MÉTODO MAIS SEGURO: Use sempre o fallback que reconstrói tudo
+    // Isso evita problemas de corrupção do toolbox
+    console.log('🛡️ Usando método seguro (fallback) para evitar corrupção do toolbox');
+    updateVariableToolboxFallback();
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar toolbox:', error);
+    // Se até o fallback falhar, tentar restaurar o toolbox original
+    restoreOriginalToolbox();
+  }
+}
+
+// Função para restaurar o toolbox original se algo der errado
+function restoreOriginalToolbox() {
+  try {
+    console.log('🚨 Tentando restaurar toolbox original...');
+    const originalToolbox = document.getElementById('toolbox');
+    if (originalToolbox) {
+      workspace.updateToolbox(originalToolbox);
+      console.log('✅ Toolbox original restaurado');
+    } else {
+      console.error('❌ Não foi possível encontrar o toolbox original');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao restaurar toolbox original:', error);
+  }
+}
+
+// Função de fallback (método antigo, mas corrigido)
+function updateVariableToolboxFallback() {
+  try {
+    console.log('🔄 Usando método fallback para atualizar toolbox...');
+    const variables = workspace.getAllVariables();
+    console.log('📊 Variáveis no fallback:', variables.map(v => v.name));
+    
+    // Criar XML para o toolbox atualizado (versão completa)
     const toolboxXml = `
       <xml id="toolbox-dynamic">
         <category name="Lógica" colour="#1d1856">
@@ -193,6 +242,11 @@ function updateVariableToolbox() {
           <block type="logic_boolean"></block>
         </category>
         <category name="Loops" colour="#00cfe5">
+          <block type="arduino_setup"></block>
+          <block type="arduino_loop"></block>
+          <sep></sep>
+          <block type="arduino_serial_begin"></block>
+          <sep></sep>
           <block type="controls_repeat_ext">
             <value name="TIMES">
               <shadow type="math_number"><field name="NUM">10</field></shadow>
@@ -219,7 +273,7 @@ function updateVariableToolbox() {
             </block>
           `).join('')}
         </category>
-        <category name="Declarações" colour="#00cfe5">
+        <category name="Listas" colour="#00cfe5">
           <block type="variable_declaration">
             <value name="VALUE">
               <shadow type="math_number"><field name="NUM">0</field></shadow>
@@ -229,6 +283,15 @@ function updateVariableToolbox() {
         <category name="Funções" colour="#e80074" custom="PROCEDURE">
           <block type="procedures_defnoreturn"></block>
           <block type="procedures_callnoreturn"></block>
+        </category>
+        <category name="Bibliotecas" colour="#3c3c3c">
+          <block type="library_arduino_basic"></block>
+          <sep></sep>
+          <block type="library_wire"></block>
+          <sep></sep>
+          <block type="library_bmp180"></block>
+          <block type="library_mpu6050"></block>
+          <block type="library_dht"></block>
         </category>
         <category name="Sensores" colour="#0c0931">
           <category name="Medidas Inerciais" colour="#2e2e8a">
@@ -244,22 +307,56 @@ function updateVariableToolbox() {
             <sep></sep>
             <block type="mpu6050_read"></block>
           </category>
-          <category name="Ultrasond" colour="#2e8a5c">
-            <block type="ultrasond"></block>
+          <category name="Ultrasound" colour="#2e8a5c">
+            <block type="ultrasound"></block>
           </category>
           <category name="Pressão" colour="#8a2e2e">
-            <block type="pressao"></block>
+            <block type="bmp180_init"></block>
+            <sep></sep>
+            <block type="bmp180_temperature"></block>
+            <block type="bmp180_pressure"></block>
+            <block type="bmp180_altitude"></block>
+          </category>
+          <category name="Temperatura e Umidade" colour="#2e8a2e">
+            <block type="dht_init"></block>
+            <sep></sep>
+            <block type="dht_temperature"></block>
+            <block type="dht_humidity"></block>
           </category>
         </category>
       </xml>
     `;
     
-    // Atualizar o toolbox
+    // Verificar se o XML está válido antes de aplicar
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(toolboxXml, 'text/xml');
+    
+    // Verificar se há erros de parsing
+    const parseError = xmlDoc.getElementsByTagName('parsererror');
+    if (parseError.length > 0) {
+      console.error('❌ Erro no XML do toolbox:', parseError[0].textContent);
+      return;
+    }
+    
+    // Atualizar o toolbox
     workspace.updateToolbox(xmlDoc.documentElement);
+    
+    console.log('✅ Toolbox atualizado via fallback com', variables.length, 'variáveis');
+    
+    // Verificar se o toolbox está visível após a atualização
+    setTimeout(() => {
+      const toolboxDiv = document.querySelector('.blocklyToolboxDiv');
+      if (!toolboxDiv || toolboxDiv.style.display === 'none') {
+        console.error('🚨 Toolbox sumiu! Tentando restaurar...');
+        restoreOriginalToolbox();
+      } else {
+        console.log('✅ Toolbox visível após fallback');
+      }
+    }, 500);
+    
   } catch (error) {
-    console.error('❌ Erro ao atualizar toolbox:', error);
+    console.error('❌ Erro no fallback do toolbox:', error);
+    restoreOriginalToolbox();
   }
 }
 
@@ -421,8 +518,13 @@ function showVariableModal() {
       // Criar a variável
       const variable = workspace.createVariable(currentVariableName);
       
-      // Atualizar toolbox para mostrar a nova variável
-      updateVariableToolbox();
+      console.log('✅ Variável criada:', currentVariableName);
+      
+      // Usar APENAS uma tentativa de atualização para evitar conflitos
+      setTimeout(() => {
+        console.log('🔄 Atualizando toolbox após criação de variável...');
+        updateVariableToolbox();
+      }, 200);
       
       // Gerar código atualizado
       generateCode();
