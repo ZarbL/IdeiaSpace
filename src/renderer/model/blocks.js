@@ -458,6 +458,23 @@ Blockly.Blocks['library_adafruit'] = {
   }
 };
 
+/**
+ * Block for including Adafruit_Sensor library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_sensor'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Biblioteca Sensor.h");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui a biblioteca Adafruit_Sensor.h necessária para sensores Adafruit');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos de biblioteca definidos com sucesso
 // ============================================================================
 // DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
@@ -588,6 +605,21 @@ Blockly.Blocks['arduino_serial_begin'] = {
     this.setNextStatement(true, null);
     this.setColour(230);
     this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for !Serial condition check.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['serial_not'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('❌ !Serial');
+    this.setOutput(true, 'Boolean');
+    this.setColour(230);
+    this.setTooltip('Verifica se a comunicação serial NÃO está disponível');
     this.setHelpUrl('');
   }
 };

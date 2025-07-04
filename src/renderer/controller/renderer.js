@@ -31,11 +31,7 @@ function ensureMPU6050Blocks() {
     if (Blockly.Cpp && !Blockly.Cpp['mpu6050_read']) {
       Blockly.Cpp['mpu6050_read'] = function(block) {
         var axis = block.getFieldValue('MPU6050_AXIS');
-        Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-        Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-        Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-        Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-        Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+        // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
         var code = '';
         switch(axis) {
           case 'ACCEL_X': code = 'mpu.getAccelX()'; break;
@@ -50,6 +46,34 @@ function ensureMPU6050Blocks() {
     }
     
     console.log('✅ Bloco mpu6050_read definido com sucesso');
+  }
+
+  // Definir bloco "!mpu" (NOT MPU) para condições negativas
+  if (!Blockly.Blocks['mpu6050_not']) {
+    console.log('⚠️ Bloco mpu6050_not (!mpu) não encontrado, definindo diretamente...');
+    
+    Blockly.Blocks['mpu6050_not'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField('❌ !mpu.begin()');
+        this.setOutput(true, 'Boolean');
+        this.setColour(210);
+        this.setTooltip('Verifica se o MPU6050 NÃO foi inicializado corretamente');
+        this.setHelpUrl('');
+      }
+    };
+    
+    // Definir gerador para o bloco !mpu
+    if (Blockly.Cpp && !Blockly.Cpp['mpu6050_not']) {
+      Blockly.Cpp['mpu6050_not'] = function(block) {
+        // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
+        // Apenas retornar o código da função
+        var code = '!mpu.begin()';
+        return [code, Blockly.Cpp.ORDER_LOGICAL_NOT];
+      };
+    }
+    
+    console.log('✅ Bloco mpu6050_not (!mpu) definido com sucesso');
   }
 }
 
@@ -317,6 +341,7 @@ function updateVariableToolboxFallback() {
           <block type="arduino_loop"></block>
           <sep></sep>
           <block type="arduino_serial_begin"></block>
+          <block type="serial_not"></block>
           <sep></sep>
           <block type="controls_repeat_ext">
             <value name="TIMES">
@@ -367,6 +392,8 @@ function updateVariableToolboxFallback() {
           <sep></sep>
           <block type="library_wire"></block>
           <sep></sep>
+          <block type="library_adafruit"></block>
+          <block type="library_sensor"></block>
           <block type="library_bmp180"></block>
           <block type="library_mpu6050"></block>
           <block type="library_dht"></block>
@@ -384,6 +411,8 @@ function updateVariableToolboxFallback() {
             <block type="mpu6050_gyro_z"></block>
             <sep></sep>
             <block type="mpu6050_read"></block>
+            <sep></sep>
+            <block type="mpu6050_not"></block>
           </category>
           <category name="Ultrasound" colour="#2e8a5c">
             <block type="ultrasound"></block>

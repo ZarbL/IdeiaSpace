@@ -761,11 +761,7 @@ Blockly.Cpp['variable_declaration'] = function(block) {
 // Gerador de código para o bloco MPU6050
 Blockly.Cpp['mpu6050_read'] = function(block) {
   var axis = block.getFieldValue('MPU6050_AXIS');
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = '';
   switch(axis) {
     case 'ACCEL_X': code = 'mpu.getAccelX()'; break;
@@ -780,85 +776,47 @@ Blockly.Cpp['mpu6050_read'] = function(block) {
 
 // Gerador de código para inicialização do MPU6050
 Blockly.Cpp['mpu6050_init'] = function(block) {
-  var sclPin = block.getFieldValue('SCL_PIN');
-  var sdaPin = block.getFieldValue('SDA_PIN');
+  // Gera apenas a declaração do objeto MPU6050
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
+  var code = 'Adafruit_MPU6050 mpu;\n';
   
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  Blockly.Cpp.setups_['mpu6050_config'] = 'mpu.setAccelSens(0);\n  mpu.setGyroSens(0);';
-  
-  return '';
+  return code;
 };
 
 // Geradores específicos para cada eixo de aceleração
 Blockly.Cpp['mpu6050_accel_x'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getAccelX()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_accel_y'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getAccelY()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_accel_z'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getAccelZ()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 // Geradores específicos para cada eixo de giroscópio
 Blockly.Cpp['mpu6050_gyro_x'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getGyroX()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_gyro_y'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getGyroY()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_gyro_z'] = function(block) {
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['mpu6050'] = '#include <MPU6050.h>';
-  Blockly.Cpp.definitions_['mpu6050_obj'] = 'MPU6050 mpu;';
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['mpu6050_begin'] = 'mpu.begin();';
-  
+  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = 'mpu.getGyroZ()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
@@ -929,9 +887,8 @@ Blockly.Cpp['bmp180_altitude'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['library_bmp180'] = function(block) {
-  // Retorna o código das bibliotecas diretamente visível no editor
-  var code = '#include <Wire.h>\n';
-  code += '#include <Adafruit_BMP085.h>\n';
+  // Retorna apenas a biblioteca Adafruit_BMP180
+  var code = '#include <Adafruit_BMP180.h>\n';
   code += '// Bibliotecas para sensor BMP180 (pressão, temperatura, altitude)\n\n';
   return code;
 };
@@ -942,9 +899,8 @@ Blockly.Cpp['library_bmp180'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['library_mpu6050'] = function(block) {
-  // Retorna o código das bibliotecas diretamente visível no editor
-  var code = '#include <Wire.h>\n';
-  code += '#include <Adafruit_MPU6050.h>\n';
+  // Retorna apenas a biblioteca Adafruit_MPU6050
+  var code = '#include <Adafruit_MPU6050.h>\n';
   code += '// Bibliotecas para sensor MPU6050 (acelerômetro e giroscópio)\n\n';
   return code;
 };
@@ -997,6 +953,18 @@ Blockly.Cpp['library_adafruit'] = function(block) {
   var code = '#include <Adafruit_Sensor.h>\n';
   code += 'Adafruit_MPU6050 mpu;\n';
   code += '// Biblioteca AdaFruit para sensor MPU6050\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for Adafruit_Sensor library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_sensor'] = function(block) {
+  // Retorna apenas a biblioteca Adafruit_Sensor
+  var code = '#include <Adafruit_Sensor.h>\n';
+  code += '// Biblioteca necessária para sensores Adafruit\n\n';
   return code;
 };
 
@@ -1100,6 +1068,17 @@ Blockly.Cpp['arduino_serial_begin'] = function(block) {
   return code;
 };
 
+/**
+ * C++ code generator for !Serial condition check.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order of operations.
+ */
+Blockly.Cpp['serial_not'] = function(block) {
+  // Retorna !Serial como condição booleana
+  var code = '!Serial';
+  return [code, Blockly.Cpp.ORDER_LOGICAL_NOT];
+};
+
 // Geradores de estrutura Arduino definidos com sucesso
 
 // ============================================================================
@@ -1116,6 +1095,8 @@ function ensureLibraryGenerators() {
   var libraryGenerators = [
     'library_arduino_basic',
     'library_wire', 
+    'library_adafruit',
+    'library_sensor',
     'library_bmp180',
     'library_mpu6050',
     'library_dht'
