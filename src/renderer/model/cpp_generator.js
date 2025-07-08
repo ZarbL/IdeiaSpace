@@ -571,7 +571,7 @@ Blockly.Cpp['text'] = function(block) {
 Blockly.Cpp['text_print'] = function(block) {
   var msg = Blockly.Cpp.valueToCode(block, 'TEXT',
     Blockly.Cpp.ORDER_NONE) || '""';
-  return 'Serial.println(' + msg + ');\n';
+  return 'Serial.print(' + msg + ');\n';
 };
 
 /**
@@ -1181,3 +1181,25 @@ Blockly.Cpp['math_boolean'] = function(block) {
   var code = boolValue;
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
+
+/**
+ * Generator for MPU6050 sensors event variables declaration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['mpu6050_sensors_event'] = function(block) {
+  var code = 'sensors_event_t a, g, temp;\n';
+  return code;
+};
+
+/**
+ * Generator for MPU6050 get event function.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['mpu6050_get_event'] = function(block) {
+  var code = 'mpu.getEvent(&a, &g, &temp);\n';
+  return code;
+};
+
+// ============================================================================

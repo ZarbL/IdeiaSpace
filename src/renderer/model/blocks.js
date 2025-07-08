@@ -313,6 +313,38 @@ Blockly.Blocks['mpu6050_set_filter_bandwidth'] = {
   }
 };
 
+/**
+ * Block for MPU6050 sensors event variables declaration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_sensors_event'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📡 sensors_event_t a, g, temp;");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Declara as variáveis de evento dos sensores do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for MPU6050 get event function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_get_event'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔄 mpu.getEvent(&a, &g, &temp);");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Obtém os eventos dos sensores do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos de configuração MPU6050 definidos com sucesso
 
 // ============================================================================
