@@ -554,16 +554,6 @@ Blockly.Cpp['math_arithmetic'] = function(block) {
 };
 
 /**
- * C++ code generator for Text block.
- * @param {!Blockly.Block} block Block to generate the code from.
- * @return {array} Generated C++ code and the operator order.
- */
-Blockly.Cpp['text'] = function(block) {
-  var code = Blockly.Cpp.quote_(block.getFieldValue('TEXT'));
-  return [code, Blockly.Cpp.ORDER_ATOMIC];
-};
-
-/**
  * C++ code generator for Text Print block.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.
@@ -571,7 +561,35 @@ Blockly.Cpp['text'] = function(block) {
 Blockly.Cpp['text_print'] = function(block) {
   var msg = Blockly.Cpp.valueToCode(block, 'TEXT',
     Blockly.Cpp.ORDER_NONE) || '""';
-  return 'Serial.print(' + msg + ');\n';
+  var addNewline = block.getFieldValue('ADD_NEWLINE') == 'TRUE';
+  
+  if (addNewline) {
+    return 'Serial.println(' + msg + ');\n';
+  } else {
+    return 'Serial.print(' + msg + ');\n';
+  }
+};
+
+/**
+ * C++ code generator for Text block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['text'] = function(block) {
+  var code = '"' + block.getFieldValue('TEXT') + '"';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for Text Join block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['text_join'] = function(block) {
+  var argument0 = Blockly.Cpp.valueToCode(block, 'A', Blockly.Cpp.ORDER_NONE) || '""';
+  var argument1 = Blockly.Cpp.valueToCode(block, 'B', Blockly.Cpp.ORDER_NONE) || '""';
+  var code = 'String(' + argument0 + ') + String(' + argument1 + ')';
+  return [code, Blockly.Cpp.ORDER_ADDITIVE];
 };
 
 /**

@@ -823,3 +823,64 @@ Blockly.Blocks['math_boolean'] = {
 // Bloco Boolean definido com sucesso
 
 // ============================================================================
+// TEXT BLOCKS - BLOCOS DE TEXTO
+// ============================================================================
+
+/**
+ * Block for text print with newline option.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['text_print'] = {
+  init: function() {
+    this.appendValueInput('TEXT')
+        .setCheck(['String', 'Number'])
+        .appendField('📝 Imprimir');
+    this.appendDummyInput()
+        .appendField('quebra de linha:')
+        .appendField(new Blockly.FieldCheckbox('TRUE'), 'ADD_NEWLINE');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5C7CFA');
+    this.setTooltip('Imprime texto no console serial. Marque a caixa para adicionar quebra de linha.');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for text input field.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['text'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('💬')
+        .appendField(new Blockly.FieldTextInput(''), 'TEXT');
+    this.setOutput(true, 'String');
+    this.setColour('#5C7CFA');
+    this.setTooltip('Campo de texto para inserir strings');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for text concatenation.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['text_join'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck(['String', 'Number'])
+        .appendField('🔗 Juntar texto');
+    this.appendValueInput('B')
+        .setCheck(['String', 'Number'])
+        .appendField('com');
+    this.setOutput(true, 'String');
+    this.setColour('#5C7CFA');
+    this.setTooltip('Junta dois textos em um só');
+    this.setHelpUrl('');
+  }
+};
+
+// Bloco Text Print definido com sucesso
+
+// ============================================================================

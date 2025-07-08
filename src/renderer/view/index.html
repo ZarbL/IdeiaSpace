@@ -83,9 +83,16 @@
       <block type="math_arithmetic"></block>
       <block type="math_boolean"></block>
     </category>
-    <category name="Texto" colour="#1d1856">
+    <category name="Texto" colour="#5C7CFA">
       <block type="text"></block>
-      <block type="text_print"></block>
+      <block type="text_join"></block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">Olá, mundo!</field>
+          </shadow>
+        </value>
+      </block>
     </category>
     <category name="Variáveis" colour="#00cfe5">
       <button text="➕ Criar Nova Variável" callbackKey="CREATE_VARIABLE"></button>
