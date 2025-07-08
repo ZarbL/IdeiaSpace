@@ -764,12 +764,12 @@ Blockly.Cpp['mpu6050_read'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
   var code = '';
   switch(axis) {
-    case 'ACCEL_X': code = 'mpu.getAccelX()'; break;
-    case 'ACCEL_Y': code = 'mpu.getAccelY()'; break;
-    case 'ACCEL_Z': code = 'mpu.getAccelZ()'; break;
-    case 'GYRO_X': code = 'mpu.getGyroX()'; break;
-    case 'GYRO_Y': code = 'mpu.getGyroY()'; break;
-    case 'GYRO_Z': code = 'mpu.getGyroZ()'; break;
+    case 'ACCEL_X': code = 'a.acceleration.x'; break;
+    case 'ACCEL_Y': code = 'a.acceleration.y'; break;
+    case 'ACCEL_Z': code = 'a.acceleration.z'; break;
+    case 'GYRO_X': code = 'g.gyro.x'; break;
+    case 'GYRO_Y': code = 'g.gyro.y'; break;
+    case 'GYRO_Z': code = 'g.gyro.z'; break;
   }
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
@@ -786,39 +786,72 @@ Blockly.Cpp['mpu6050_init'] = function(block) {
 // Geradores específicos para cada eixo de aceleração
 Blockly.Cpp['mpu6050_accel_x'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getAccelX()';
+  var code = 'a.acceleration.x';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_accel_y'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getAccelY()';
+  var code = 'a.acceleration.y';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_accel_z'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getAccelZ()';
+  var code = 'a.acceleration.z';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 // Geradores específicos para cada eixo de giroscópio
 Blockly.Cpp['mpu6050_gyro_x'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getGyroX()';
+  var code = 'g.gyro.x';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_gyro_y'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getGyroY()';
+  var code = 'g.gyro.y';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
 Blockly.Cpp['mpu6050_gyro_z'] = function(block) {
   // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'mpu.getGyroZ()';
+  var code = 'g.gyro.z';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * Generator for MPU6050 accelerometer range configuration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['mpu6050_set_accel_range'] = function(block) {
+  var accelRange = block.getFieldValue('ACCEL_RANGE');
+  var code = 'mpu.setAccelerometerRange(' + accelRange + ');\n';
+  return code;
+};
+
+/**
+ * Generator for MPU6050 gyroscope range configuration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['mpu6050_set_gyro_range'] = function(block) {
+  var gyroRange = block.getFieldValue('GYRO_RANGE');
+  var code = 'mpu.setGyroRange(' + gyroRange + ');\n';
+  return code;
+};
+
+/**
+ * Generator for MPU6050 filter bandwidth configuration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['mpu6050_set_filter_bandwidth'] = function(block) {
+  var filterBandwidth = block.getFieldValue('FILTER_BANDWIDTH');
+  var code = 'mpu.setFilterBandwidth(' + filterBandwidth + ');\n';
+  return code;
 };
 
 // ============================================================================
@@ -1136,4 +1169,15 @@ Blockly.Cpp['delay_function'] = function(block) {
     delayTime = '1000'; // Valor padrão se nenhum valor for conectado
   }
   return 'delay(' + delayTime + ');\n';
+};
+
+/**
+ * Generator for Boolean block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['math_boolean'] = function(block) {
+  var boolValue = block.getFieldValue('BOOL_VALUE');
+  var code = boolValue;
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
 };

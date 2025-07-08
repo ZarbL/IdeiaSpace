@@ -764,6 +764,19 @@ body {
   border: 2px solid #00BCD4 !important;
 }
 
+/* Estilos para blocos de configuração MPU6050 */
+.blocklyBlock[data-type="mpu6050_set_accel_range"] {
+  border: 2px solid #FF9800 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_set_gyro_range"] {
+  border: 2px solid #FF5722 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_set_filter_bandwidth"] {
+  border: 2px solid #795548 !important;
+}
+
 /* Estilos específicos para o workspace do Blockly no modo escuro */
 .dark-mode .blocklyMainBackground {
   fill: #1e1e1e !important;
@@ -852,4 +865,106 @@ body {
 .dark-mode .blocklyToolboxDiv rect[fill="#ffffff"],
 .dark-mode .blocklyToolboxDiv rect[fill="white"] {
   fill: #252526 !important;
+}
+
+/* Estilos específicos para dropdown do bloco Boolean no modo escuro */
+.dark-mode .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemCheckbox {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemContent {
+  color: #cccccc !important;
+}
+
+/* Garantir que o texto do dropdown seja visível */
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemLabel {
+  color: #cccccc !important;
+}
+
+/* Estilos específicos para elementos SVG nos dropdowns */
+.dark-mode .blocklyDropDownDiv svg text {
+  fill: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv svg .blocklyText {
+  fill: #cccccc !important;
+}
+
+/* Garantir que o texto do field dropdown seja visível */
+.dark-mode .blocklyFieldDropdown .blocklyText {
+  fill: #cccccc !important;
+}
+
+.dark-mode .blocklyFieldDropdown text {
+  fill: #cccccc !important;
+}
+
+/* Estilos específicos para o bloco Boolean no modo escuro */
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyText {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] text {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyFieldDropdown .blocklyText {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyFieldDropdown text {
+  fill: #ffffff !important;
+}
+
+/* Garantir que o menu dropdown do bloco Boolean seja visível */
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+/* Correção global para todos os dropdowns do Blockly no modo escuro */
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que o texto dos dropdowns seja sempre visível */
+.dark-mode .blocklyDropDownDiv * {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv:hover * {
+  color: #ffffff !important;
 }

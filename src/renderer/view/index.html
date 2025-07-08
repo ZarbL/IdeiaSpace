@@ -81,6 +81,7 @@
     <category name="Matemática" colour="#e80074">
       <block type="math_number"><field name="NUM">0</field></block>
       <block type="math_arithmetic"></block>
+      <block type="math_boolean"></block>
     </category>
     <category name="Texto" colour="#1d1856">
       <block type="text"></block>
@@ -121,6 +122,10 @@
     <category name="Sensores" colour="#0c0931">
       <category name="MPU6050" colour="#2e2e8a">
         <block type="mpu6050_init"></block>
+        <sep></sep>
+        <block type="mpu6050_set_accel_range"></block>
+        <block type="mpu6050_set_gyro_range"></block>
+        <block type="mpu6050_set_filter_bandwidth"></block>
         <sep></sep>
         <block type="mpu6050_accel_x"></block>
         <block type="mpu6050_accel_y"></block>

@@ -245,29 +245,75 @@ Blockly.Blocks['mpu6050_gyro_z'] = {
 };
 
 /**
- * Block for reading MPU6050 sensor values (generic).
+ * Block for MPU6050 accelerometer range configuration.
  * @this {Blockly.Block}
  */
-Blockly.Blocks['mpu6050_read'] = {
+Blockly.Blocks['mpu6050_set_accel_range'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField('📡 Ler MPU6050')
+        .appendField("⚙️ MPU.setAccelerometer")
         .appendField(new Blockly.FieldDropdown([
-          ['Aceleração X', 'ACCEL_X'],
-          ['Aceleração Y', 'ACCEL_Y'],
-          ['Aceleração Z', 'ACCEL_Z'],
-          ['Giro X', 'GYRO_X'],
-          ['Giro Y', 'GYRO_Y'],
-          ['Giro Z', 'GYRO_Z']
-        ]), 'MPU6050_AXIS');
-    this.setOutput(true, 'Number');
-    this.setColour(210);
-    this.setTooltip('Lê um valor do sensor MPU6050');
-    this.setHelpUrl('https://bipes.net.br');
+          ["±2G", "MPU6050_RANGE_2_G"],
+          ["±4G", "MPU6050_RANGE_4_G"],
+          ["±8G", "MPU6050_RANGE_8_G"],
+          ["±16G", "MPU6050_RANGE_16_G"]
+        ]), "ACCEL_RANGE");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Configura o range do acelerômetro do MPU6050');
+    this.setHelpUrl('');
   }
 };
 
-// Blocos MPU6050 definidos com sucesso
+/**
+ * Block for MPU6050 gyroscope range configuration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_set_gyro_range'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ MPU.setGyroRange")
+        .appendField(new Blockly.FieldDropdown([
+          ["±250°/s", "MPU6050_RANGE_250_DEG"],
+          ["±500°/s", "MPU6050_RANGE_500_DEG"],
+          ["±1000°/s", "MPU6050_RANGE_1000_DEG"],
+          ["±2000°/s", "MPU6050_RANGE_2000_DEG"]
+        ]), "GYRO_RANGE");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Configura o range do giroscópio do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for MPU6050 filter bandwidth configuration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_set_filter_bandwidth'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ MPU.setFilterBandWidth")
+        .appendField(new Blockly.FieldDropdown([
+          ["260 Hz", "MPU6050_BAND_260_HZ"],
+          ["184 Hz", "MPU6050_BAND_184_HZ"],
+          ["94 Hz", "MPU6050_BAND_94_HZ"],
+          ["44 Hz", "MPU6050_BAND_44_HZ"],
+          ["21 Hz", "MPU6050_BAND_21_HZ"],
+          ["10 Hz", "MPU6050_BAND_10_HZ"],
+          ["5 Hz", "MPU6050_BAND_5_HZ"]
+        ]), "FILTER_BANDWIDTH");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Configura a largura de banda do filtro do MPU6050');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos de configuração MPU6050 definidos com sucesso
 
 // ============================================================================
 // BMP180 BLOCKS - Sensor de Pressão, Temperatura e Altitude
@@ -716,3 +762,32 @@ setTimeout(function() {
     console.error('❌ Bloco delay_function não disponível ainda!');
   }
 }, 100);
+
+// Bloco Delay definido com sucesso
+
+// ============================================================================
+// BOOLEAN BLOCK - BLOCO BOOLEANO PARA MATEMÁTICA
+// ============================================================================
+
+/**
+ * Block for Boolean values (returns 1 or 0).
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['math_boolean'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔢 Boolean")
+        .appendField(new Blockly.FieldDropdown([
+          ["1 (true)", "1"],
+          ["0 (false)", "0"]
+        ]), "BOOL_VALUE");
+    this.setOutput(true, 'Boolean');
+    this.setColour("#e80074"); // Cor pink da categoria Matemática
+    this.setTooltip('Retorna um valor booleano: 1 para verdadeiro ou 0 para falso');
+    this.setHelpUrl('');
+  }
+};
+
+// Bloco Boolean definido com sucesso
+
+// ============================================================================
