@@ -427,6 +427,95 @@ Blockly.Blocks['bmp180_altitude'] = {
 // Blocos BMP180 definidos com sucesso
 
 // ============================================================================
+// BH1750 BLOCKS - Sensor de Luminosidade
+// ============================================================================
+
+/**
+ * Block for BH1750 initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bh1750_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("💡 Inicializar BH1750")
+        .appendField("SCL:")
+        .appendField(new Blockly.FieldDropdown([
+          ["5", "5"],
+          ["21", "21"],
+          ["22", "22"]
+        ]), "SCL_PIN")
+        .appendField("SDA:")
+        .appendField(new Blockly.FieldDropdown([
+          ["4", "4"],
+          ["20", "20"],
+          ["21", "21"]
+        ]), "SDA_PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip("Inicializa o sensor BH1750 com os pinos SCL e SDA especificados");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for reading BH1750 light level in lux.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bh1750_light_level'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("☀️ Luminosidade (lux)");
+    this.setOutput(true, 'Number');
+    this.setColour(60);
+    this.setTooltip('Lê o valor de luminosidade do BH1750 em lux');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for setting BH1750 measurement mode.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bh1750_set_mode'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ Configurar modo BH1750:")
+        .appendField(new Blockly.FieldDropdown([
+          ["Alta resolução (1 lx)", "BH1750::CONTINUOUS_HIGH_RES_MODE"],
+          ["Alta resolução 2 (0.5 lx)", "BH1750::CONTINUOUS_HIGH_RES_MODE_2"],
+          ["Baixa resolução (4 lx)", "BH1750::CONTINUOUS_LOW_RES_MODE"],
+          ["Uma medição alta res.", "BH1750::ONE_TIME_HIGH_RES_MODE"],
+          ["Uma medição alta res. 2", "BH1750::ONE_TIME_HIGH_RES_MODE_2"],
+          ["Uma medição baixa res.", "BH1750::ONE_TIME_LOW_RES_MODE"]
+        ]), "MODE");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip("Configura o modo de medição do sensor BH1750");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for BH1750 begin initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bh1750_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🚀 Iniciar BH1750");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip("Inicia a comunicação com o sensor BH1750");
+    this.setHelpUrl("");
+  }
+};
+
+// Blocos BH1750 definidos com sucesso
+
+// ============================================================================
 // LIBRARY BLOCKS - BIBLIOTECAS
 // ============================================================================
 
@@ -549,6 +638,23 @@ Blockly.Blocks['library_sensor'] = {
     this.setNextStatement(true, null);
     this.setColour(60);
     this.setTooltip('Inclui a biblioteca Adafruit_Sensor.h necessária para sensores Adafruit');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including BH1750 library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_bh1750'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Incluir biblioteca BH1750");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui as bibliotecas necessárias para o sensor BH1750 (luminosidade)');
     this.setHelpUrl('');
   }
 };
@@ -1009,6 +1115,47 @@ mpuConfigBlocks.forEach(blockType => {
   }
 });
 
+// Blocos BH1750 - Amarelo/Dourado (Luminosidade)
+if (Blockly.Blocks['bh1750_init']) {
+  const originalBH1750Init = Blockly.Blocks['bh1750_init'].init;
+  Blockly.Blocks['bh1750_init'].init = function() {
+    originalBH1750Init.call(this);
+    this.setColour("#F1C40F");
+  };
+}
+
+if (Blockly.Blocks['bh1750_light_level']) {
+  const originalBH1750Light = Blockly.Blocks['bh1750_light_level'].init;
+  Blockly.Blocks['bh1750_light_level'].init = function() {
+    originalBH1750Light.call(this);
+    this.setColour("#FFD700");
+  };
+}
+
+if (Blockly.Blocks['bh1750_set_mode']) {
+  const originalBH1750Mode = Blockly.Blocks['bh1750_set_mode'].init;
+  Blockly.Blocks['bh1750_set_mode'].init = function() {
+    originalBH1750Mode.call(this);
+    this.setColour("#F39C12");
+  };
+}
+
+if (Blockly.Blocks['bh1750_begin']) {
+  const originalBH1750Begin = Blockly.Blocks['bh1750_begin'].init;
+  Blockly.Blocks['bh1750_begin'].init = function() {
+    originalBH1750Begin.call(this);
+    this.setColour("#FFCC00");
+  };
+}
+
+if (Blockly.Blocks['library_bh1750']) {
+  const originalLibBH1750 = Blockly.Blocks['library_bh1750'].init;
+  Blockly.Blocks['library_bh1750'].init = function() {
+    originalLibBH1750.call(this);
+    this.setColour("#F4D03F");
+  };
+}
+
 // Blocos BMP180 - Terracota/Laranja
 if (Blockly.Blocks['bmp180_init']) {
   const originalBMPInit = Blockly.Blocks['bmp180_init'].init;
@@ -1042,31 +1189,6 @@ if (Blockly.Blocks['bmp180_altitude']) {
   };
 }
 
-// Blocos DHT - Teal
-if (Blockly.Blocks['dht_init']) {
-  const originalDHTInit = Blockly.Blocks['dht_init'].init;
-  Blockly.Blocks['dht_init'].init = function() {
-    originalDHTInit.call(this);
-    this.setColour("#17A2B8");
-  };
-}
-
-if (Blockly.Blocks['dht_temperature']) {
-  const originalDHTTemp = Blockly.Blocks['dht_temperature'].init;
-  Blockly.Blocks['dht_temperature'].init = function() {
-    originalDHTTemp.call(this);
-    this.setColour("#E67E22");
-  };
-}
-
-if (Blockly.Blocks['dht_humidity']) {
-  const originalDHTHum = Blockly.Blocks['dht_humidity'].init;
-  Blockly.Blocks['dht_humidity'].init = function() {
-    originalDHTHum.call(this);
-    this.setColour("#20B2AA");
-  };
-}
-
 // Blocos de estrutura Arduino - Vermelho/Laranja
 if (Blockly.Blocks['arduino_setup']) {
   const originalSetup = Blockly.Blocks['arduino_setup'].init;
@@ -1093,7 +1215,7 @@ if (Blockly.Blocks['arduino_serial_begin']) {
 }
 
 // Blocos de bibliotecas - Roxo escuro
-const libraryBlocks = ['library_bmp180', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_adafruit', 'library_sensor'];
+const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_adafruit', 'library_sensor'];
 libraryBlocks.forEach(blockType => {
   if (Blockly.Blocks[blockType]) {
     const originalInit = Blockly.Blocks[blockType].init;

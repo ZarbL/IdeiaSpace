@@ -929,6 +929,49 @@ Blockly.Cpp['bmp180_altitude'] = function(block) {
 };
 
 // ============================================================================
+// BH1750 CODE GENERATORS - Sensor de Luminosidade
+// ============================================================================
+
+// Gerador de código para inicialização do BH1750
+Blockly.Cpp['bh1750_init'] = function(block) {
+  var sclPin = block.getFieldValue('SCL_PIN');
+  var sdaPin = block.getFieldValue('SDA_PIN');
+  
+  // Gera a declaração do objeto BH1750
+  var code = 'BH1750 lightMeter;\n';
+  
+  // Configura setup automático para Wire e inicialização
+  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
+  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
+  Blockly.Cpp.setups_['bh1750_begin'] = 'if (!lightMeter.begin()) {\n    Serial.println("BH1750 sensor não encontrado!");\n    while (1) {}\n  }';
+  
+  return code;
+};
+
+// Gerador de código para leitura de luminosidade do BH1750
+Blockly.Cpp['bh1750_light_level'] = function(block) {
+  // Não gerar declaração automática - deve ser feita pela biblioteca
+  var code = 'lightMeter.readLightLevel()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+// Gerador de código para configuração do modo BH1750
+Blockly.Cpp['bh1750_set_mode'] = function(block) {
+  var mode = block.getFieldValue('MODE');
+  // Não gerar declaração automática - deve ser feita pela biblioteca
+  var code = 'lightMeter.configure(' + mode + ');\n';
+  return code;
+};
+
+// Gerador de código para início da comunicação BH1750
+Blockly.Cpp['bh1750_begin'] = function(block) {
+  // Gera código para inicializar Wire e BH1750
+  var code = 'Wire.begin();\n';
+  code += 'lightMeter.begin();\n';
+  return code;
+};
+
+// ============================================================================
 // LIBRARY GENERATORS - GERADORES PARA BIBLIOTECAS
 // ============================================================================
 
@@ -1019,9 +1062,17 @@ Blockly.Cpp['library_sensor'] = function(block) {
   return code;
 };
 
-// ============================================================================
-// DHT SENSOR GENERATORS - GERADORES PARA SENSORES DHT
-// ============================================================================
+/**
+ * C++ code generator for BH1750 library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_bh1750'] = function(block) {
+  // Retorna apenas a biblioteca BH1750 específica + declaração do objeto
+  var code = '#include <BH1750.h>\n';
+  code += '// Biblioteca para sensor BH1750 (luminosidade)\n\n';
+  return code;
+};
 
 /**
  * C++ code generator for DHT sensor initialization.
@@ -1163,6 +1214,7 @@ function ensureLibraryGenerators() {
     'library_adafruit',
     'library_sensor',
     'library_bmp180',
+    'library_bh1750',
     'library_mpu6050',
     'library_dht'
   ];
