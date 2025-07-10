@@ -968,3 +968,307 @@ body {
 .dark-mode .blocklyDropDownDiv:hover * {
   color: #ffffff !important;
 }
+
+/* ============================================================================
+   SISTEMA DE CORES PARA BLOCOS - PALETA HARMONIOSA
+   ============================================================================ */
+
+/* BLOCOS DE LÓGICA - Tons de Azul Escuro */
+.blocklyBlock[data-type="controls_if"] {
+  border: 2px solid #2C3E50 !important;
+  background: linear-gradient(135deg, #2C3E50 0%, #1B2631 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(44, 62, 80, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_compare"] {
+  border: 2px solid #34495E !important;
+  background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 73, 94, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_operation"] {
+  border: 2px solid #5D6D7E !important;
+  background: linear-gradient(135deg, #5D6D7E 0%, #34495E 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 109, 126, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_boolean"] {
+  border: 2px solid #283747 !important;
+  background: linear-gradient(135deg, #283747 0%, #1B2631 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 55, 71, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE ESTRUTURA ARDUINO - Tons de Vermelho/Laranja */
+.blocklyBlock[data-type="arduino_setup"] {
+  border: 2px solid #E74C3C !important;
+  background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="arduino_loop"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #D35400 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="arduino_serial_begin"] {
+  border: 2px solid #F39C12 !important;
+  background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS MATEMÁTICOS - Tons de Laranja/Amarelo */
+.blocklyBlock[data-type="math_number"] {
+  border: 2px solid #F39C12 !important;
+  background: linear-gradient(135deg, #F39C12 0%, #D68910 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="math_arithmetic"] {
+  border: 2px solid #F4D03F !important;
+  background: linear-gradient(135deg, #F4D03F 0%, #F39C12 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(244, 208, 63, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="math_boolean"] {
+  border: 2px solid #D68910 !important;
+  background: linear-gradient(135deg, #D68910 0%, #B7950B 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(214, 137, 16, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE TEXTO/COMUNICAÇÃO - Tons de Verde */
+.blocklyBlock[data-type="text"] {
+  border: 2px solid #27AE60 !important;
+  background: linear-gradient(135deg, #27AE60 0%, #229954 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="text_join"] {
+  border: 2px solid #28B463 !important;
+  background: linear-gradient(135deg, #28B463 0%, #27AE60 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 180, 99, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="text_print"] {
+  border: 2px solid #2ECC71 !important;
+  background: linear-gradient(135deg, #2ECC71 0%, #28B463 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE VARIÁVEIS - Tons de Azul Claro */
+.blocklyBlock[data-type="variable_declaration"] {
+  border: 2px solid #3498DB !important;
+  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="variables_get"] {
+  border: 2px solid #5DADE2 !important;
+  background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 173, 226, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="variables_set"] {
+  border: 2px solid #2980B9 !important;
+  background: linear-gradient(135deg, #2980B9 0%, #1F618D 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(41, 128, 185, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE TEMPO - Tons de Roxo */
+.blocklyBlock[data-type="delay_function"] {
+  border: 2px solid #9B59B6 !important;
+  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(155, 89, 182, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="delay_block"] {
+  border: 2px solid #8E44AD !important;
+  background: linear-gradient(135deg, #8E44AD 0%, #7D3C98 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(142, 68, 173, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE BIBLIOTECAS - Tons de Roxo Escuro */
+.blocklyBlock[data-type*="library_"] {
+  border: 2px solid #7D3C98 !important;
+  background: linear-gradient(135deg, #7D3C98 0%, #6C3483 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(125, 60, 152, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS MPU6050 - Tons de Azul Tecnológico */
+.blocklyBlock[data-type="mpu6050_init"] {
+  border: 2px solid #2E86AB !important;
+  background: linear-gradient(135deg, #2E86AB 0%, #1B4F72 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(46, 134, 171, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_accel"] {
+  border: 2px solid #5DADE2 !important;
+  background: linear-gradient(135deg, #5DADE2 0%, #2E86AB 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 173, 226, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_gyro"] {
+  border: 2px solid #85C1E9 !important;
+  background: linear-gradient(135deg, #85C1E9 0%, #5DADE2 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(133, 193, 233, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_set"] {
+  border: 2px solid #1B4F72 !important;
+  background: linear-gradient(135deg, #1B4F72 0%, #154360 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(27, 79, 114, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS BMP180 - Tons de Terracota/Laranja */
+.blocklyBlock[data-type="bmp180_init"] {
+  border: 2px solid #DC7633 !important;
+  background: linear-gradient(135deg, #DC7633 0%, #CA6F1E 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(220, 118, 51, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_pressure"] {
+  border: 2px solid #3498DB !important;
+  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_temperature"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_altitude"] {
+  border: 2px solid #28B463 !important;
+  background: linear-gradient(135deg, #28B463 0%, #229954 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 180, 99, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DHT - Tons de Teal/Verde-azulado */
+.blocklyBlock[data-type="dht_init"] {
+  border: 2px solid #17A2B8 !important;
+  background: linear-gradient(135deg, #17A2B8 0%, #138496 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_temperature"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_humidity"] {
+  border: 2px solid #20B2AA !important;
+  background: linear-gradient(135deg, #20B2AA 0%, #17A2B8 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(32, 178, 170, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE HARDWARE - Tons de Laranja Metálico */
+.blocklyBlock[data-type="digital_write"] {
+  border: 2px solid #FF6B35 !important;
+  background: linear-gradient(135deg, #FF6B35 0%, #E67E22 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="digital_read"] {
+  border: 2px solid #58D68D !important;
+  background: linear-gradient(135deg, #58D68D 0%, #28B463 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(88, 214, 141, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* EFEITOS HOVER UNIVERSAIS */
+.blocklyBlock:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* EFEITOS DE FOCO */
+.blocklyBlock:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ANIMAÇÃO SUTIL PARA TODOS OS BLOCOS */
+.blocklyBlock {
+  animation: gentle-pulse 4s ease-in-out infinite;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* MELHORIA NA LEGIBILIDADE DO TEXTO */
+.blocklyBlock .blocklyText {
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  fill: #FFFFFF !important;
+}

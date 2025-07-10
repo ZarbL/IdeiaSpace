@@ -884,3 +884,223 @@ Blockly.Blocks['text_join'] = {
 // Bloco Text Print definido com sucesso
 
 // ============================================================================
+// SISTEMA DE CORES PARA BLOCOS CUSTOMIZADOS
+// ============================================================================
+
+// Aplicar cores consistentes aos blocos customizados existentes
+
+// Blocos de delay - Roxo
+if (Blockly.Blocks['delay_block']) {
+  const originalDelayInit = Blockly.Blocks['delay_block'].init;
+  Blockly.Blocks['delay_block'].init = function() {
+    originalDelayInit.call(this);
+    this.setColour("#8E44AD");
+  };
+}
+
+// Blocos de hardware - Laranja
+if (Blockly.Blocks['digital_write']) {
+  const originalDigitalWriteInit = Blockly.Blocks['digital_write'].init;
+  Blockly.Blocks['digital_write'].init = function() {
+    originalDigitalWriteInit.call(this);
+    this.setColour("#FF6B35");
+  };
+}
+
+if (Blockly.Blocks['digital_read']) {
+  const originalDigitalReadInit = Blockly.Blocks['digital_read'].init;
+  Blockly.Blocks['digital_read'].init = function() {
+    originalDigitalReadInit.call(this);
+    this.setColour("#58D68D");
+  };
+}
+
+// Blocos de variáveis - Azul
+if (Blockly.Blocks['variable_declaration']) {
+  const originalVarDeclInit = Blockly.Blocks['variable_declaration'].init;
+  Blockly.Blocks['variable_declaration'].init = function() {
+    originalVarDeclInit.call(this);
+    this.setColour("#3498DB");
+  };
+}
+
+// Blocos MPU6050 - Azul tecnológico
+if (Blockly.Blocks['mpu6050_init']) {
+  const originalMPUInit = Blockly.Blocks['mpu6050_init'].init;
+  Blockly.Blocks['mpu6050_init'].init = function() {
+    originalMPUInit.call(this);
+    this.setColour("#2E86AB");
+  };
+}
+
+// Aplicar cores aos outros blocos MPU6050
+const mpuAccelBlocks = ['mpu6050_accel_x', 'mpu6050_accel_y', 'mpu6050_accel_z'];
+mpuAccelBlocks.forEach(blockType => {
+  if (Blockly.Blocks[blockType]) {
+    const originalInit = Blockly.Blocks[blockType].init;
+    Blockly.Blocks[blockType].init = function() {
+      originalInit.call(this);
+      this.setColour("#5DADE2");
+    };
+  }
+});
+
+const mpuGyroBlocks = ['mpu6050_gyro_x', 'mpu6050_gyro_y', 'mpu6050_gyro_z'];
+mpuGyroBlocks.forEach(blockType => {
+  if (Blockly.Blocks[blockType]) {
+    const originalInit = Blockly.Blocks[blockType].init;
+    Blockly.Blocks[blockType].init = function() {
+      originalInit.call(this);
+      this.setColour("#85C1E9");
+    };
+  }
+});
+
+const mpuConfigBlocks = ['mpu6050_set_accel_range', 'mpu6050_set_gyro_range', 'mpu6050_set_filter_bandwidth'];
+mpuConfigBlocks.forEach(blockType => {
+  if (Blockly.Blocks[blockType]) {
+    const originalInit = Blockly.Blocks[blockType].init;
+    Blockly.Blocks[blockType].init = function() {
+      originalInit.call(this);
+      this.setColour("#1B4F72");
+    };
+  }
+});
+
+// Blocos BMP180 - Terracota/Laranja
+if (Blockly.Blocks['bmp180_init']) {
+  const originalBMPInit = Blockly.Blocks['bmp180_init'].init;
+  Blockly.Blocks['bmp180_init'].init = function() {
+    originalBMPInit.call(this);
+    this.setColour("#DC7633");
+  };
+}
+
+if (Blockly.Blocks['bmp180_pressure']) {
+  const originalBMPPressure = Blockly.Blocks['bmp180_pressure'].init;
+  Blockly.Blocks['bmp180_pressure'].init = function() {
+    originalBMPPressure.call(this);
+    this.setColour("#3498DB");
+  };
+}
+
+if (Blockly.Blocks['bmp180_temperature']) {
+  const originalBMPTemp = Blockly.Blocks['bmp180_temperature'].init;
+  Blockly.Blocks['bmp180_temperature'].init = function() {
+    originalBMPTemp.call(this);
+    this.setColour("#E67E22");
+  };
+}
+
+if (Blockly.Blocks['bmp180_altitude']) {
+  const originalBMPAlt = Blockly.Blocks['bmp180_altitude'].init;
+  Blockly.Blocks['bmp180_altitude'].init = function() {
+    originalBMPAlt.call(this);
+    this.setColour("#28B463");
+  };
+}
+
+// Blocos DHT - Teal
+if (Blockly.Blocks['dht_init']) {
+  const originalDHTInit = Blockly.Blocks['dht_init'].init;
+  Blockly.Blocks['dht_init'].init = function() {
+    originalDHTInit.call(this);
+    this.setColour("#17A2B8");
+  };
+}
+
+if (Blockly.Blocks['dht_temperature']) {
+  const originalDHTTemp = Blockly.Blocks['dht_temperature'].init;
+  Blockly.Blocks['dht_temperature'].init = function() {
+    originalDHTTemp.call(this);
+    this.setColour("#E67E22");
+  };
+}
+
+if (Blockly.Blocks['dht_humidity']) {
+  const originalDHTHum = Blockly.Blocks['dht_humidity'].init;
+  Blockly.Blocks['dht_humidity'].init = function() {
+    originalDHTHum.call(this);
+    this.setColour("#20B2AA");
+  };
+}
+
+// Blocos de estrutura Arduino - Vermelho/Laranja
+if (Blockly.Blocks['arduino_setup']) {
+  const originalSetup = Blockly.Blocks['arduino_setup'].init;
+  Blockly.Blocks['arduino_setup'].init = function() {
+    originalSetup.call(this);
+    this.setColour("#E74C3C");
+  };
+}
+
+if (Blockly.Blocks['arduino_loop']) {
+  const originalLoop = Blockly.Blocks['arduino_loop'].init;
+  Blockly.Blocks['arduino_loop'].init = function() {
+    originalLoop.call(this);
+    this.setColour("#E67E22");
+  };
+}
+
+if (Blockly.Blocks['arduino_serial_begin']) {
+  const originalSerial = Blockly.Blocks['arduino_serial_begin'].init;
+  Blockly.Blocks['arduino_serial_begin'].init = function() {
+    originalSerial.call(this);
+    this.setColour("#F39C12");
+  };
+}
+
+// Blocos de bibliotecas - Roxo escuro
+const libraryBlocks = ['library_bmp180', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_adafruit', 'library_sensor'];
+libraryBlocks.forEach(blockType => {
+  if (Blockly.Blocks[blockType]) {
+    const originalInit = Blockly.Blocks[blockType].init;
+    Blockly.Blocks[blockType].init = function() {
+      originalInit.call(this);
+      this.setColour("#7D3C98");
+    };
+  }
+});
+
+// Blocos de tempo - Roxo
+if (Blockly.Blocks['delay_function']) {
+  const originalDelayFunc = Blockly.Blocks['delay_function'].init;
+  Blockly.Blocks['delay_function'].init = function() {
+    originalDelayFunc.call(this);
+    this.setColour("#9B59B6");
+  };
+}
+
+// Blocos de texto - Verde
+if (Blockly.Blocks['text_print']) {
+  const originalTextPrint = Blockly.Blocks['text_print'].init;
+  Blockly.Blocks['text_print'].init = function() {
+    originalTextPrint.call(this);
+    this.setColour("#2ECC71");
+  };
+}
+
+if (Blockly.Blocks['text']) {
+  const originalText = Blockly.Blocks['text'].init;
+  Blockly.Blocks['text'].init = function() {
+    originalText.call(this);
+    this.setColour("#27AE60");
+  };
+}
+
+if (Blockly.Blocks['text_join']) {
+  const originalTextJoin = Blockly.Blocks['text_join'].init;
+  Blockly.Blocks['text_join'].init = function() {
+    originalTextJoin.call(this);
+    this.setColour("#28B463");
+  };
+}
+
+// Bloco booleano matemático - Laranja
+if (Blockly.Blocks['math_boolean']) {
+  const originalMathBool = Blockly.Blocks['math_boolean'].init;
+  Blockly.Blocks['math_boolean'].init = function() {
+    originalMathBool.call(this);
+    this.setColour("#D68910");
+  };
+}
