@@ -1032,25 +1032,21 @@ Blockly.Cpp['dht_init'] = function(block) {
   var dht_type = block.getFieldValue('TYPE');
   var pin = block.getFieldValue('PIN');
   
-  // Adiciona as bibliotecas necessárias
-  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
+  // Gera o código na sequência dos blocos
+  var code = '';
   
   // Define o tipo de sensor
   if (dht_type === 'DHT11') {
-    Blockly.Cpp.definitions_['dht_type'] = '#define DHTTYPE DHT11';
+    code += '#define DHTTYPE DHT11\n';
   } else {
-    Blockly.Cpp.definitions_['dht_type'] = '#define DHTTYPE DHT22';
+    code += '#define DHTTYPE DHT22\n';
   }
   
   // Define o pino e cria o objeto DHT
-  Blockly.Cpp.definitions_['dht_pin'] = '#define DHTPIN ' + pin;
-  Blockly.Cpp.definitions_['dht_obj'] = 'DHT dht(DHTPIN, DHTTYPE);';
+  code += '#define DHTPIN ' + pin + '\n';
+  code += 'DHT dht(DHTPIN, DHTTYPE);\n\n';
   
-  // Inicializa o sensor no setup
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['dht_begin'] = 'dht.begin();';
-  
-  var code = '// Sensor ' + dht_type + ' inicializado no pino ' + pin + '\n';
+  code += '// Sensor ' + dht_type + ' inicializado no pino ' + pin + '\n';
   return code;
 };
 
@@ -1060,9 +1056,6 @@ Blockly.Cpp['dht_init'] = function(block) {
  * @return {array} Generated C++ code and the operator order.
  */
 Blockly.Cpp['dht_temperature'] = function(block) {
-  // Garante que as bibliotecas estão incluídas
-  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
-  
   var code = 'dht.readTemperature()';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
@@ -1073,10 +1066,31 @@ Blockly.Cpp['dht_temperature'] = function(block) {
  * @return {array} Generated C++ code and the operator order.
  */
 Blockly.Cpp['dht_humidity'] = function(block) {
-  // Garante que as bibliotecas estão incluídas
-  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
-  
   var code = 'dht.readHumidity()';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for DHT begin initialization.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['dht_begin'] = function(block) {
+  var code = 'dht.begin();\n';
+  return code;
+};
+
+/**
+ * C++ code generator for DHT heat index calculation.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['dht_heat_index'] = function(block) {
+  var temperature = Blockly.Cpp.valueToCode(block, 'TEMPERATURE', Blockly.Cpp.ORDER_ATOMIC) || '0';
+  var humidity = Blockly.Cpp.valueToCode(block, 'HUMIDITY', Blockly.Cpp.ORDER_ATOMIC) || '0';
+  var unit = Blockly.Cpp.valueToCode(block, 'UNIT', Blockly.Cpp.ORDER_ATOMIC) || 'false';
+  
+  var code = 'dht.computeHeatIndex(' + temperature + ', ' + humidity + ', ' + unit + ')';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 

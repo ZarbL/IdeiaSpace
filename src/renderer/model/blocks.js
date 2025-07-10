@@ -628,6 +628,48 @@ Blockly.Blocks['dht_humidity'] = {
   }
 };
 
+/**
+ * Block for DHT begin initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🚀")
+        .appendField("DHT Begin");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for calculating heat index.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_heat_index'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️🔥")
+        .appendField("Calcular Índice de Calor");
+    this.appendValueInput("TEMPERATURE")
+        .setCheck("Number")
+        .appendField("Temperatura:");
+    this.appendValueInput("HUMIDITY")
+        .setCheck("Number")
+        .appendField("Umidade:");
+    this.appendValueInput("UNIT")
+        .setCheck(["String", "Boolean"])
+        .appendField("Condição:");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos DHT definidos com sucesso
 // ============================================================================
 // ARDUINO STRUCTURE BLOCKS - BLOCOS DE ESTRUTURA ARDUINO
