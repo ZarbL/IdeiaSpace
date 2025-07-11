@@ -513,12 +513,6 @@ Blockly.Blocks['bh1750_begin'] = {
   }
 };
 
-// Blocos BH1750 definidos com sucesso
-
-// ============================================================================
-// LIBRARY BLOCKS - BIBLIOTECAS
-// ============================================================================
-
 /**
  * Block for including BMP180 library.
  * @this {Blockly.Block}
@@ -609,23 +603,6 @@ Blockly.Blocks['library_arduino_basic'] = {
 };
 
 /**
- * Block for including AdaFruit library.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['library_adafruit'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("📚")
-        .appendField("Biblioteca AdaFruit");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(60);
-    this.setTooltip('Inclui a biblioteca AdaFruit para sensores MPU6050');
-    this.setHelpUrl('');
-  }
-};
-
-/**
  * Block for including Adafruit_Sensor library.
  * @this {Blockly.Block}
  */
@@ -633,7 +610,7 @@ Blockly.Blocks['library_sensor'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("📚")
-        .appendField("Biblioteca Sensor.h");
+        .appendField("Biblioteca AdaFruit");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(60);
@@ -655,6 +632,23 @@ Blockly.Blocks['library_bh1750'] = {
     this.setNextStatement(true, null);
     this.setColour(60);
     this.setTooltip('Inclui as bibliotecas necessárias para o sensor BH1750 (luminosidade)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for including HMC5883 library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_hmc5883'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Biblioteca HMC5883");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui a biblioteca Adafruit_HMC5883_U.h para magnetômetro/bússola');
     this.setHelpUrl('');
   }
 };
@@ -1215,7 +1209,7 @@ if (Blockly.Blocks['arduino_serial_begin']) {
 }
 
 // Blocos de bibliotecas - Roxo escuro
-const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_adafruit', 'library_sensor'];
+const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_sensor', 'library_hmc5883'];
 libraryBlocks.forEach(blockType => {
   if (Blockly.Blocks[blockType]) {
     const originalInit = Blockly.Blocks[blockType].init;

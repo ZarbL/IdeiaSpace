@@ -1037,28 +1037,17 @@ Blockly.Cpp['library_arduino_basic'] = function(block) {
   return code;
 };
 
-/**
- * C++ code generator for AdaFruit library inclusion.
- * @param {!Blockly.Block} block Block to generate the code from.
- * @return {string} Generated C++ code.
- */
-Blockly.Cpp['library_adafruit'] = function(block) {
-  // Retorna o código das bibliotecas diretamente visível no editor
-  var code = '#include <Adafruit_Sensor.h>\n';
-  code += 'Adafruit_MPU6050 mpu;\n';
-  code += '// Biblioteca AdaFruit para sensor MPU6050\n\n';
-  return code;
-};
+
 
 /**
- * C++ code generator for Adafruit_Sensor library inclusion.
+ * C++ code generator for AdaFruit library inclusion.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['library_sensor'] = function(block) {
   // Retorna apenas a biblioteca Adafruit_Sensor
   var code = '#include <Adafruit_Sensor.h>\n';
-  code += '// Biblioteca necessária para sensores Adafruit\n\n';
+  code += '// Biblioteca AdaFruit para sensores\n\n';
   return code;
 };
 
@@ -1071,6 +1060,18 @@ Blockly.Cpp['library_bh1750'] = function(block) {
   // Retorna apenas a biblioteca BH1750 específica + declaração do objeto
   var code = '#include <BH1750.h>\n';
   code += '// Biblioteca para sensor BH1750 (luminosidade)\n\n';
+  return code;
+};
+
+/**
+ * C++ code generator for HMC5883 library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_hmc5883'] = function(block) {
+  // Retorna a biblioteca HMC5883 para magnetômetro/bússola
+  var code = '#include <Adafruit_HMC5883_U.h>\n';
+  code += '// Biblioteca para sensor HMC5883 (magnetômetro/bússola)\n\n';
   return code;
 };
 
@@ -1211,12 +1212,12 @@ function ensureLibraryGenerators() {
   var libraryGenerators = [
     'library_arduino_basic',
     'library_wire', 
-    'library_adafruit',
     'library_sensor',
     'library_bmp180',
     'library_bh1750',
     'library_mpu6050',
-    'library_dht'
+    'library_dht',
+    'library_hmc5883'
   ];
   
   libraryGenerators.forEach(function(generatorName) {
