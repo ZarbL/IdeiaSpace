@@ -655,196 +655,235 @@ Blockly.Blocks['library_hmc5883'] = {
 
 // Blocos de biblioteca definidos com sucesso
 // ============================================================================
-// DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
+// HMC5883 BLOCKS - Sensor Magnetômetro/Bússola (3 Eixos)
 // ============================================================================
 
 /**
- * Block for initializing DHT sensor.
+ * Block for HMC5883 initialization.
  * @this {Blockly.Block}
  */
-Blockly.Blocks['dht_init'] = {
+Blockly.Blocks['hmc5883_init'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("🔧")
-        .appendField("Inicializar DHT")
+        .appendField("🧭 Inicializar HMC5883")
+        .appendField("SCL:")
         .appendField(new Blockly.FieldDropdown([
-          ["DHT11", "DHT11"],
-          ["DHT22", "DHT22"]
-        ]), "TYPE")
-        .appendField("no pino")
-        .appendField(new Blockly.FieldDropdown([
-          ["2", "2"],
-          ["3", "3"],
-          ["4", "4"],
           ["5", "5"],
-          ["6", "6"],
-          ["7", "7"],
-          ["8", "8"],
-          ["9", "9"],
-          ["10", "10"],
-          ["11", "11"],
-          ["12", "12"],
-          ["13", "13"],
-          ["14", "14"],
-          ["15", "15"]
-        ]), "PIN");
+          ["21", "21"],
+          ["22", "22"]
+        ]), "SCL_PIN")
+        .appendField("SDA:")
+        .appendField(new Blockly.FieldDropdown([
+          ["4", "4"],
+          ["20", "20"],
+          ["21", "21"]
+        ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
-    this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
-    this.setHelpUrl('');
+    this.setColour("#E74C3C");
+    this.setTooltip("Inicializa o magnetômetro/bússola HMC5883 com os pinos SCL e SDA especificados");
+    this.setHelpUrl("");
   }
 };
 
 /**
- * Block for reading DHT temperature.
+ * Block for HMC5883 begin initialization.
  * @this {Blockly.Block}
  */
-Blockly.Blocks['dht_temperature'] = {
+Blockly.Blocks['hmc5883_begin'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("🌡️")
-        .appendField("Temperatura DHT");
-    this.setOutput(true, 'Number');
-    this.setColour(30);
-    this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for reading DHT humidity.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_humidity'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("💧")
-        .appendField("Umidade DHT");
-    this.setOutput(true, 'Number');
-    this.setColour(200);
-    this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for DHT begin initialization.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_begin'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🚀")
-        .appendField("DHT Begin");
+        .appendField("🚀 HMC5883 Begin");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
-    this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
+    this.setColour("#DC143C");
+    this.setTooltip("Inicia a comunicação com o magnetômetro HMC5883");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for reading HMC5883 magnetic field X axis.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_mag_x'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🧲 Campo Magnético - X");
+    this.setOutput(true, 'Number');
+    this.setColour("#FF6B6B");
+    this.setTooltip('Lê o valor do campo magnético no eixo X em microTesla (μT)');
     this.setHelpUrl('');
   }
 };
 
 /**
- * Block for calculating heat index.
+ * Block for reading HMC5883 magnetic field Y axis.
  * @this {Blockly.Block}
  */
-Blockly.Blocks['dht_heat_index'] = {
+Blockly.Blocks['hmc5883_mag_y'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("🌡️🔥")
-        .appendField("Calcular Índice de Calor");
-    this.appendValueInput("TEMPERATURE")
+        .appendField("🧲 Campo Magnético - Y");
+    this.setOutput(true, 'Number');
+    this.setColour("#FF6B6B");
+    this.setTooltip('Lê o valor do campo magnético no eixo Y em microTesla (μT)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading HMC5883 magnetic field Z axis.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_mag_z'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🧲 Campo Magnético - Z");
+    this.setOutput(true, 'Number');
+    this.setColour("#FF6B6B");
+    this.setTooltip('Lê o valor do campo magnético no eixo Z em microTesla (μT)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for calculating compass heading from HMC5883.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_heading'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🧭 Direção da Bússola (graus)");
+    this.setOutput(true, 'Number');
+    this.setColour("#8B0000");
+    this.setTooltip('Calcula a direção da bússola em graus (0-360°) baseado nos valores X e Y');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for setting HMC5883 gain/range.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_set_gain'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ Configurar Ganho HMC5883:")
+        .appendField(new Blockly.FieldDropdown([
+          ["±1.3 Ga (padrão)", "HMC5883_MAGGAIN_1_3"],
+          ["±1.9 Ga", "HMC5883_MAGGAIN_1_9"],
+          ["±2.5 Ga", "HMC5883_MAGGAIN_2_5"],
+          ["±4.0 Ga", "HMC5883_MAGGAIN_4_0"],
+          ["±4.7 Ga", "HMC5883_MAGGAIN_4_7"],
+          ["±5.6 Ga", "HMC5883_MAGGAIN_5_6"],
+          ["±8.1 Ga", "HMC5883_MAGGAIN_8_1"]
+        ]), "GAIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#B22222");
+    this.setTooltip("Configura o ganho/sensibilidade do magnetômetro HMC5883 (Gauss)");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for HMC5883 sensor event declaration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_event_declare'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📡 sensors_event_t event;");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#8B0000");
+    this.setTooltip('Declara uma variável de evento para o sensor HMC5883');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for HMC5883 get event function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_get_event'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔄 mag.getEvent(&event);");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#8B0000");
+    this.setTooltip('Obtém os dados mais recentes do magnetômetro HMC5883');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading magnetic declination angle.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_declination'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌍 Declinação Magnética:")
+        .appendField(new Blockly.FieldNumber(0, -180, 180, 0.1), "DECLINATION")
+        .appendField("graus");
+    this.setOutput(true, 'Number');
+    this.setColour("#A0522D");
+    this.setTooltip('Define o ângulo de declinação magnética da sua localização para correção da bússola');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for compass direction text.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_direction_text'] = {
+  init: function() {
+    this.appendValueInput("HEADING")
         .setCheck("Number")
-        .appendField("Temperatura:");
-    this.appendValueInput("HUMIDITY")
-        .setCheck("Number")
-        .appendField("Umidade:");
-    this.appendValueInput("UNIT")
-        .setCheck(["String", "Boolean"])
-        .appendField("Condição:");
+        .appendField("🧭 Direção Cardinal:");
+    this.setOutput(true, 'String');
+    this.setColour("#CD853F");
+    this.setTooltip('Converte o ângulo da bússola em direção cardinal (N, NE, E, SE, S, SW, W, NW)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for HMC5883 sensor object declaration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_sensor_object'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🧭 Inicializador HMC5883");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#800000");
+    this.setTooltip('Declara o objeto do sensor HMC5883 com ID único');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for magnetic field strength calculation.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_field_strength'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🧲 Intensidade Total do Campo");
     this.setOutput(true, 'Number');
-    this.setColour(30);
-    this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
+    this.setColour("#FF1493");
+    this.setTooltip('Calcula a intensidade total do campo magnético usando sqrt(X² + Y² + Z²)');
     this.setHelpUrl('');
   }
 };
 
-// Blocos DHT definidos com sucesso
-// ============================================================================
-// ARDUINO STRUCTURE BLOCKS - BLOCOS DE ESTRUTURA ARDUINO
-// ============================================================================
-
-/**
- * Block for void setup() function.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['arduino_setup'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("⚙️ void setup()");
-    this.appendStatementInput("SETUP_CODE")
-        .setCheck(null);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(230);
-    this.setTooltip('Função setup() do Arduino - executa uma vez no início');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for void loop() function.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['arduino_loop'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🔁 void loop()");
-    this.appendStatementInput("LOOP_CODE")
-        .setCheck(null);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(230);
-    this.setTooltip('Função loop() do Arduino - executa continuamente');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for Serial.begin() function.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['arduino_serial_begin'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("📡 Serial.begin(")
-        .appendField(new Blockly.FieldNumber(9600, 300, 115200, 100), "BAUD_RATE")
-        .appendField(")");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(230);
-    this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for !Serial condition check.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['serial_not'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField('❌ !Serial');
-    this.setOutput(true, 'Boolean');
-    this.setColour(230);
-    this.setTooltip('Verifica se a comunicação serial NÃO está disponível');
-    this.setHelpUrl('');
-  }
-};
-
-// Blocos de estrutura Arduino definidos com sucesso
+// Blocos HMC5883 definidos com sucesso
 
 // ============================================================================
 // DELAY BLOCK - BLOCO DE DELAY COM VALOR CONECTÁVEL
@@ -1183,30 +1222,7 @@ if (Blockly.Blocks['bmp180_altitude']) {
   };
 }
 
-// Blocos de estrutura Arduino - Vermelho/Laranja
-if (Blockly.Blocks['arduino_setup']) {
-  const originalSetup = Blockly.Blocks['arduino_setup'].init;
-  Blockly.Blocks['arduino_setup'].init = function() {
-    originalSetup.call(this);
-    this.setColour("#E74C3C");
-  };
-}
-
-if (Blockly.Blocks['arduino_loop']) {
-  const originalLoop = Blockly.Blocks['arduino_loop'].init;
-  Blockly.Blocks['arduino_loop'].init = function() {
-    originalLoop.call(this);
-    this.setColour("#E67E22");
-  };
-}
-
-if (Blockly.Blocks['arduino_serial_begin']) {
-  const originalSerial = Blockly.Blocks['arduino_serial_begin'].init;
-  Blockly.Blocks['arduino_serial_begin'].init = function() {
-    originalSerial.call(this);
-    this.setColour("#F39C12");
-  };
-}
+// Blocos de estrutura Arduino já definidos com cores corretas
 
 // Blocos de bibliotecas - Roxo escuro
 const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_sensor', 'library_hmc5883'];
@@ -1262,3 +1278,333 @@ if (Blockly.Blocks['math_boolean']) {
     this.setColour("#D68910");
   };
 }
+
+// Blocos de estrutura Arduino definidos com sucesso
+// ============================================================================
+// DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
+// ============================================================================
+
+/**
+ * Block for initializing DHT sensor.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔧")
+        .appendField("Inicializar DHT")
+        .appendField(new Blockly.FieldDropdown([
+          ["DHT11", "DHT11"],
+          ["DHT22", "DHT22"]
+        ]), "TYPE")
+        .appendField("no pino")
+        .appendField(new Blockly.FieldDropdown([
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"],
+          ["5", "5"],
+          ["6", "6"],
+          ["7", "7"],
+          ["8", "8"],
+          ["9", "9"],
+          ["10", "10"],
+          ["11", "11"],
+          ["12", "12"],
+          ["13", "13"],
+          ["14", "14"],
+          ["15", "15"]
+        ]), "PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT temperature.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_temperature'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️")
+        .appendField("Temperatura DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT humidity.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_humidity'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("💧")
+        .appendField("Umidade DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(200);
+    this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for DHT begin initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🚀")
+        .appendField("DHT Begin");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for calculating heat index.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_heat_index'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️🔥")
+        .appendField("Calcular Índice de Calor");
+    this.appendValueInput("TEMPERATURE")
+        .setCheck("Number")
+        .appendField("Temperatura:");
+    this.appendValueInput("HUMIDITY")
+        .setCheck("Number")
+        .appendField("Umidade:");
+    this.appendValueInput("UNIT")
+        .setCheck(["String", "Boolean"])
+        .appendField("Condição:");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos DHT definidos com sucesso
+
+// ============================================================================
+// ARDUINO STRUCTURE BLOCKS - BLOCOS DE ESTRUTURA ARDUINO
+// ============================================================================
+
+/**
+ * Block for void setup() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("⚙️ void setup()");
+    this.appendStatementInput("SETUP_CODE")
+        .setCheck(null);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#E74C3C");
+    this.setTooltip('Função setup() do Arduino - executa uma vez no início');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for void loop() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_loop'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔁 void loop()");
+    this.appendStatementInput("LOOP_CODE")
+        .setCheck(null);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#E67E22");
+    this.setTooltip('Função loop() do Arduino - executa continuamente');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for Serial.begin() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['arduino_serial_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📡 Serial.begin(")
+        .appendField(new Blockly.FieldNumber(9600, 300, 115200, 100), "BAUD_RATE")
+        .appendField(")");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#F39C12");
+    this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for !Serial condition check.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['serial_not'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('❌ !Serial');
+    this.setOutput(true, 'Boolean');
+    this.setColour("#F39C12");
+    this.setTooltip('Verifica se a comunicação serial NÃO está disponível');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for void displaySensorDetails() function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['void_display'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📋 void displaySensorDetails()");
+    this.appendStatementInput("DISPLAY_CODE")
+        .setCheck(null);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#9B59B6");
+    this.setTooltip('Função para exibir detalhes dos sensores - útil para debug e informações');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos de estrutura Arduino definidos com sucesso
+
+// ============================================================================
+// DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
+// ============================================================================
+
+/**
+ * Block for initializing DHT sensor.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔧")
+        .appendField("Inicializar DHT")
+        .appendField(new Blockly.FieldDropdown([
+          ["DHT11", "DHT11"],
+          ["DHT22", "DHT22"]
+        ]), "TYPE")
+        .appendField("no pino")
+        .appendField(new Blockly.FieldDropdown([
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"],
+          ["5", "5"],
+          ["6", "6"],
+          ["7", "7"],
+          ["8", "8"],
+          ["9", "9"],
+          ["10", "10"],
+          ["11", "11"],
+          ["12", "12"],
+          ["13", "13"],
+          ["14", "14"],
+          ["15", "15"]
+        ]), "PIN");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT temperature.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_temperature'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️")
+        .appendField("Temperatura DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading DHT humidity.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_humidity'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("💧")
+        .appendField("Umidade DHT");
+    this.setOutput(true, 'Number');
+    this.setColour(200);
+    this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for DHT begin initialization.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_begin'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🚀")
+        .appendField("DHT Begin");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for calculating heat index.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['dht_heat_index'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🌡️🔥")
+        .appendField("Calcular Índice de Calor");
+    this.appendValueInput("TEMPERATURE")
+        .setCheck("Number")
+        .appendField("Temperatura:");
+    this.appendValueInput("HUMIDITY")
+        .setCheck("Number")
+        .appendField("Umidade:");
+    this.appendValueInput("UNIT")
+        .setCheck(["String", "Boolean"])
+        .appendField("Condição:");
+    this.setOutput(true, 'Number');
+    this.setColour(30);
+    this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
+    this.setHelpUrl('');
+  }
+};
+
+// Blocos DHT definidos com sucesso

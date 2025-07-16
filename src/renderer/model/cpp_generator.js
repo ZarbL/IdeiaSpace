@@ -1175,6 +1175,17 @@ Blockly.Cpp['arduino_loop'] = function(block) {
 };
 
 /**
+ * C++ code generator for void displaySensorDetails() function.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['void_display'] = function(block) {
+  var displayCode = Blockly.Cpp.statementToCode(block, 'DISPLAY_CODE');
+  var code = 'void displaySensorDetails(void) {\n' + displayCode + '}\n\n';
+  return code;
+};
+
+/**
  * C++ code generator for Serial.begin() function.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.
@@ -1229,15 +1240,53 @@ function ensureLibraryGenerators() {
   });
 }
 
+/**
+ * Verify all HMC5883 generators are properly defined
+ */
+function ensureHMC5883Generators() {
+  console.log('🧭 Verificando geradores HMC5883...');
+  
+  // Lista de todos os geradores HMC5883
+  var hmc5883Generators = [
+    'hmc5883_init',
+    'hmc5883_begin',
+    'hmc5883_mag_x',
+    'hmc5883_mag_y',
+    'hmc5883_mag_z',
+    'hmc5883_heading',
+    'hmc5883_set_gain',
+    'hmc5883_event_declare',
+    'hmc5883_get_event',
+    'hmc5883_declination',
+    'hmc5883_direction_text',
+    'hmc5883_sensor_object',
+    'hmc5883_field_strength'
+  ];
+  
+  hmc5883Generators.forEach(function(generatorName) {
+    if (!Blockly.Cpp[generatorName]) {
+      console.error('❌ Gerador HMC5883 não encontrado:', generatorName);
+    } else {
+      console.log('✅ Gerador HMC5883 OK:', generatorName);
+    }
+  });
+}
+
 // Chamar verificação quando o documento estiver pronto
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(ensureLibraryGenerators, 100);
+    setTimeout(function() {
+      ensureLibraryGenerators();
+      ensureHMC5883Generators();
+    }, 100);
   });
 }
 
 // Verificação imediata também
-setTimeout(ensureLibraryGenerators, 50);
+setTimeout(function() {
+  ensureLibraryGenerators();
+  ensureHMC5883Generators();
+}, 50);
 
 // ============================================================================
 // DELAY FUNCTION GENERATOR - GERADOR PARA BLOCO DE DELAY COM VALOR CONECTÁVEL
@@ -1288,3 +1337,158 @@ Blockly.Cpp['mpu6050_get_event'] = function(block) {
 };
 
 // ============================================================================
+// GERADORES C++ PARA BLOCOS HMC5883 - MAGNETÔMETRO/BÚSSOLA
+// ============================================================================
+
+/**
+ * C++ code generator for HMC5883 initialization.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_init'] = function(block) {
+  var scl_pin = block.getFieldValue('SCL_PIN');
+  var sda_pin = block.getFieldValue('SDA_PIN');
+  
+  var code = '// Inicialização HMC5883 - Pinos SCL: ' + scl_pin + ', SDA: ' + sda_pin + '\n';
+  //code += 'Wire.begin(' + sda_pin + ', ' + scl_pin + ');\n';
+  code += 'Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);\n';
+  return code;
+};
+
+/**
+ * C++ code generator for HMC5883 begin.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_begin'] = function(block) {
+  var code = 'if(!mag.begin()) {\n';
+  code += '  Serial.println("Erro: HMC5883 não detectado!");\n';
+  code += '  while(1);\n';
+  code += '}\n';
+  return code;
+};
+
+/**
+ * C++ code generator for HMC5883 magnetic field X reading.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_mag_x'] = function(block) {
+  var code = 'event.magnetic.x';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for HMC5883 magnetic field Y reading.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_mag_y'] = function(block) {
+  var code = 'event.magnetic.y';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for HMC5883 magnetic field Z reading.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_mag_z'] = function(block) {
+  var code = 'event.magnetic.z';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for HMC5883 compass heading calculation.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_heading'] = function(block) {
+  var code = '(atan2(event.magnetic.y, event.magnetic.x) * 180 / M_PI)';
+  return [code, Blockly.Cpp.ORDER_MULTIPLICATIVE];
+};
+
+/**
+ * C++ code generator for HMC5883 gain setting.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_set_gain'] = function(block) {
+  var gain = block.getFieldValue('GAIN');
+  var code = 'mag.setMagGain(' + gain + ');\n';
+  return code;
+};
+
+/**
+ * C++ code generator for HMC5883 event declaration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_event_declare'] = function(block) {
+  var code = 'sensors_event_t event;\n';
+  return code;
+};
+
+/**
+ * C++ code generator for HMC5883 get event.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_get_event'] = function(block) {
+  var code = 'mag.getEvent(&event);\n';
+  return code;
+};
+
+/**
+ * C++ code generator for magnetic declination angle.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_declination'] = function(block) {
+  var declination = block.getFieldValue('DECLINATION');
+  var code = '(' + declination + ' * M_PI / 180.0)';
+  return [code, Blockly.Cpp.ORDER_MULTIPLICATIVE];
+};
+
+/**
+ * C++ code generator for compass direction text.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_direction_text'] = function(block) {
+  var heading = Blockly.Cpp.valueToCode(block, 'HEADING', Blockly.Cpp.ORDER_NONE) || '0';
+  
+  var code = '((' + heading + ' >= 337.5 || ' + heading + ' < 22.5) ? "N" : ' +
+             '(' + heading + ' >= 22.5 && ' + heading + ' < 67.5) ? "NE" : ' +
+             '(' + heading + ' >= 67.5 && ' + heading + ' < 112.5) ? "E" : ' +
+             '(' + heading + ' >= 112.5 && ' + heading + ' < 157.5) ? "SE" : ' +
+             '(' + heading + ' >= 157.5 && ' + heading + ' < 202.5) ? "S" : ' +
+             '(' + heading + ' >= 202.5 && ' + heading + ' < 247.5) ? "SW" : ' +
+             '(' + heading + ' >= 247.5 && ' + heading + ' < 292.5) ? "W" : "NW")';
+  
+  return [code, Blockly.Cpp.ORDER_CONDITIONAL];
+};
+
+/**
+ * C++ code generator for HMC5883 sensor object declaration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_sensor_object'] = function(block) {
+  var code = 'Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);\n';
+   code += 'sensor_t sensor;\n';
+   code += 'mag.getSensor(&sensor);\n';
+  return code;
+};
+
+/**
+ * C++ code generator for magnetic field strength calculation.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_field_strength'] = function(block) {
+  var code = 'sqrt(pow(event.magnetic.x, 2) + pow(event.magnetic.y, 2) + pow(event.magnetic.z, 2))';
+  return [code, Blockly.Cpp.ORDER_UNARY_PREFIX];
+};
+
+// Fim dos geradores HMC5883

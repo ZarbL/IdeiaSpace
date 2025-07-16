@@ -67,6 +67,7 @@
     <category name="Controle" colour="#00cfe5">
       <block type="arduino_setup"></block>
       <block type="arduino_loop"></block>
+      <block type="void_display"></block>
       <sep></sep>
       <block type="arduino_serial_begin"></block>
       <block type="serial_not"></block>
@@ -166,7 +167,32 @@
         <block type="bh1750_light_level"></block>
       </category>
       <category name="HMC5883" colour="#8a2e8a">
-        <!-- Blocos do sensor HMC5883 (magnetômetro/bússola) serão adicionados aqui -->
+        <!-- Inicialização e configuração -->
+        <block type="hmc5883_sensor_object"></block>
+        <block type="hmc5883_init"></block>
+        <block type="hmc5883_begin"></block>
+        <block type="hmc5883_set_gain"></block>
+        <sep></sep>
+        <!-- Leitura de dados -->
+        <block type="hmc5883_event_declare"></block>
+        <block type="hmc5883_get_event"></block>
+        <sep></sep>
+        <!-- Campo magnético em cada eixo -->
+        <block type="hmc5883_mag_x"></block>
+        <block type="hmc5883_mag_y"></block>
+        <block type="hmc5883_mag_z"></block>
+        <sep></sep>
+        <!-- Cálculos avançados -->
+        <block type="hmc5883_field_strength"></block>
+        <block type="hmc5883_heading"></block>
+        <block type="hmc5883_direction_text">
+          <value name="HEADING">
+            <block type="hmc5883_heading"></block>
+          </value>
+        </block>
+        <sep></sep>
+        <!-- Correção de declinação magnética -->
+        <block type="hmc5883_declination"></block>
       </category>
       <category name="DHT" colour="#2e8a2e">
         <block type="dht_init"></block>
