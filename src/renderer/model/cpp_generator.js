@@ -1319,6 +1319,18 @@ Blockly.Cpp['math_boolean'] = function(block) {
 };
 
 /**
+ * Generator for Pi mathematical constant block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['math_pi'] = function(block) {
+  var code = 'M_PI';
+  // Adicionar include necessário para usar M_PI
+  Blockly.Cpp.includes_['math'] = '#include <math.h>';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
  * Generator for MPU6050 sensors event variables declaration.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.

@@ -1040,7 +1040,22 @@ Blockly.Blocks['math_boolean'] = {
   }
 };
 
-// Bloco Boolean definido com sucesso
+/**
+ * Block for Pi mathematical constant.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['math_pi'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🥧 PI (π)");
+    this.setOutput(true, 'Number');
+    this.setColour("#D68910"); // Cor laranja da categoria Matemática
+    this.setTooltip('Retorna o valor da constante matemática Pi (π = 3.14159...)');
+    this.setHelpUrl('');
+  }
+};
+
+// Bloco Boolean e PI definidos com sucesso
 
 // ============================================================================
 // TEXT BLOCKS - BLOCOS DE TEXTO
@@ -1314,6 +1329,15 @@ if (Blockly.Blocks['math_boolean']) {
   const originalMathBool = Blockly.Blocks['math_boolean'].init;
   Blockly.Blocks['math_boolean'].init = function() {
     originalMathBool.call(this);
+    this.setColour("#D68910");
+  };
+}
+
+// Bloco PI matemático - Laranja
+if (Blockly.Blocks['math_pi']) {
+  const originalMathPi = Blockly.Blocks['math_pi'].init;
+  Blockly.Blocks['math_pi'].init = function() {
+    originalMathPi.call(this);
     this.setColour("#D68910");
   };
 }
