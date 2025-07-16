@@ -14,16 +14,27 @@
 <body>
   <header class="header">
     <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
-    <h1>Mission Programming Tool</h1>
-    <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
-      🌙
-    </button>
+    <h1 id="pageTitle">Mission Programming Tool</h1>
+    <div class="header-buttons">
+      <div class="language-selector">
+        <button id="languageToggle" class="language-button tooltip" data-tooltip="Alterar idioma">
+          🇧🇷
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <button class="language-option" data-lang="pt-BR">🇧🇷 Português</button>
+          <button class="language-option" data-lang="en-US">🇺🇸 English</button>
+        </div>
+      </div>
+      <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
+        🌙
+      </button>
+    </div>
   </header>
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
     <div class="side-panel">
       <div class="code-header">
-        <h3>🧠 Código C++</h3>
+        <h3 id="codeHeader">🧠 Código C++</h3>
       </div>
       <pre id="code-display" class="code-box">// Código C++ aparecerá aqui automaticamente</pre>
       <div class="monitor-section">
@@ -184,15 +195,9 @@
         <sep></sep>
         <!-- Cálculos avançados -->
         <block type="hmc5883_field_strength"></block>
-        <block type="hmc5883_heading"></block>
-        <block type="hmc5883_direction_text">
-          <value name="HEADING">
-            <block type="hmc5883_heading"></block>
-          </value>
-        </block>
         <sep></sep>
-        <!-- Correção de declinação magnética -->
-        <block type="hmc5883_declination"></block>
+        <!-- Informações do sensor -->
+        <block type="hmc5883_sensor_info"></block>
       </category>
       <category name="DHT" colour="#2e8a2e">
         <block type="dht_init"></block>
@@ -225,13 +230,14 @@
         // Copia para a área de transferência
         navigator.clipboard.writeText(codeText).then(function() {
           // Mostra feedback de sucesso
+          const t = getCurrentTranslation();
           copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
           
           // Volta ao estado normal após 2 segundos
           setTimeout(function() {
             copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', 'Copiar código');
+            copyButton.setAttribute('data-tooltip', t.copyTooltip);
           }, 2000);
         }).catch(function(err) {
           // Fallback para navegadores mais antigos
@@ -243,12 +249,13 @@
           document.body.removeChild(textArea);
           
           // Mostra feedback
+          const t = getCurrentTranslation();
           copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
           
           setTimeout(function() {
             copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', 'Copiar código');
+            copyButton.setAttribute('data-tooltip', t.copyTooltip);
           }, 2000);
         });
       });
@@ -263,21 +270,126 @@
     if (savedTheme === 'dark') {
       body.classList.add('dark-mode');
       darkModeToggle.textContent = '☀️';
-      darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
     }
 
     darkModeToggle.addEventListener('click', function() {
       body.classList.toggle('dark-mode');
       
+      const t = translations[currentLanguage];
       if (body.classList.contains('dark-mode')) {
         darkModeToggle.textContent = '☀️';
-        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema claro');
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
         localStorage.setItem('theme', 'dark');
       } else {
         darkModeToggle.textContent = '🌙';
-        darkModeToggle.setAttribute('data-tooltip', 'Alternar tema escuro');
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
         localStorage.setItem('theme', 'light');
       }
+    });
+
+    // Funcionalidade do seletor de idioma
+    const languageToggle = document.getElementById('languageToggle');
+    const languageDropdown = document.getElementById('languageDropdown');
+    const pageTitle = document.getElementById('pageTitle');
+
+    // Traduções
+    const translations = {
+      'pt-BR': {
+        title: 'Ferramenta de Programação de Missão',
+        languageTooltip: 'Alterar idioma',
+        darkModeTooltip: 'Alternar tema escuro',
+        darkModeTooltipLight: 'Alternar tema claro',
+        codeHeader: '🧠 Código C++',
+        executeTooltip: 'Executar código',
+        copyTooltip: 'Copiar código',
+        copyFeedback: 'Código copiado para a área de transferência!',
+        copiedTooltip: 'Copiado!'
+      },
+      'en-US': {
+        title: 'Mission Programming Tool',
+        languageTooltip: 'Change language',
+        darkModeTooltip: 'Toggle dark mode',
+        darkModeTooltipLight: 'Toggle light mode',
+        codeHeader: '🧠 C++ Code',
+        executeTooltip: 'Execute code',
+        copyTooltip: 'Copy code',
+        copyFeedback: 'Code copied to clipboard!',
+        copiedTooltip: 'Copied!'
+      }
+    };
+
+    // Idioma atual
+    let currentLanguage = localStorage.getItem('language') || 'pt-BR';
+
+    // Função para obter tradução atual
+    function getCurrentTranslation() {
+      return translations[currentLanguage];
+    }
+
+    // Aplicar traduções
+    function applyTranslations(lang) {
+      const t = translations[lang];
+      if (t) {
+        // Traduzir título da página
+        pageTitle.textContent = t.title;
+        
+        // Traduzir tooltips
+        languageToggle.setAttribute('data-tooltip', t.languageTooltip);
+        document.getElementById('startButton').setAttribute('data-tooltip', t.executeTooltip);
+        document.getElementById('copyButton').setAttribute('data-tooltip', t.copyTooltip);
+        
+        // Traduzir cabeçalho do código
+        document.getElementById('codeHeader').textContent = t.codeHeader;
+        
+        // Traduzir feedback de cópia
+        document.getElementById('copyFeedback').textContent = t.copyFeedback;
+        
+        // Atualizar tooltip do dark mode baseado no estado atual
+        if (body.classList.contains('dark-mode')) {
+          darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
+        } else {
+          darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
+        }
+      }
+    }
+
+    // Aplicar idioma salvo
+    applyTranslations(currentLanguage);
+    if (currentLanguage === 'en-US') {
+      languageToggle.textContent = '🇺🇸';
+    }
+
+    // Toggle dropdown
+    languageToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      languageDropdown.classList.toggle('show');
+    });
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function() {
+      languageDropdown.classList.remove('show');
+    });
+
+    // Seleção de idioma
+    document.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const selectedLang = this.getAttribute('data-lang');
+        currentLanguage = selectedLang;
+        localStorage.setItem('language', selectedLang);
+        
+        // Atualizar bandeira
+        if (selectedLang === 'en-US') {
+          languageToggle.textContent = '🇺🇸';
+        } else {
+          languageToggle.textContent = '🇧🇷';
+        }
+        
+        // Aplicar traduções
+        applyTranslations(selectedLang);
+        
+        // Fechar dropdown
+        languageDropdown.classList.remove('show');
+      });
     });
 
     // Funcionalidade do modal de variáveis

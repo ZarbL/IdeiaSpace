@@ -883,6 +883,29 @@ Blockly.Blocks['hmc5883_field_strength'] = {
   }
 };
 
+/**
+ * Block for HMC5883 sensor information.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_sensor_info'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("🔍 Sensor HMC5883:")
+        .appendField(new Blockly.FieldDropdown([
+          ["Sensor name", "sensor_name"],
+          ["Sensor version", "sensor_version"], 
+          ["Sensor id", "sensor_id"],
+          ["Sensor minimo valor", "sensor_min_value"],
+          ["Sensor maximo valor", "sensor_max_value"],
+          ["Sensor de Resolução", "sensor_resolution"]
+        ]), "INFO_TYPE");
+    this.setOutput(true, 'String');
+    this.setColour("#9932CC");
+    this.setTooltip('Obtém informações específicas sobre o sensor HMC5883 (nome, versão, ID, valores min/max, resolução)');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos HMC5883 definidos com sucesso
 
 // ============================================================================

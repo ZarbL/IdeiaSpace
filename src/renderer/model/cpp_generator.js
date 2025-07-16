@@ -1260,7 +1260,8 @@ function ensureHMC5883Generators() {
     'hmc5883_declination',
     'hmc5883_direction_text',
     'hmc5883_sensor_object',
-    'hmc5883_field_strength'
+    'hmc5883_field_strength',
+    'hmc5883_sensor_info'
   ];
   
   hmc5883Generators.forEach(function(generatorName) {
@@ -1489,6 +1490,41 @@ Blockly.Cpp['hmc5883_sensor_object'] = function(block) {
 Blockly.Cpp['hmc5883_field_strength'] = function(block) {
   var code = 'sqrt(pow(event.magnetic.x, 2) + pow(event.magnetic.y, 2) + pow(event.magnetic.z, 2))';
   return [code, Blockly.Cpp.ORDER_UNARY_PREFIX];
+};
+
+/**
+ * C++ code generator for HMC5883 sensor information.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_sensor_info'] = function(block) {
+  var infoType = block.getFieldValue('INFO_TYPE');
+  var code = '';
+  
+  switch(infoType) {
+    case 'sensor_name':
+      code = 'mag.getSensor().name';
+      break;
+    case 'sensor_version':
+      code = 'mag.getSensor().version';
+      break;
+    case 'sensor_id':
+      code = 'mag.getSensor().sensor_id';
+      break;
+    case 'sensor_min_value':
+      code = 'mag.getSensor().min_value';
+      break;
+    case 'sensor_max_value':
+      code = 'mag.getSensor().max_value';
+      break;
+    case 'sensor_resolution':
+      code = 'mag.getSensor().resolution';
+      break;
+    default:
+      code = 'mag.getSensor().name';
+  }
+  
+  return [code, Blockly.Cpp.ORDER_MEMBER];
 };
 
 // Fim dos geradores HMC5883

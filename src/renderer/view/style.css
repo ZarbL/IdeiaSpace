@@ -513,6 +513,96 @@ body {
   border-left-color: #000000;
 }
 
+/* Header buttons container */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Language selector styles */
+.language-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.language-button {
+  background-color: transparent;
+  border: 2px solid var(--accent-cyan);
+  color: var(--text-primary);
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.language-button:hover {
+  background-color: var(--accent-cyan);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.4);
+}
+
+.language-button:active {
+  transform: scale(0.95);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  min-width: 120px;
+  margin-top: 5px;
+}
+
+.language-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.language-option {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.language-option:hover {
+  background-color: var(--accent-cyan);
+  color: #ffffff;
+}
+
+.language-option:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.language-option:last-child {
+  border-radius: 0 0 6px 6px;
+}
+
 /* Modal para criar variáveis */
 .modal {
   display: none;
@@ -775,6 +865,56 @@ body {
 
 .blocklyBlock[data-type="mpu6050_set_filter_bandwidth"] {
   border: 2px solid #795548 !important;
+}
+
+/* Estilos para blocos HMC5883 específicos */
+.blocklyBlock[data-type="hmc5883_init"] {
+  border: 2px solid #E74C3C !important;
+}
+
+.blocklyBlock[data-type="hmc5883_begin"] {
+  border: 2px solid #DC143C !important;
+}
+
+.blocklyBlock[data-type*="hmc5883_mag"] {
+  border: 2px solid #FF6B6B !important;
+}
+
+.blocklyBlock[data-type="hmc5883_heading"] {
+  border: 2px solid #8B0000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_set_gain"] {
+  border: 2px solid #B22222 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_direction_text"] {
+  border: 2px solid #CD853F !important;
+}
+
+.blocklyBlock[data-type="hmc5883_declination"] {
+  border: 2px solid #A0522D !important;
+}
+
+.blocklyBlock[data-type="hmc5883_field_strength"] {
+  border: 2px solid #FF1493 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_sensor_info"] {
+  border: 2px solid #9932CC !important;
+  box-shadow: 0 2px 8px rgba(153, 50, 204, 0.3) !important;
+}
+
+.blocklyBlock[data-type="hmc5883_sensor_object"] {
+  border: 2px solid #800000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_event_declare"] {
+  border: 2px solid #8B0000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_get_event"] {
+  border: 2px solid #8B0000 !important;
 }
 
 /* Estilos específicos para o workspace do Blockly no modo escuro */
