@@ -906,6 +906,22 @@ Blockly.Blocks['hmc5883_sensor_info'] = {
   }
 };
 
+/**
+ * Block for HMC5883 display sensor details.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_display_sensor'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📋 Display do Sensor HMC5883");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#9932CC");
+    this.setTooltip('Chama a função displaySensorDetails() para exibir informações detalhadas do sensor HMC5883');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos HMC5883 definidos com sucesso
 
 // ============================================================================

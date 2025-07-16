@@ -1261,7 +1261,8 @@ function ensureHMC5883Generators() {
     'hmc5883_direction_text',
     'hmc5883_sensor_object',
     'hmc5883_field_strength',
-    'hmc5883_sensor_info'
+    'hmc5883_sensor_info',
+    'hmc5883_display_sensor'
   ];
   
   hmc5883Generators.forEach(function(generatorName) {
@@ -1476,9 +1477,8 @@ Blockly.Cpp['hmc5883_direction_text'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['hmc5883_sensor_object'] = function(block) {
-  var code = 'Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);\n';
-   code += 'sensor_t sensor;\n';
-   code += 'mag.getSensor(&sensor);\n';
+    var code = 'sensor_t sensor;\n';
+    code += 'mag.getSensor(&sensor);\n';
   return code;
 };
 
@@ -1503,28 +1503,38 @@ Blockly.Cpp['hmc5883_sensor_info'] = function(block) {
   
   switch(infoType) {
     case 'sensor_name':
-      code = 'mag.getSensor().name';
+      code = 'sensor.name';
       break;
     case 'sensor_version':
-      code = 'mag.getSensor().version';
+      code = 'sensor.version';
       break;
     case 'sensor_id':
-      code = 'mag.getSensor().sensor_id';
+      code = 'sensor.sensor_id';
       break;
     case 'sensor_min_value':
-      code = 'mag.getSensor().min_value';
+      code = 'sensor.min_value';
       break;
     case 'sensor_max_value':
-      code = 'mag.getSensor().max_value';
+      code = 'sensor.max_value';
       break;
     case 'sensor_resolution':
-      code = 'mag.getSensor().resolution';
+      code = 'sensor.resolution';
       break;
     default:
-      code = 'mag.getSensor().name';
+      code = 'sensor.name';
   }
   
   return [code, Blockly.Cpp.ORDER_MEMBER];
+};
+
+/**
+ * C++ code generator for HMC5883 display sensor details.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['hmc5883_display_sensor'] = function(block) {
+  var code = 'displaySensorDetails();\n';
+  return code;
 };
 
 // Fim dos geradores HMC5883
