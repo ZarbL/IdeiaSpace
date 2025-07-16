@@ -1076,6 +1076,18 @@ Blockly.Cpp['library_hmc5883'] = function(block) {
 };
 
 /**
+ * C++ code generator for Math library inclusion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['library_math'] = function(block) {
+  // Retorna a biblioteca math.h para constantes matemáticas
+  var code = '#include <math.h>\n';
+  code += '// Biblioteca para constantes matemáticas (PI, funções trigonométricas, etc.)\n\n';
+  return code;
+};
+
+/**
  * C++ code generator for DHT sensor initialization.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.
@@ -1223,6 +1235,7 @@ function ensureLibraryGenerators() {
   var libraryGenerators = [
     'library_arduino_basic',
     'library_wire', 
+    'library_math',
     'library_sensor',
     'library_bmp180',
     'library_bh1750',
@@ -1324,9 +1337,9 @@ Blockly.Cpp['math_boolean'] = function(block) {
  * @return {array} Generated C++ code with order.
  */
 Blockly.Cpp['math_pi'] = function(block) {
-  var code = 'M_PI';
-  // Adicionar include necessário para usar M_PI
-  Blockly.Cpp.includes_['math'] = '#include <math.h>';
+  var piValue = block.getFieldValue('PI_VALUE');
+  var code = piValue;
+  // Não gerar biblioteca automaticamente - usuário deve usar a aba Bibliotecas
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 

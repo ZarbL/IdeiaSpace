@@ -653,6 +653,23 @@ Blockly.Blocks['library_hmc5883'] = {
   }
 };
 
+/**
+ * Block for including Math library.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['library_math'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📚")
+        .appendField("Biblioteca Math");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(60);
+    this.setTooltip('Inclui a biblioteca math.h para constantes matemáticas (PI, funções trigonométricas, etc.)');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos de biblioteca definidos com sucesso
 // ============================================================================
 // HMC5883 BLOCKS - Sensor Magnetômetro/Bússola (3 Eixos)
@@ -1047,10 +1064,21 @@ Blockly.Blocks['math_boolean'] = {
 Blockly.Blocks['math_pi'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("🥧 PI (π)");
+        .appendField("🥧 PI")
+        .appendField(new Blockly.FieldDropdown([
+          ["π", "PI"],
+          ["M π ", "M_PI"],
+          ["2π", "2 * M_PI"],
+          ["π/2", "M_PI / 2"],
+          ["π/3", "M_PI / 3"],
+          ["π/4", "M_PI / 4"],
+          ["π/6", "M_PI / 6"],
+          ["3π/2", "3 * M_PI / 2"],
+          ["2π/3", "2 * M_PI / 3"]
+        ]), "PI_VALUE");
     this.setOutput(true, 'Number');
     this.setColour("#D68910"); // Cor laranja da categoria Matemática
-    this.setTooltip('Retorna o valor da constante matemática Pi (π = 3.14159...)');
+    this.setTooltip('Retorna valores da constante matemática Pi (π) e suas variações');
     this.setHelpUrl('');
   }
 };
@@ -1279,7 +1307,7 @@ if (Blockly.Blocks['bmp180_altitude']) {
 // Blocos de estrutura Arduino já definidos com cores corretas
 
 // Blocos de bibliotecas - Roxo escuro
-const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_sensor', 'library_hmc5883'];
+const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_sensor', 'library_hmc5883', 'library_math'];
 libraryBlocks.forEach(blockType => {
   if (Blockly.Blocks[blockType]) {
     const originalInit = Blockly.Blocks[blockType].init;
