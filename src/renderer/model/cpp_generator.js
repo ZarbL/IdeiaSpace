@@ -769,11 +769,119 @@ Blockly.Cpp['variable_declaration'] = function(block) {
     Blockly.Cpp.includes_['string'] = '#include <string>';
   }
   
-  // Add explicit variable declaration
-  var declaration = varType + ' ' + varName + ' = ' + value + ';';
-  Blockly.Cpp.variableDeclarations_[varName] = declaration;
+  // Generate inline code where the block is positioned for educational purposes
+  return varType + ' ' + varName + ' = ' + value + ';\n';
+};
+
+/**
+ * C++ code generator for integer variable declaration block - Arduino style.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['int_declaration'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '0';
   
-  return ''; // Declaration is handled globally
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  // Generate inline code where the block is positioned for educational purposes
+  return 'int ' + varName + ' = ' + value + ';\n';
+};
+
+/**
+ * C++ code generator for integer variable get block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code and the operator order.
+ */
+Blockly.Cpp['int_variable_get'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  return [varName, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for integer variable set block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['int_variable_set'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '0';
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  return varName + ' = ' + value + ';\n';
+};
+
+/**
+ * C++ code generator for float variable declaration block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['float_declaration'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '0.0';
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  // Generate inline code where the block is positioned for educational purposes
+  return 'float ' + varName + ' = ' + value + ';\n';
+};
+
+/**
+ * C++ code generator for boolean variable declaration block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['bool_declaration'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || 'false';
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  // Generate inline code where the block is positioned for educational purposes
+  return 'bool ' + varName + ' = ' + value + ';\n';
+};
+
+/**
+ * C++ code generator for String variable declaration block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['string_declaration'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME');
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '""';
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  // Generate inline code where the block is positioned for educational purposes
+  return 'String ' + varName + ' = ' + value + ';\n';
 };
 
 // Gerador de código para o bloco MPU6050

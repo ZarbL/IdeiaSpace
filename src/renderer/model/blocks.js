@@ -127,6 +127,121 @@ Blockly.Blocks['variable_declaration'] = {
 };
 
 /**
+ * Block for integer variable declaration - Arduino style.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['int_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("int")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck("Number");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma variável inteira no estilo Arduino: int nome = valor;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for using an integer variable - returns its value.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['int_variable_get'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
+    this.setOutput(true, "Number");
+    this.setColour(160);
+    this.setTooltip("Retorna o valor de uma variável inteira");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for setting an integer variable value.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['int_variable_set'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("definir")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck("Number");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Atribui um novo valor a uma variável inteira");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for float variable declaration - Arduino style.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['float_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("float")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck("Number");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma variável de ponto flutuante no estilo Arduino: float nome = valor;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for boolean variable declaration - Arduino style.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['bool_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("bool")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck("Boolean");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma variável booleana no estilo Arduino: bool nome = valor;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for String variable declaration - Arduino style.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['string_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("String")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck("String");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip("Declara uma variável String no estilo Arduino: String nome = valor;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
  * Block for MPU6050 initialization.
  * @this {Blockly.Block}
  */
