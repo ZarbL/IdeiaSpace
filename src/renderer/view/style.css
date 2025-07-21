@@ -54,11 +54,11 @@ body {
 
 .logo {
   height: 40px;
-  filter: brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(7000%) hue-rotate(322deg) brightness(100%)
-    contrast(100%);
+  /* Não aplicar filtro no modo claro - usar Logo2(2) */
 }
 
 .dark-mode .logo {
+  /* No modo escuro, usar a logo original sem alteração */
   filter: brightness(1) saturate(100%);
 }
 

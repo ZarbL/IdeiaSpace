@@ -13,7 +13,7 @@
 </head>
 <body>
   <header class="header">
-    <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
+    <img src="../../assets/Logo2 (2).png" id="logoImg" class="logo" alt="Logo Ideia">
     <h1 id="pageTitle">Mission Programming Tool</h1>
     <div class="header-buttons">
       <div class="language-selector">
@@ -267,6 +267,16 @@
     // Funcionalidade do dark mode
     const darkModeToggle = document.getElementById('darkModeToggle');
     const body = document.body;
+    const logoImg = document.getElementById('logoImg');
+
+    // Função para trocar logo baseado no tema
+    function updateLogo() {
+      if (body.classList.contains('dark-mode')) {
+        logoImg.src = '../../assets/logo.png'; // Logo original para modo escuro
+      } else {
+        logoImg.src = '../../assets/Logo2 (2).png'; // Logo alternativa para modo claro
+      }
+    }
 
     // Verificar se há preferência salva
     const savedTheme = localStorage.getItem('theme');
@@ -274,9 +284,15 @@
       body.classList.add('dark-mode');
       darkModeToggle.textContent = '☀️';
     }
+    
+    // Atualizar logo baseado no tema inicial
+    updateLogo();
 
     darkModeToggle.addEventListener('click', function() {
       body.classList.toggle('dark-mode');
+      
+      // Atualizar logo após mudança de tema
+      updateLogo();
       
       const t = translations[currentLanguage];
       if (body.classList.contains('dark-mode')) {
