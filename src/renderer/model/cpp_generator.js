@@ -1452,6 +1452,30 @@ Blockly.Cpp['math_pi'] = function(block) {
 };
 
 /**
+ * Generator for heading correction with declination and degree conversion.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code as statement.
+ */
+Blockly.Cpp['heading_correction'] = function(block) {
+  var heading = Blockly.Cpp.valueToCode(block, 'HEADING', Blockly.Cpp.ORDER_NONE) || 'heading';
+  var declination = Blockly.Cpp.valueToCode(block, 'DECLINATION', Blockly.Cpp.ORDER_NONE) || '0.22';
+  
+  // Gerar o código exato que o usuário pediu
+  var code = 'float declinationAngle = ' + declination + ';\n' +
+             heading + ' += declinationAngle;\n' +
+             '\n' +
+             'if(' + heading + ' < 0)\n' +
+             '  ' + heading + ' += 2*M_PI;\n' +
+             '  \n' +
+             'if(' + heading + ' > 2*M_PI)\n' +
+             '  ' + heading + ' -= 2*M_PI;\n' +
+             ' \n' +
+             'float headingDegrees = ' + heading + ' * 180/M_PI;\n';
+  
+  return code;
+};
+
+/**
  * Generator for MPU6050 sensors event variables declaration.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {string} Generated C++ code.
@@ -1668,6 +1692,16 @@ Blockly.Cpp['hmc5883_sensor_info'] = function(block) {
 Blockly.Cpp['hmc5883_display_sensor'] = function(block) {
   var code = 'displaySensorDetails();\n';
   return code;
+};
+
+/**
+ * C++ code generator for HMC5883 atan2 calculation.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['hmc5883_atan2'] = function(block) {
+  var code = 'atan2(event.magnetic.y, event.magnetic.x)';
+  return [code, Blockly.Cpp.ORDER_FUNCTION_CALL];
 };
 
 // Fim dos geradores HMC5883

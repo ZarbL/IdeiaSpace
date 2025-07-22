@@ -225,6 +225,12 @@
         <sep></sep>
         <!-- Cálculos avançados -->
         <block type="hmc5883_field_strength"></block>
+        <block type="hmc5883_atan2"></block>
+        <block type="heading_correction">
+          <value name="DECLINATION">
+            <shadow type="math_number"><field name="NUM">0.22</field></shadow>
+          </value>
+        </block>
         <sep></sep>
         <!-- Informações do sensor -->
         <block type="hmc5883_sensor_info"></block>

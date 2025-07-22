@@ -1054,6 +1054,21 @@ Blockly.Blocks['hmc5883_display_sensor'] = {
   }
 };
 
+/**
+ * Block for atan2 calculation using HMC5883 magnetic field values.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['hmc5883_atan2'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📐 Atan2 (Y, X)");
+    this.setOutput(true, 'Number');
+    this.setColour("#8B0000");
+    this.setTooltip('Calcula atan2(event.magnetic.y, event.magnetic.x) para determinar o ângulo da bússola em radianos');
+    this.setHelpUrl('');
+  }
+};
+
 // Blocos HMC5883 definidos com sucesso
 
 // ============================================================================
@@ -1198,7 +1213,29 @@ Blockly.Blocks['math_pi'] = {
   }
 };
 
-// Bloco Boolean e PI definidos com sucesso
+/**
+ * Block for heading correction with declination and conversion to degrees.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['heading_correction'] = {
+  init: function() {
+    this.appendValueInput("HEADING")
+        .setCheck("Number")
+        .appendField("🧭 Corrigir direção");
+    this.appendValueInput("DECLINATION")
+        .setCheck("Number")
+        .appendField("declinação:");
+    this.appendDummyInput()
+        .appendField("converter para graus");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#D68910");
+    this.setTooltip('Corrige o heading com declinação magnética, normaliza entre 0-2π e converte para graus. Cria a variável headingDegrees. Usado em navegação aeroespacial.');
+    this.setHelpUrl('');
+  }
+};
+
+// Bloco Boolean, PI e Correção de Heading definidos com sucesso
 
 // ============================================================================
 // TEXT BLOCKS - BLOCOS DE TEXTO
