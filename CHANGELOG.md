@@ -5,6 +5,38 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] - 2025-01-10
+
+### ✨ Adicionado
+- **Sensor BH1750** - Suporte completo para sensor de luminosidade
+  - 💡 Bloco de inicialização com configuração de pinos I2C
+  - ☀️ Bloco de leitura de luminosidade em lux (0-65535)
+  - ⚙️ Bloco de configuração de modo de medição (6 opções de resolução)
+  - 🚀 Bloco de inicialização de comunicação
+  - 📚 Bloco de inclusão de biblioteca BH1750
+- **Documentação BH1750** - Guia completo de uso e especificações técnicas
+- **Estilos visuais** - Tema amarelo/dourado para blocos de luminosidade
+- **Integração completa** - Aba dedicada na categoria Sensores
+
+### 🔧 Melhorado
+- **Organização de sensores** - Estrutura mais clara na categoria Sensores
+- **Geração de código** - Suporte otimizado para comunicação I2C
+- **Validação de biblioteca** - Sistema atualizado para incluir BH1750
+
+### 🐛 Correções
+- **Blocos BH1750** - Removida geração automática de bibliotecas, agora usa aba Bibliotecas dedicada
+- **Ordem de código** - Corrigida prioridade de geração, biblioteca BH1750 agora aparece antes da inicialização
+- **Biblioteca BH1750** - Removida geração automática do Wire.h, agora gera apenas BH1750.h específico
+- **Inicialização BH1750** - Corrigido bloco para gerar declaração do objeto `BH1750 lightMeter;`
+- **Leitura de luminosidade** - Corrigido gerador do bloco "Ler nível de luz BH1750" para gerar `lightMeter.readLightLevel()` ao invés de comandos de inicialização
+
+### 🎯 Aplicações Aeroespaciais
+- Monitoramento de condições de voo (dia/noite)
+- Controle automático de painéis solares
+- Sistemas de navegação baseados em luminosidade
+- Controle de iluminação de sinalização
+- Experimentos de radiação solar em altitude
+
 ## [1.0.0] - 2024-01-XX
 
 ### 🎉 Lançamento Inicial
@@ -22,8 +54,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Sistema de versionamento** semântico
 
 #### 🧩 Blocos de Programação
-- **Lógica**: Controles condicionais, comparações, operações lógicas
-- **Loops**: Repetições e estruturas de controle
+- **Lógica**: Sensores condicionais, comparações, operações lógicas
+- **Loops**: Repetições e estruturas de sensores
 - **Matemática**: Operações aritméticas e números
 - **Texto**: Manipulação e exibição de texto
 - **Variáveis**: Declaração e uso de variáveis
@@ -107,4 +139,4 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
-**Desenvolvido com ❤️ pela Equipe IdeiaSpace** 
+**Desenvolvido com ❤️ pela Equipe IdeiaSpace**

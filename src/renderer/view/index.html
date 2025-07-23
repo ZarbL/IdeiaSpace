@@ -6,21 +6,35 @@
   <link rel="stylesheet" href="./style.css">
   <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
   <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
+  <script src="../../../node_modules/blockly/javascript_compressed.js"></script>
   <script src="../../../node_modules/blockly/msg/en.js"></script>
-  <script src="../model/cpp_generator.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Executar Blocos</title>
 </head>
 <body>
   <header class="header">
-    <img src="../../assets/logo.png" class="logo" alt="Logo Ideia">
-    <h1>Ideia Space Mission</h1>
+    <img src="../../assets/Logo2 (2).png" id="logoImg" class="logo" alt="Logo Ideia">
+    <h1 id="pageTitle">Mission Programming Tool</h1>
+    <div class="header-buttons">
+      <div class="language-selector">
+        <button id="languageToggle" class="language-button tooltip" data-tooltip="Alterar idioma">
+          🇧🇷
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <button class="language-option" data-lang="pt-BR">🇧🇷 Português</button>
+          <button class="language-option" data-lang="en-US">🇺🇸 English</button>
+        </div>
+      </div>
+      <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip="Alternar tema escuro">
+        🌙
+      </button>
+    </div>
   </header>
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
     <div class="side-panel">
       <div class="code-header">
-        <h3>🧠 Código C++</h3>
+        <h3 id="codeHeader">🧠 Código C++</h3>
       </div>
       <pre id="code-display" class="code-box">// Código C++ aparecerá aqui automaticamente</pre>
       <div class="monitor-section">
@@ -38,6 +52,22 @@
     </div>
   </div>
 
+  <!-- Modal para criar variáveis -->
+  <div id="variable-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>🚀 Criar Nova Variável</h2>
+      <div class="modal-body">
+        <label for="variable-name">Nome da variável:</label>
+        <input type="text" id="variable-name" placeholder="Digite o nome da variável..." maxlength="50">
+        <div class="modal-buttons">
+          <button id="create-variable-btn" class="btn-primary variable-create">✅ Criar</button>
+          <button id="cancel-variable-btn" class="btn-secondary">❌ Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <xml id="toolbox" class="toolbox">
     <category name="Lógica" colour="#1d1856">
       <block type="controls_if"></block>
@@ -45,7 +75,14 @@
       <block type="logic_operation"></block>
       <block type="logic_boolean"></block>
     </category>
-    <category name="Loops" colour="#00cfe5">
+    <category name="Controle" colour="#00cfe5">
+      <block type="arduino_setup"></block>
+      <block type="arduino_loop"></block>
+      <block type="void_display"></block>
+      <sep></sep>
+      <block type="arduino_serial_begin"></block>
+      <block type="serial_not"></block>
+      <sep></sep>
       <block type="controls_repeat_ext">
         <value name="TIMES">
           <shadow type="math_number"><field name="NUM">10</field></shadow>
@@ -56,22 +93,165 @@
     <category name="Matemática" colour="#e80074">
       <block type="math_number"><field name="NUM">0</field></block>
       <block type="math_arithmetic"></block>
+      <block type="math_boolean"></block>
+      <block type="math_pi"></block>
     </category>
-    <category name="Texto" colour="#1d1856">
+    <category name="Texto" colour="#5C7CFA">
       <block type="text"></block>
-      <block type="text_print"></block>
+      <block type="text_join"></block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">Olá, mundo!</field>
+          </shadow>
+        </value>
+      </block>
     </category>
-    <category name="Variáveis" colour="#00cfe5" custom="VARIABLE"></category>
-    <category name="Funções" colour="#e80074" custom="PROCEDURE"></category>
-    <category name="Controle" colour="#0c0931">
-      <block type="delay_block"></block>
-      <block type="digital_write"></block>
-      <block type="digital_read"></block>
+    <category name="Variáveis" colour="#00cfe5">
+      <button text="➕ Criar Nova Variável" callbackKey="CREATE_VARIABLE"></button>
+      <block type="int_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="float_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0.0</field></shadow>
+        </value>
+      </block>
+      <block type="bool_declaration">
+        <value name="VALUE">
+          <shadow type="logic_boolean"><field name="BOOL">TRUE</field></shadow>
+        </value>
+      </block>
+      <block type="string_declaration">
+        <value name="VALUE">
+          <shadow type="text"><field name="TEXT">texto</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
+      <block type="int_variable_get"></block>
+      <block type="int_variable_set">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
+      <block type="variable_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+    </category>
+    </category>
+    <category name="Funções" colour="#e80074" custom="PROCEDURE">
+    </category>
+    <category name="Tempo" colour="#e80074">
+      <block type="delay_function">
+        <value name="DELAY_TIME">
+          <shadow type="math_number">
+            <field name="NUM">1000</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <category name="Bibliotecas" colour="#3c3c3c">
+      <block type="library_arduino_basic"></block>
+      <sep></sep>
+      <block type="library_wire"></block>
+      <block type="library_math"></block>
+      <sep></sep>
+      <block type="library_sensor"></block>
+      <block type="library_bmp180"></block>
+      <block type="library_bh1750"></block>
+      <block type="library_hmc5883"></block>
+      <block type="library_mpu6050"></block>
+      <block type="library_dht"></block>
+    </category>
+    <category name="Sensores" colour="#0c0931">
+      <category name="MPU6050" colour="#2e2e8a">
+        <block type="mpu6050_init"></block>
+        <sep></sep>
+        <block type="mpu6050_set_accel_range"></block>
+        <block type="mpu6050_set_gyro_range"></block>
+        <block type="mpu6050_set_filter_bandwidth"></block>
+        <sep></sep>
+        <block type="mpu6050_sensors_event"></block>
+        <block type="mpu6050_get_event"></block>
+        <sep></sep>
+        <block type="mpu6050_accel_x"></block>
+        <block type="mpu6050_accel_y"></block>
+        <block type="mpu6050_accel_z"></block>
+        <sep></sep>
+        <block type="mpu6050_gyro_x"></block>
+        <block type="mpu6050_gyro_y"></block>
+        <block type="mpu6050_gyro_z"></block>
+        <sep></sep>
+        <block type="mpu6050_read"></block>
+        <sep></sep>
+        <block type="mpu6050_not"></block>
+      </category>
+      <category name="BMP180" colour="#8a2e2e">
+        <block type="bmp180_init"></block>
+        <sep></sep>
+        <block type="bmp180_temperature"></block>
+        <block type="bmp180_pressure"></block>
+        <block type="bmp180_altitude"></block>
+      </category>
+      <category name="BH1750" colour="#ffcc00">
+        <block type="bh1750_init"></block>
+        <block type="bh1750_begin"></block>
+        <sep></sep>
+        <block type="bh1750_set_mode"></block>
+        <sep></sep>
+        <block type="bh1750_light_level"></block>
+      </category>
+      <category name="HMC5883" colour="#8a2e8a">
+        <!-- Inicialização e configuração -->
+        <block type="hmc5883_sensor_object"></block>
+        <block type="hmc5883_init"></block>
+        <block type="hmc5883_begin"></block>
+        <block type="hmc5883_set_gain"></block>
+        <sep></sep>
+        <!-- Leitura de dados -->
+        <block type="hmc5883_event_declare"></block>
+        <block type="hmc5883_get_event"></block>
+        <sep></sep>
+        <!-- Campo magnético em cada eixo -->
+        <block type="hmc5883_mag_x"></block>
+        <block type="hmc5883_mag_y"></block>
+        <block type="hmc5883_mag_z"></block>
+        <sep></sep>
+        <!-- Cálculos avançados -->
+        <block type="hmc5883_field_strength"></block>
+        <block type="hmc5883_atan2"></block>
+        <block type="heading_correction">
+          <value name="DECLINATION">
+            <shadow type="math_number"><field name="NUM">0.22</field></shadow>
+          </value>
+        </block>
+        <sep></sep>
+        <!-- Informações do sensor -->
+        <block type="hmc5883_sensor_info"></block>
+        <block type="hmc5883_display_sensor"></block>
+      </category>
+      <category name="DHT" colour="#2e8a2e">
+        <block type="dht_init"></block>
+        <block type="dht_begin"></block>
+        <sep></sep>
+        <block type="dht_temperature"></block>
+        <block type="dht_humidity"></block>
+        <block type="dht_heat_index">
+        </block>
+      </category>
     </category>
   </xml>
 
   <script src="../model/blocks.js"></script>
+  <script src="../model/cpp_generator.js"></script>
+  
   <script src="../controller/renderer.js"></script>
+  <script src="../../../debug_delay_block.js"></script>
   <script>
     // Funcionalidade do botão copiar
     document.addEventListener('DOMContentLoaded', function() {
@@ -86,13 +266,14 @@
         // Copia para a área de transferência
         navigator.clipboard.writeText(codeText).then(function() {
           // Mostra feedback de sucesso
+          const t = getCurrentTranslation();
           copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
           
           // Volta ao estado normal após 2 segundos
           setTimeout(function() {
             copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', 'Copiar código');
+            copyButton.setAttribute('data-tooltip', t.copyTooltip);
           }, 2000);
         }).catch(function(err) {
           // Fallback para navegadores mais antigos
@@ -104,15 +285,206 @@
           document.body.removeChild(textArea);
           
           // Mostra feedback
+          const t = getCurrentTranslation();
           copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', 'Copiado!');
+          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
           
           setTimeout(function() {
             copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', 'Copiar código');
+            copyButton.setAttribute('data-tooltip', t.copyTooltip);
           }, 2000);
         });
       });
+    });
+
+    // Funcionalidade do dark mode
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    const logoImg = document.getElementById('logoImg');
+
+    // Função para trocar logo baseado no tema
+    function updateLogo() {
+      if (body.classList.contains('dark-mode')) {
+        logoImg.src = '../../assets/logo.png'; // Logo original para modo escuro
+      } else {
+        logoImg.src = '../../assets/Logo2 (2).png'; // Logo alternativa para modo claro
+      }
+    }
+
+    // Verificar se há preferência salva
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      darkModeToggle.textContent = '☀️';
+    }
+    
+    // Atualizar logo baseado no tema inicial
+    updateLogo();
+
+    darkModeToggle.addEventListener('click', function() {
+      body.classList.toggle('dark-mode');
+      
+      // Atualizar logo após mudança de tema
+      updateLogo();
+      
+      const t = translations[currentLanguage];
+      if (body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = '☀️';
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
+        localStorage.setItem('theme', 'dark');
+      } else {
+        darkModeToggle.textContent = '🌙';
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Funcionalidade do seletor de idioma
+    const languageToggle = document.getElementById('languageToggle');
+    const languageDropdown = document.getElementById('languageDropdown');
+    const pageTitle = document.getElementById('pageTitle');
+
+    // Traduções
+    const translations = {
+      'pt-BR': {
+        title: 'Ferramenta de Programação de Missão',
+        languageTooltip: 'Alterar idioma',
+        darkModeTooltip: 'Alternar tema escuro',
+        darkModeTooltipLight: 'Alternar tema claro',
+        codeHeader: '🧠 Código C++',
+        executeTooltip: 'Executar código',
+        copyTooltip: 'Copiar código',
+        copyFeedback: 'Código copiado para a área de transferência!',
+        copiedTooltip: 'Copiado!'
+      },
+      'en-US': {
+        title: 'Mission Programming Tool',
+        languageTooltip: 'Change language',
+        darkModeTooltip: 'Toggle dark mode',
+        darkModeTooltipLight: 'Toggle light mode',
+        codeHeader: '🧠 C++ Code',
+        executeTooltip: 'Execute code',
+        copyTooltip: 'Copy code',
+        copyFeedback: 'Code copied to clipboard!',
+        copiedTooltip: 'Copied!'
+      }
+    };
+
+    // Idioma atual
+    let currentLanguage = localStorage.getItem('language') || 'pt-BR';
+
+    // Função para obter tradução atual
+    function getCurrentTranslation() {
+      return translations[currentLanguage];
+    }
+
+    // Aplicar traduções
+    function applyTranslations(lang) {
+      const t = translations[lang];
+      if (t) {
+        // Traduzir título da página
+        pageTitle.textContent = t.title;
+        
+        // Traduzir tooltips
+        languageToggle.setAttribute('data-tooltip', t.languageTooltip);
+        document.getElementById('startButton').setAttribute('data-tooltip', t.executeTooltip);
+        document.getElementById('copyButton').setAttribute('data-tooltip', t.copyTooltip);
+        
+        // Traduzir cabeçalho do código
+        document.getElementById('codeHeader').textContent = t.codeHeader;
+        
+        // Traduzir feedback de cópia
+        document.getElementById('copyFeedback').textContent = t.copyFeedback;
+        
+        // Atualizar tooltip do dark mode baseado no estado atual
+        if (body.classList.contains('dark-mode')) {
+          darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
+        } else {
+          darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
+        }
+      }
+    }
+
+    // Aplicar idioma salvo
+    applyTranslations(currentLanguage);
+    if (currentLanguage === 'en-US') {
+      languageToggle.textContent = '🇺🇸';
+    }
+
+    // Toggle dropdown
+    languageToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      languageDropdown.classList.toggle('show');
+    });
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function() {
+      languageDropdown.classList.remove('show');
+    });
+
+    // Seleção de idioma
+    document.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const selectedLang = this.getAttribute('data-lang');
+        currentLanguage = selectedLang;
+        localStorage.setItem('language', selectedLang);
+        
+        // Atualizar bandeira
+        if (selectedLang === 'en-US') {
+          languageToggle.textContent = '🇺🇸';
+        } else {
+          languageToggle.textContent = '🇧🇷';
+        }
+        
+        // Aplicar traduções
+        applyTranslations(selectedLang);
+        
+        // Fechar dropdown
+        languageDropdown.classList.remove('show');
+      });
+    });
+
+    // Funcionalidade do modal de variáveis
+    const variableModal = document.getElementById('variable-modal');
+    const createVariableBtn = document.getElementById('create-variable-btn');
+    const cancelVariableBtn = document.getElementById('cancel-variable-btn');
+    const closeModalSpan = document.getElementsByClassName('close')[0];
+
+    // Quando o usuário clica no botão de criar nova variável
+    document.querySelector('button[callbackKey="CREATE_VARIABLE"]').addEventListener('click', function() {
+      variableModal.style.display = 'block';
+    });
+
+    // Quando o usuário clica no botão de criar variável no modal
+    createVariableBtn.addEventListener('click', function() {
+      const variableName = document.getElementById('variable-name').value.trim();
+      
+      if (variableName) {
+        // Fecha o modal
+        variableModal.style.display = 'none';
+        
+        // Limpa o campo de entrada
+        document.getElementById('variable-name').value = '';
+      } else {
+        alert('Por favor, digite um nome válido para a variável.');
+      }
+    });
+
+    // Quando o usuário clica no botão de cancelar no modal
+    cancelVariableBtn.addEventListener('click', function() {
+      variableModal.style.display = 'none';
+    });
+
+    // Quando o usuário clica no "x" para fechar o modal
+    closeModalSpan.addEventListener('click', function() {
+      variableModal.style.display = 'none';
+    });
+
+    // Fecha o modal se o usuário clicar fora dele
+    window.addEventListener('click', function(event) {
+      if (event.target == variableModal) {
+        variableModal.style.display = 'none';
+      }
     });
   </script>
 </body>

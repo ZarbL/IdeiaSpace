@@ -1,0 +1,39 @@
+{
+  "pageTitle": "Executar Blocos",
+  "toggleLanguageTooltip": "Mudar para Inglês",
+  "cppCodeTitle": "🧠 Código C++",
+  "cppCodePlaceholder": "// Código C++ aparecerá aqui automaticamente",
+  "runCodeTooltip": "Executar código",
+  "copyCodeTooltip": "Copiar código",
+  "copiedTooltip": "Copiado!",
+  "copyFeedback": "Código copiado para a área de transferência!",
+  "delayBlockText": "atraso %1 milissegundos",
+  "digitalWriteText": "escrever no pino digital %1 o valor %2",
+  "digitalReadText": "ler o pino digital %1",
+  "CAT_LOGIC": "Lógica",
+  "CAT_LOOPS": "Loops",
+  "CAT_MATH": "Matemática",
+  "CAT_TEXT": "Texto",
+  "CAT_VARIABLES": "Variáveis",
+  "CAT_FUNCTIONS": "Funções",
+  "CAT_CONTROL": "Controlo"
+}
+            "name": "ideiaspace_mission",
+            "maintainer": "IdeiaSpace",
+            "homepage": "https://ideiaspace.com.br",
+            "description": "Plataforma de programação em blocos para ensino aeroespacial"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "name": "ideiaspace_mission",
+            "maintainer": "IdeiaSpace",
+            "homepage": "https://ideiaspace.com.br",
+            "description": "Plataforma de programação em blocos para ensino aeroespacial"
+          }
+        }
+      ]
+    }
+  }
+}

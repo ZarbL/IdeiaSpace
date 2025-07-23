@@ -65,7 +65,7 @@ IdeiaSpace/
 
 ### Blocos Disponíveis
 
-#### Lógica e Controle
+#### Lógica e Sensores
 - **IF/ELSE**: Estruturas condicionais
 - **Comparações**: Operadores de comparação (==, !=, <, >, etc.)
 - **Operações Lógicas**: AND (&&), OR (||)
@@ -86,6 +86,19 @@ IdeiaSpace/
 #### Variáveis e Funções
 - **Get/Set**: Manipulação de variáveis
 - **Definir/Chamar**: Criação e uso de funções
+
+#### Sensores
+- **MPU6050**: Acelerômetro e giroscópio (medidas inerciais)
+- **BMP180**: Pressão, temperatura e altitude
+- **DHT11/DHT22**: Temperatura e umidade
+- **Ultrasound**: Sensor ultrassônico
+
+#### Bibliotecas 📚 **[NOVO]**
+- **Arduino Básico**: Bibliotecas essenciais do Arduino
+- **Wire (I2C)**: Comunicação I2C para sensores
+- **BMP180**: Bibliotecas para sensor de pressão
+- **MPU6050**: Bibliotecas para sensor inercial  
+- **DHT**: Bibliotecas para sensores de temperatura/umidade
 
 #### Controle
 - **Delay**: Pausa em millisegundos

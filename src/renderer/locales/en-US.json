@@ -1,0 +1,20 @@
+{
+  "pageTitle": "Run Blocks",
+  "toggleLanguageTooltip": "Switch to Portuguese",
+  "cppCodeTitle": "🧠 C++ Code",
+  "cppCodePlaceholder": "// C++ code will appear here automatically",
+  "runCodeTooltip": "Run code",
+  "copyCodeTooltip": "Copy code",
+  "copiedTooltip": "Copied!",
+  "copyFeedback": "Code copied to clipboard!",
+  "delayBlockText": "delay %1 milliseconds",
+  "digitalWriteText": "digital write pin %1 to %2",
+  "digitalReadText": "digital read pin %1",
+  "CAT_LOGIC": "Logic",
+  "CAT_LOOPS": "Loops",
+  "CAT_MATH": "Math",
+  "CAT_TEXT": "Text",
+  "CAT_VARIABLES": "Variables",
+  "CAT_FUNCTIONS": "Functions",
+  "CAT_CONTROL": "Control"
+}
