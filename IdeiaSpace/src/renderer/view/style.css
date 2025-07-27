@@ -1,0 +1,1455 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #1e1e1e; /* Cor do VS Code como padrão */
+  color: #cccccc; /* Texto padrão do VS Code */
+  overflow: hidden;
+}
+
+:root {
+  /* Tema claro do VS Code */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --bg-terminal: #ffffff;
+  --text-primary: #3c3c3c;
+  --text-code: #1e1e1e;
+  --accent-pink: #e80074;
+  --accent-cyan: #00cfe5;
+  --workspace-bg: #ffffff;
+}
+
+.dark-mode {
+  /* Tema escuro do VS Code */
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-terminal: #1e1e1e;
+  --text-primary: #cccccc;
+  --text-code: #d4d4d4;
+  --accent-pink: #e80074;
+  --accent-cyan: #00cfe5;
+  --workspace-bg: #1e1e1e;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.header {
+  background-color: var(--bg-secondary);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 3px solid var(--accent-pink);
+}
+
+.header h1 {
+  font-size: 24px;
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+}
+
+.logo {
+  height: 40px;
+  /* Não aplicar filtro no modo claro - usar Logo2(2) */
+}
+
+.dark-mode .logo {
+  /* No modo escuro, usar a logo original sem alteração */
+  filter: brightness(1) saturate(100%);
+}
+
+.container {
+  display: flex;
+  height: calc(100vh - 60px);
+  width: 100vw;
+}
+
+.blockly-area {
+  flex: 1;
+  height: 100%;
+  background-color: var(--workspace-bg);
+  position: relative;
+}
+
+.side-panel {
+  width: 400px;
+  background-color: var(--bg-secondary);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  border-left: 3px solid var(--accent-pink);
+  box-shadow: -2px 0 10px rgba(232, 0, 116, 0.2);
+}
+
+button#generate-btn {
+  background-color: var(--accent-cyan);
+  color: #ffffff;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+button#generate-btn:hover {
+  background-color: #00b3cc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 207, 229, 0.3);
+}
+
+.code-box {
+  background-color: var(--bg-terminal);
+  color: var(--text-code);
+  border: 2px solid var(--accent-pink);
+  border-radius: 12px;
+  padding: 20px;
+  height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3);
+}
+
+.code-header {
+  margin-bottom: 10px;
+}
+
+.code-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-header {
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.result-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-box {
+  background-color: var(--bg-terminal);
+  color: var(--accent-cyan);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 12px;
+  padding: 20px;
+  height: 150px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3);
+}
+
+.monitor-section {
+  margin-top: 8px;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+  margin-left: 20px;
+}
+
+/* Botões minimalistas */
+.icon-button {
+  background-color: #1d1856;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.2);
+}
+
+.icon-button:hover {
+  background-color: #0c0931;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 24, 86, 0.3);
+}
+
+.icon-button:active {
+  transform: translateY(0);
+  background-color: #1d1856;
+}
+
+.dark-mode .icon-button {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .icon-button:hover {
+  background-color: #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .icon-button:active {
+  background-color: #1a1a1a;
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1d1856;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.3);
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1d1856;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dark-mode .tooltip::before {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .tooltip::after {
+  border-top-color: #000000;
+}
+
+.copy-feedback {
+  font-size: 0.9em;
+  color: #00cfe5;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+.copy-feedback.show {
+  opacity: 1;
+}
+
+.monitor-section h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.serial-box {
+  width: 100%;
+  height: 80px;
+  background-color: var(--bg-primary);
+  color: var(--text-code);
+  font-family: monospace;
+  border: 2px solid var(--accent-pink);
+  padding: 10px;
+  border-radius: 8px;
+  resize: none;
+  font-size: 13px;
+}
+
+.toolbox {
+  display: none;
+  background-color: var(--bg-secondary) !important;
+  border: 2px solid var(--accent-pink) !important;
+  border-radius: 12px !important;
+  padding: 15px !important;
+  color: var(--text-primary) !important;
+  font-style: normal;
+  display: flex;
+  box-shadow: 0 6px 20px rgba(232, 0, 116, 0.2);
+}
+
+/* Estilos para as categorias do toolbox */
+.blocklyToolboxCategory {
+  background-color: var(--bg-primary) !important;
+  border: 2px solid var(--accent-cyan) !important;
+  border-radius: 8px !important;
+  margin: 3px !important;
+  padding: 10px !important;
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyToolboxCategory:hover {
+  background-color: var(--accent-pink) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--accent-cyan) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3) !important;
+}
+
+/* Estilo para o texto das categorias */
+.blocklyTreeLabel {
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  font-family: "Segoe UI", sans-serif !important;
+}
+
+.plotter-box {
+  width: 100%;
+  height: 80px;
+  background-color: var(--bg-primary);
+  border: 2px solid var(--accent-pink);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text-code);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+#message {
+  margin-top: 20px;
+  font-size: 1.1em;
+  color: var(--accent-pink);
+  font-weight: 600;
+}
+
+/* Alvos para o contêiner do toolbox gerado pelo Blockly */
+.blocklyToolboxDiv {
+  background-color: var(--bg-secondary) !important;
+  border-right: 3px solid var(--accent-pink) !important;
+  color: var(--text-primary) !important;
+  padding: 15px !important;
+}
+
+/* Estilos gerais melhorados */
+h3 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary); /* Azul escuro */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #e80074, #00cfe5); /* Gradiente rosa-ciano */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #00cfe5, #e80074); /* Gradiente invertido */
+}
+
+/* Elementos focados */
+button:focus,
+input:focus,
+textarea:focus {
+  outline: 3px solid #e80074; /* Rosa para foco */
+  outline-offset: 2px;
+}
+
+/* Adicionar sombras com as novas cores */
+.code-box,
+.serial-box,
+.plotter-box {
+  box-shadow: 0 2px 10px rgba(232, 0, 116, 0.2);
+}
+
+/* Melhorar tipografia */
+body {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.dark-mode-toggle {
+  background-color: transparent;
+  border: 2px solid var(--accent-pink);
+  color: var(--text-primary);
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  position: relative;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--accent-pink);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.4);
+}
+
+.dark-mode-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Animação suave para transição de temas */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Remover TODOS os pseudo-elementos do dark-mode_toggle */
+.dark-mode-toggle::before,
+.dark-mode-toggle::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Tooltip específico para o dark mode - versão simplificada */
+.dark-mode-tooltip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+  background-color: #1d1856;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(29, 24, 86, 0.3);
+  pointer-events: none;
+}
+
+/* Seta do tooltip */
+.dark-mode-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: #1d1856;
+}
+
+/* Mostrar tooltip no hover */
+.dark-mode-toggle:hover .dark-mode-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Estilo para tema escuro */
+.dark-mode .dark-mode-tooltip {
+  background-color: #000000;
+  color: #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .dark-mode-tooltip::after {
+  border-left-color: #000000;
+}
+
+/* Header buttons container */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Language selector styles */
+.language-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.language-button {
+  background-color: transparent;
+  border: 2px solid var(--accent-cyan);
+  color: var(--text-primary);
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.language-button:hover {
+  background-color: var(--accent-cyan);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(0, 207, 229, 0.4);
+}
+
+.language-button:active {
+  transform: scale(0.95);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  min-width: 120px;
+  margin-top: 5px;
+}
+
+.language-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.language-option {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.language-option:hover {
+  background-color: var(--accent-cyan);
+  color: #ffffff;
+}
+
+.language-option:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.language-option:last-child {
+  border-radius: 0 0 6px 6px;
+}
+
+/* Modal para criar variáveis */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: var(--bg-primary);
+  margin: 15% auto;
+  padding: 0;
+  border: none;
+  border-radius: 15px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-content h2 {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+  color: white;
+  margin: 0;
+  padding: 20px;
+  border-radius: 15px 15px 0 0;
+  text-align: center;
+  font-size: 18px;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal-body input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 207, 229, 0.1);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(232, 0, 116, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: #6c757d;
+}
+
+/* Estado reativo do botão de criar variável */
+.btn-primary.variable-create {
+  transition: all 0.2s ease;
+}
+
+.btn-primary.variable-create:not(:disabled) {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+.close {
+  color: white;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 15px;
+  line-height: 1;
+}
+
+.close:hover {
+  opacity: 0.7;
+}
+
+/* Animações para notificações */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Estilos responsivos para o modal */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    margin: 10% auto;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
+/* Estilos específicos para blocos MPU6050 */
+.blocklyTreeLabel {
+  font-family: "Segoe UI", sans-serif !important;
+}
+
+/* Estilos para os blocos de sensores */
+.blocklyTreeRow {
+  cursor: pointer;
+}
+
+.blocklyTreeRow:hover {
+  background-color: var(--accent-cyan) !important;
+  color: white !important;
+}
+
+/* Estilos para categorias de sensores */
+.blocklyTreeIcon {
+  margin-right: 8px;
+}
+
+/* Garantir que os separadores funcionem */
+.blocklyFlyoutSeparator {
+  height: 8px !important;
+  background-color: transparent !important;
+}
+
+/* Estilos para blocos MPU6050 específicos */
+.blocklyBlock[data-type="mpu6050_init"] {
+  border: 2px solid #4CAF50 !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_accel"] {
+  border: 2px solid #2196F3 !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_gyro"] {
+  border: 2px solid #9C27B0 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_read"] {
+  border: 2px solid #00BCD4 !important;
+}
+
+/* Estilos para blocos de configuração MPU6050 */
+.blocklyBlock[data-type="mpu6050_set_accel_range"] {
+  border: 2px solid #FF9800 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_set_gyro_range"] {
+  border: 2px solid #FF5722 !important;
+}
+
+.blocklyBlock[data-type="mpu6050_set_filter_bandwidth"] {
+  border: 2px solid #795548 !important;
+}
+
+/* Estilos para blocos HMC5883 específicos */
+.blocklyBlock[data-type="hmc5883_init"] {
+  border: 2px solid #E74C3C !important;
+}
+
+.blocklyBlock[data-type="hmc5883_begin"] {
+  border: 2px solid #DC143C !important;
+}
+
+.blocklyBlock[data-type*="hmc5883_mag"] {
+  border: 2px solid #FF6B6B !important;
+}
+
+.blocklyBlock[data-type="hmc5883_heading"] {
+  border: 2px solid #8B0000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_set_gain"] {
+  border: 2px solid #B22222 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_direction_text"] {
+  border: 2px solid #CD853F !important;
+}
+
+.blocklyBlock[data-type="hmc5883_declination"] {
+  border: 2px solid #A0522D !important;
+}
+
+.blocklyBlock[data-type="hmc5883_field_strength"] {
+  border: 2px solid #FF1493 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_sensor_info"] {
+  border: 2px solid #9932CC !important;
+  box-shadow: 0 2px 8px rgba(153, 50, 204, 0.3) !important;
+}
+
+.blocklyBlock[data-type="hmc5883_sensor_object"] {
+  border: 2px solid #800000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_event_declare"] {
+  border: 2px solid #8B0000 !important;
+}
+
+.blocklyBlock[data-type="hmc5883_get_event"] {
+  border: 2px solid #8B0000 !important;
+}
+
+/* Estilos específicos para o workspace do Blockly no modo escuro */
+.dark-mode .blocklyMainBackground {
+  fill: #1e1e1e !important;
+}
+
+.dark-mode .blocklyScrollbarBackground {
+  fill: #252526 !important;
+}
+
+.dark-mode .blocklyScrollbarHandle {
+  fill: #3e3e42 !important;
+}
+
+.dark-mode .blocklyFlyoutBackground {
+  fill: #252526 !important;
+}
+
+.dark-mode .blocklyToolboxDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyTreeLabel {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyTreeRow:hover {
+  background-color: #3e3e42 !important;
+}
+
+.dark-mode .blocklyWidgetDiv {
+  background-color: #1e1e1e !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyDropDownContent {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownArrow {
+  fill: #cccccc !important;
+}
+
+/* Forçar o fundo do workspace para escuro, mas NÃO o toolbox */
+.dark-mode .blockly-area {
+  background-color: #1e1e1e !important;
+}
+
+/* Apenas workspace principal - evitar afetar toolbox */
+.dark-mode .blocklyMainWorkspace {
+  background-color: #1e1e1e !important;
+}
+
+/* SVG específico do workspace principal, não do toolbox */
+.dark-mode .blockly-area svg.blocklySvg {
+  background-color: #1e1e1e !important;
+}
+
+.dark-mode .blockly-area .blocklySvg .blocklyMainBackground {
+  fill: #1e1e1e !important;
+}
+
+/* Garantir que apenas retângulos brancos do workspace mudem de cor */
+.dark-mode .blockly-area [class*="blockly"] rect[fill="#ffffff"],
+.dark-mode .blockly-area [class*="blockly"] rect[fill="white"] {
+  fill: #1e1e1e !important;
+}
+
+/* Garantir que o toolbox não seja afetado pelos estilos do workspace */
+.dark-mode .blocklyToolboxDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyToolboxDiv .blocklySvg {
+  background-color: #252526 !important;
+}
+
+.dark-mode .blocklyToolboxDiv rect[fill="#ffffff"],
+.dark-mode .blocklyToolboxDiv rect[fill="white"] {
+  fill: #252526 !important;
+}
+
+/* Estilos específicos para dropdown do bloco Boolean no modo escuro */
+.dark-mode .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemCheckbox {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemContent {
+  color: #cccccc !important;
+}
+
+/* Garantir que o texto do dropdown seja visível */
+.dark-mode .blocklyDropDownDiv .blocklyMenuItemLabel {
+  color: #cccccc !important;
+}
+
+/* Estilos específicos para elementos SVG nos dropdowns */
+.dark-mode .blocklyDropDownDiv svg text {
+  fill: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv svg .blocklyText {
+  fill: #cccccc !important;
+}
+
+/* Garantir que o texto do field dropdown seja visível */
+.dark-mode .blocklyFieldDropdown .blocklyText {
+  fill: #cccccc !important;
+}
+
+.dark-mode .blocklyFieldDropdown text {
+  fill: #cccccc !important;
+}
+
+/* Estilos específicos para o bloco Boolean no modo escuro */
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyText {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] text {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyFieldDropdown .blocklyText {
+  fill: #ffffff !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyFieldDropdown text {
+  fill: #ffffff !important;
+}
+
+/* Garantir que o menu dropdown do bloco Boolean seja visível */
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyBlock[data-type="math_boolean"] .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+/* Correção global para todos os dropdowns do Blockly no modo escuro */
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  border: 1px solid #3e3e42 !important;
+}
+
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyWidgetDiv .blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #3e3e42 !important;
+  color: #ffffff !important;
+}
+
+/* Garantir que o texto dos dropdowns seja sempre visível */
+.dark-mode .blocklyDropDownDiv * {
+  color: #cccccc !important;
+}
+
+.dark-mode .blocklyDropDownDiv:hover * {
+  color: #ffffff !important;
+}
+
+/* ============================================================================
+   SISTEMA DE CORES PARA BLOCOS - PALETA HARMONIOSA
+   ============================================================================ */
+
+/* BLOCOS DE LÓGICA - Tons de Azul Escuro */
+.blocklyBlock[data-type="controls_if"] {
+  border: 2px solid #2C3E50 !important;
+  background: linear-gradient(135deg, #2C3E50 0%, #1B2631 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(44, 62, 80, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_compare"] {
+  border: 2px solid #34495E !important;
+  background: linear-gradient(135deg, #34495E 0%, #2C3E50 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 73, 94, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_operation"] {
+  border: 2px solid #5D6D7E !important;
+  background: linear-gradient(135deg, #5D6D7E 0%, #34495E 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 109, 126, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="logic_boolean"] {
+  border: 2px solid #283747 !important;
+  background: linear-gradient(135deg, #283747 0%, #1B2631 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 55, 71, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE ESTRUTURA ARDUINO - Tons de Vermelho/Laranja */
+.blocklyBlock[data-type="arduino_setup"] {
+  border: 2px solid #E74C3C !important;
+  background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="arduino_loop"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #D35400 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="arduino_serial_begin"] {
+  border: 2px solid #F39C12 !important;
+  background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS MATEMÁTICOS - Tons de Laranja/Amarelo */
+.blocklyBlock[data-type="math_number"] {
+  border: 2px solid #F39C12 !important;
+  background: linear-gradient(135deg, #F39C12 0%, #D68910 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="math_arithmetic"] {
+  border: 2px solid #F4D03F !important;
+  background: linear-gradient(135deg, #F4D03F 0%, #F39C12 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(244, 208, 63, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="math_boolean"] {
+  border: 2px solid #D68910 !important;
+  background: linear-gradient(135deg, #D68910 0%, #B7950B 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(214, 137, 16, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE TEXTO/COMUNICAÇÃO - Tons de Verde */
+.blocklyBlock[data-type="text"] {
+  border: 2px solid #27AE60 !important;
+  background: linear-gradient(135deg, #27AE60 0%, #229954 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="text_join"] {
+  border: 2px solid #28B463 !important;
+  background: linear-gradient(135deg, #28B463 0%, #27AE60 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 180, 99, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="text_print"] {
+  border: 2px solid #2ECC71 !important;
+  background: linear-gradient(135deg, #2ECC71 0%, #28B463 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE VARIÁVEIS - Tons de Azul Claro */
+.blocklyBlock[data-type="variable_declaration"] {
+  border: 2px solid #3498DB !important;
+  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="variables_get"] {
+  border: 2px solid #5DADE2 !important;
+  background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 173, 226, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="variables_set"] {
+  border: 2px solid #2980B9 !important;
+  background: linear-gradient(135deg, #2980B9 0%, #1F618D 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(41, 128, 185, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE TEMPO - Tons de Roxo */
+.blocklyBlock[data-type="delay_function"] {
+  border: 2px solid #9B59B6 !important;
+  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(155, 89, 182, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="delay_block"] {
+  border: 2px solid #8E44AD !important;
+  background: linear-gradient(135deg, #8E44AD 0%, #7D3C98 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(142, 68, 173, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE BIBLIOTECAS - Tons de Roxo Escuro */
+.blocklyBlock[data-type*="library_"] {
+  border: 2px solid #7D3C98 !important;
+  background: linear-gradient(135deg, #7D3C98 0%, #6C3483 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(125, 60, 152, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS MPU6050 - Tons de Azul Tecnológico */
+.blocklyBlock[data-type="mpu6050_init"] {
+  border: 2px solid #2E86AB !important;
+  background: linear-gradient(135deg, #2E86AB 0%, #1B4F72 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(46, 134, 171, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_accel"] {
+  border: 2px solid #5DADE2 !important;
+  background: linear-gradient(135deg, #5DADE2 0%, #2E86AB 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(93, 173, 226, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_gyro"] {
+  border: 2px solid #85C1E9 !important;
+  background: linear-gradient(135deg, #85C1E9 0%, #5DADE2 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(133, 193, 233, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type*="mpu6050_set"] {
+  border: 2px solid #1B4F72 !important;
+  background: linear-gradient(135deg, #1B4F72 0%, #154360 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(27, 79, 114, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS BMP180 - Tons de Terracota/Laranja */
+.blocklyBlock[data-type="bmp180_init"] {
+  border: 2px solid #DC7633 !important;
+  background: linear-gradient(135deg, #DC7633 0%, #CA6F1E 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(220, 118, 51, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_pressure"] {
+  border: 2px solid #3498DB !important;
+  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_temperature"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bmp180_altitude"] {
+  border: 2px solid #28B463 !important;
+  background: linear-gradient(135deg, #28B463 0%, #229954 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(40, 180, 99, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS BH1750 - Tons de Amarelo/Dourado (Luminosidade) */
+.blocklyBlock[data-type="bh1750_init"] {
+  border: 2px solid #F1C40F !important;
+  background: linear-gradient(135deg, #F1C40F 0%, #F39C12 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(241, 196, 15, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bh1750_light_level"] {
+  border: 2px solid #FFD700 !important;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bh1750_set_mode"] {
+  border: 2px solid #F39C12 !important;
+  background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="bh1750_begin"] {
+  border: 2px solid #FFCC00 !important;
+  background: linear-gradient(135deg, #FFCC00 0%, #FF9900 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 204, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="library_bh1750"] {
+  border: 2px solid #F4D03F !important;
+  background: linear-gradient(135deg, #F4D03F 0%, #F1C40F 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(244, 208, 63, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DHT - Tons de Teal/Verde-azulado */
+.blocklyBlock[data-type="dht_init"] {
+  border: 2px solid #17A2B8 !important;
+  background: linear-gradient(135deg, #17A2B8 0%, #138496 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_temperature"] {
+  border: 2px solid #E67E22 !important;
+  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_humidity"] {
+  border: 2px solid #20B2AA !important;
+  background: linear-gradient(135deg, #20B2AA 0%, #17A2B8 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(32, 178, 170, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* BLOCOS DE HARDWARE - Tons de Laranja Metálico */
+.blocklyBlock[data-type="digital_write"] {
+  border: 2px solid #FF6B35 !important;
+  background: linear-gradient(135deg, #FF6B35 0%, #E67E22 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="digital_read"] {
+  border: 2px solid #58D68D !important;
+  background: linear-gradient(135deg, #58D68D 0%, #28B463 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(88, 214, 141, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* EFEITOS HOVER UNIVERSAIS */
+.blocklyBlock:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* EFEITOS DE FOCO */
+.blocklyBlock:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ANIMAÇÃO SUTIL PARA TODOS OS BLOCOS */
+.blocklyBlock {
+  animation: gentle-pulse 4s ease-in-out infinite;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* MELHORIA NA LEGIBILIDADE DO TEXTO */
+.blocklyBlock .blocklyText {
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  fill: #FFFFFF !important;
+}
