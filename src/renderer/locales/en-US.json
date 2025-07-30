@@ -82,6 +82,13 @@
   "hmc5883_library": "HMC5883 Library",
   "math_library": "Math Library",
   
+  "_comment_text": "Text Blocks",
+  "print_text": "📝 Print",
+  "newline": "newline:",
+  "text_field": "💬",
+  "join_text": "🔗 Join text",
+  "with": "with",
+  
   "_comment_categories": "Toolbox Categories",
   "CAT_LOGIC": "Logic",
   "CAT_CONTROL": "Control",

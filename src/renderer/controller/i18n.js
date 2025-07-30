@@ -635,6 +635,50 @@ const i18n = {
       };
     }
     
+    // Redefinir blocos de Texto (Text)
+    if (Blockly.Blocks['text_print']) {
+      Blockly.Blocks['text_print'].init = function() {
+        this.appendValueInput('TEXT')
+            .setCheck(['String', 'Number'])
+            .appendField(window.i18n.t('print_text') || '📝 Imprimir');
+        this.appendDummyInput()
+            .appendField(window.i18n.t('newline') || 'quebra de linha:')
+            .appendField(new Blockly.FieldCheckbox('TRUE'), 'ADD_NEWLINE');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#5C7CFA');
+        this.setTooltip('Imprime texto no console serial. Marque a caixa para adicionar quebra de linha.');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['text']) {
+      Blockly.Blocks['text'].init = function() {
+        this.appendDummyInput()
+            .appendField(window.i18n.t('text_field') || '💬')
+            .appendField(new Blockly.FieldTextInput(''), 'TEXT');
+        this.setOutput(true, 'String');
+        this.setColour('#5C7CFA');
+        this.setTooltip('Campo de texto para inserir strings');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['text_join']) {
+      Blockly.Blocks['text_join'].init = function() {
+        this.appendValueInput('A')
+            .setCheck(['String', 'Number'])
+            .appendField(window.i18n.t('join_text') || '🔗 Juntar texto');
+        this.appendValueInput('B')
+            .setCheck(['String', 'Number'])
+            .appendField(window.i18n.t('with') || 'com');
+        this.setOutput(true, 'String');
+        this.setColour('#5C7CFA');
+        this.setTooltip('Junta dois textos em um só');
+        this.setHelpUrl('');
+      };
+    }
+    
     // Redefinir blocos DHT (Temperature and Humidity)
     if (Blockly.Blocks['dht_init']) {
       Blockly.Blocks['dht_init'].init = function() {
@@ -1051,6 +1095,23 @@ const i18n = {
       'library_math': {
         fields: [
           { text: 'Biblioteca Math', key: 'math_library' }
+        ]
+      },
+      'text_print': {
+        fields: [
+          { text: '📝 Imprimir', key: 'print_text' },
+          { text: 'quebra de linha:', key: 'newline' }
+        ]
+      },
+      'text': {
+        fields: [
+          { text: '💬', key: 'text_field' }
+        ]
+      },
+      'text_join': {
+        fields: [
+          { text: '🔗 Juntar texto', key: 'join_text' },
+          { text: 'com', key: 'with' }
         ]
       }
     };
