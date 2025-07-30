@@ -56,7 +56,7 @@
   <div id="variable-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2 data-translate-key="variableModalTitle">➕ Criar Nova Variável</h2>
+      <h2 data-translate-key="variableModalTitle">� Criar Nova Variável</h2>
       <div class="modal-body">
         <label for="variable-name" data-translate-key="variableNameLabel">Nome da variável:</label>
         <input type="text" id="variable-name" data-translate-key-placeholder="variableNamePlaceholder" placeholder="Digite o nome da variável..." maxlength="50">
@@ -78,6 +78,7 @@
     <category name="Controle" colour="#00cfe5" data-translate-name="CAT_CONTROL">
       <block type="arduino_setup"></block>
       <block type="arduino_loop"></block>
+      <block type="void_display"></block>
       <sep></sep>
       <block type="arduino_serial_begin"></block>
       <block type="serial_not"></block>
@@ -92,6 +93,8 @@
     <category name="Matemática" colour="#e80074" data-translate-name="CAT_MATH">
       <block type="math_number"><field name="NUM">0</field></block>
       <block type="math_arithmetic"></block>
+      <block type="math_boolean"></block>
+      <block type="math_pi"></block>
     </category>
     <category name="Texto" colour="#5C7CFA" data-translate-name="CAT_TEXT">
       <block type="text"></block>
@@ -140,6 +143,7 @@
         </value>
       </block>
     </category>
+    </category>
     <category name="Funções" colour="#e80074" custom="PROCEDURE" data-translate-name="CAT_FUNCTIONS">
     </category>
     <category name="Tempo" colour="#e80074" data-translate-name="CAT_TIME">
@@ -155,17 +159,25 @@
       <block type="library_arduino_basic"></block>
       <sep></sep>
       <block type="library_wire"></block>
+      <block type="library_math"></block>
       <sep></sep>
-      <block type="library_adafruit"></block>
       <block type="library_sensor"></block>
-      <sep></sep>
       <block type="library_bmp180"></block>
+      <block type="library_bh1750"></block>
+      <block type="library_hmc5883"></block>
       <block type="library_mpu6050"></block>
       <block type="library_dht"></block>
     </category>
     <category name="Sensores" colour="#0c0931" data-translate-name="CAT_SENSORS">
-      <category name="Medidas Inerciais" colour="#2e2e8a" data-translate-name="CAT_MPU6050">
+      <category name="MPU6050" colour="#2e2e8a" data-translate-name="CAT_MPU6050">
         <block type="mpu6050_init"></block>
+        <sep></sep>
+        <block type="mpu6050_set_accel_range"></block>
+        <block type="mpu6050_set_gyro_range"></block>
+        <block type="mpu6050_set_filter_bandwidth"></block>
+        <sep></sep>
+        <block type="mpu6050_sensors_event"></block>
+        <block type="mpu6050_get_event"></block>
         <sep></sep>
         <block type="mpu6050_accel_x"></block>
         <block type="mpu6050_accel_y"></block>
@@ -179,21 +191,58 @@
         <sep></sep>
         <block type="mpu6050_not"></block>
       </category>
-      <category name="Ultrasound" colour="#2e8a5c">
-        <block type="ultrasound"></block>
-      </category>
-      <category name="Pressão" colour="#8a2e2e" data-translate-name="CAT_BMP180">
+      <category name="BMP180" colour="#8a2e2e" data-translate-name="CAT_BMP180">
         <block type="bmp180_init"></block>
         <sep></sep>
         <block type="bmp180_temperature"></block>
         <block type="bmp180_pressure"></block>
         <block type="bmp180_altitude"></block>
       </category>
-      <category name="Temperatura e Umidade" colour="#2e8a2e" data-translate-name="CAT_DHT">
+      <category name="BH1750" colour="#ffcc00" data-translate-name="CAT_BH1750">
+        <block type="bh1750_init"></block>
+        <block type="bh1750_begin"></block>
+        <sep></sep>
+        <block type="bh1750_set_mode"></block>
+        <sep></sep>
+        <block type="bh1750_light_level"></block>
+      </category>
+      <category name="HMC5883" colour="#8a2e8a" data-translate-name="CAT_HMC5883">
+        <!-- Inicialização e configuração -->
+        <block type="hmc5883_sensor_object"></block>
+        <block type="hmc5883_init"></block>
+        <block type="hmc5883_begin"></block>
+        <block type="hmc5883_set_gain"></block>
+        <sep></sep>
+        <!-- Leitura de dados -->
+        <block type="hmc5883_event_declare"></block>
+        <block type="hmc5883_get_event"></block>
+        <sep></sep>
+        <!-- Campo magnético em cada eixo -->
+        <block type="hmc5883_mag_x"></block>
+        <block type="hmc5883_mag_y"></block>
+        <block type="hmc5883_mag_z"></block>
+        <sep></sep>
+        <!-- Cálculos avançados -->
+        <block type="hmc5883_field_strength"></block>
+        <block type="hmc5883_atan2"></block>
+        <block type="heading_correction">
+          <value name="DECLINATION">
+            <shadow type="math_number"><field name="NUM">0.22</field></shadow>
+          </value>
+        </block>
+        <sep></sep>
+        <!-- Informações do sensor -->
+        <block type="hmc5883_sensor_info"></block>
+        <block type="hmc5883_display_sensor"></block>
+      </category>
+      <category name="DHT" colour="#2e8a2e" data-translate-name="CAT_DHT">
         <block type="dht_init"></block>
+        <block type="dht_begin"></block>
         <sep></sep>
         <block type="dht_temperature"></block>
         <block type="dht_humidity"></block>
+        <block type="dht_heat_index">
+        </block>
       </category>
     </category>
   </xml>
@@ -281,15 +330,14 @@
       // Atualizar logo após mudança de tema
       updateLogo();
       
-      // Usar o sistema i18n para obter traduções
-      const t = window.i18n || { t: (key) => key }; // fallback
+      const t = translations[currentLanguage];
       if (body.classList.contains('dark-mode')) {
         darkModeToggle.textContent = '☀️';
-        darkModeToggle.setAttribute('data-tooltip', t.t('darkModeTooltipLight'));
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
         localStorage.setItem('theme', 'dark');
       } else {
         darkModeToggle.textContent = '🌙';
-        darkModeToggle.setAttribute('data-tooltip', t.t('darkModeTooltip'));
+        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
         localStorage.setItem('theme', 'light');
       }
     });
@@ -336,20 +384,10 @@
         const selectedLang = this.getAttribute('data-lang');
         currentLanguage = selectedLang;
         
-        console.log('🔄 Mudando idioma para:', selectedLang);
-        console.log('🔍 window.i18n disponível:', !!window.i18n);
-        
         // Usar o sistema i18n.js se disponível
         if (window.i18n) {
-          console.log('✅ Chamando window.i18n.setLanguage...');
-          try {
-            await window.i18n.setLanguage(selectedLang);
-            console.log('✅ Idioma alterado com sucesso!');
-          } catch (error) {
-            console.error('❌ Erro ao alterar idioma:', error);
-          }
+          await window.i18n.setLanguage(selectedLang);
         } else {
-          console.log('⚠️ window.i18n não disponível, salvando no localStorage');
           localStorage.setItem('language', selectedLang);
         }
         
@@ -378,13 +416,9 @@
     const closeModalSpan = document.getElementsByClassName('close')[0];
 
     // Quando o usuário clica no botão de criar nova variável
-    try {
-      document.querySelector('button[callbackKey="CREATE_VARIABLE"]').addEventListener('click', function() {
-        variableModal.style.display = 'block';
-      });
-    } catch (e) {
-      console.log('Botão CREATE_VARIABLE não encontrado ainda, será configurado pelo Blockly');
-    }
+    document.querySelector('button[callbackKey="CREATE_VARIABLE"]').addEventListener('click', function() {
+      variableModal.style.display = 'block';
+    });
 
     // Quando o usuário clica no botão de criar variável no modal
     createVariableBtn.addEventListener('click', function() {

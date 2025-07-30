@@ -23,35 +23,20 @@ const i18n = {
   
   async setLanguage(lang) {
     console.log(`🌐 Mudando idioma para: ${lang}`);
-    console.log(`📊 Traduções disponíveis:`, Object.keys(this.translations));
-    
     if (!this.translations[lang]) {
-      console.log(`⚠️ Tradução não carregada para ${lang}, tentando carregar...`);
       await this.loadTranslations(lang);
     }
     if (this.translations[lang]) {
-      console.log(`✅ Definindo idioma atual como: ${lang}`);
       this.current = lang;
       localStorage.setItem('language', lang);
-      
-      console.log('🔄 Aplicando traduções...');
       this.applyTranslations();
-      
-      console.log('🔄 Atualizando blocos Blockly...');
       this.updateBlocklyBlocks();
-      
-      console.log('🔄 Atualizando categorias do toolbox...');
       this.updateToolboxCategories();
       
       // Disparar evento customizado para outros componentes
-      console.log('📡 Disparando evento languageChanged...');
       window.dispatchEvent(new CustomEvent('languageChanged', { 
         detail: { language: lang, translations: this.translations[lang] } 
       }));
-      
-      console.log('✅ Processo de mudança de idioma concluído!');
-    } else {
-      console.error(`❌ Não foi possível carregar traduções para: ${lang}`);
     }
   },
   
@@ -60,42 +45,26 @@ const i18n = {
     console.log(`🔄 Aplicando traduções para: ${lang}`);
     
     // Elementos com data-translate-key
-    const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
-    console.log(`📋 Encontrados ${elementsToTranslate.length} elementos para traduzir`);
-    
-    elementsToTranslate.forEach(el => {
+    document.querySelectorAll('[data-translate-key]').forEach(el => {
       const key = el.getAttribute('data-translate-key');
       if (key && this.translations[lang] && this.translations[lang][key]) {
-        const oldText = el.textContent;
-        const newText = this.translations[lang][key];
-        el.textContent = newText;
-        console.log(`🔄 Traduzido "${key}": "${oldText}" → "${newText}"`);
-      } else {
-        console.warn(`⚠️ Tradução não encontrada para chave "${key}" no idioma ${lang}`);
+        el.textContent = this.translations[lang][key];
       }
     });
     
     // Elementos com data-translate-key-placeholder para placeholders
-    const placeholderElements = document.querySelectorAll('[data-translate-key-placeholder]');
-    console.log(`📋 Encontrados ${placeholderElements.length} placeholders para traduzir`);
-    
-    placeholderElements.forEach(el => {
+    document.querySelectorAll('[data-translate-key-placeholder]').forEach(el => {
       const key = el.getAttribute('data-translate-key-placeholder');
       if (key && this.translations[lang] && this.translations[lang][key]) {
         el.placeholder = this.translations[lang][key];
-        console.log(`🔄 Placeholder traduzido "${key}"`);
       }
     });
     
     // Tooltips
-    const tooltipElements = document.querySelectorAll('[data-tooltip-key]');
-    console.log(`📋 Encontrados ${tooltipElements.length} tooltips para traduzir`);
-    
-    tooltipElements.forEach(el => {
+    document.querySelectorAll('[data-tooltip-key]').forEach(el => {
       const key = el.getAttribute('data-tooltip-key');
       if (key && this.translations[lang] && this.translations[lang][key]) {
         el.setAttribute('data-tooltip', this.translations[lang][key]);
-        console.log(`🔄 Tooltip traduzido "${key}"`);
       }
     });
     
@@ -103,21 +72,18 @@ const i18n = {
     const pageTitle = document.getElementById('pageTitle');
     if (pageTitle) {
       pageTitle.textContent = this.t('pageTitle');
-      console.log(`🔄 Título da página atualizado: "${pageTitle.textContent}"`);
     }
     
     // Atualizar cabeçalho do código
     const codeHeader = document.getElementById('codeHeader');
     if (codeHeader) {
       codeHeader.textContent = this.t('cppCodeTitle');
-      console.log(`🔄 Cabeçalho do código atualizado: "${codeHeader.textContent}"`);
     }
     
     // Atualizar placeholder do código
     const codeDisplay = document.getElementById('code-display');
     if (codeDisplay && codeDisplay.textContent.includes('//')) {
       codeDisplay.textContent = this.t('cppCodePlaceholder');
-      console.log(`🔄 Placeholder do código atualizado`);
     }
     
     // Atualizar tooltips específicos baseados no estado atual
@@ -130,8 +96,6 @@ const i18n = {
         darkModeToggle.setAttribute('data-tooltip', this.t('darkModeTooltip'));
       }
     }
-    
-    console.log(`✅ Traduções aplicadas para ${lang}`);
   },
   
   updateBlocklyBlocks() {
@@ -293,44 +257,28 @@ const i18n = {
 // Inicialização quando a página carregar
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('🚀 Inicializando sistema i18n...');
-  console.log('📊 Estado inicial do DOM:', document.readyState);
   
-  try {
-    // Verificar se os elementos necessários existem
-    const languageToggle = document.getElementById('languageToggle');
-    const languageOptions = document.querySelectorAll('.language-option');
-    console.log('🔍 Elemento languageToggle encontrado:', !!languageToggle);
-    console.log('🔍 Opções de idioma encontradas:', languageOptions.length);
-    
-    // Carregar ambos os idiomas
-    console.log('📥 Carregando traduções...');
-    await i18n.loadTranslations('pt-BR');
-    await i18n.loadTranslations('en-US');
-    
-    console.log('📊 Traduções carregadas:', Object.keys(i18n.translations));
-    
-    // Definir idioma atual
-    console.log('🌐 Definindo idioma atual:', i18n.current);
-    await i18n.setLanguage(i18n.current);
-    
-    console.log('✅ Sistema i18n inicializado com sucesso!');
-    
-    // Disponibilizar globalmente
-    window.i18n = i18n;
-    console.log('🌍 i18n disponibilizado globalmente:', !!window.i18n);
-    
-    // Testar uma tradução
-    console.log('🧪 Teste de tradução para "pageTitle":', i18n.t('pageTitle'));
-    
-    // Verificar se os elementos HTML estão sendo traduzidos
-    setTimeout(() => {
-      const pageTitle = document.getElementById('pageTitle');
-      if (pageTitle) {
-        console.log('📝 Texto atual do título:', pageTitle.textContent);
-      }
-    }, 1000);
-    
-  } catch (error) {
-    console.error('❌ Erro ao inicializar i18n:', error);
+  // Carregar ambos os idiomas
+  await i18n.loadTranslations('pt-BR');
+  await i18n.loadTranslations('en-US');
+  
+  // Definir idioma atual
+  await i18n.setLanguage(i18n.current);
+  
+  // Configurar botão de idioma
+  const langBtn = document.getElementById('lang-toggle-btn');
+  if (langBtn) {
+    langBtn.addEventListener('click', async function() {
+      const nextLang = i18n.current === 'pt-BR' ? 'en-US' : 'pt-BR';
+      await i18n.setLanguage(nextLang);
+      langBtn.textContent = i18n.current === 'pt-BR' ? 'EN' : 'PT';
+    });
+    // Atualizar texto do botão ao carregar
+    langBtn.textContent = i18n.current === 'pt-BR' ? 'EN' : 'PT';
   }
+  
+  console.log('✅ Sistema i18n inicializado com sucesso!');
 });
+
+// Disponibilizar globalmente
+window.i18n = i18n;
