@@ -173,6 +173,9 @@ const workspace = Blockly.inject('blocklyDiv', {
   }
 });
 
+// Disponibilizar workspace globalmente para o sistema de tradução
+window.blocklyWorkspace = workspace;
+
 // ============================================================================
 // GARANTIR QUE O BLOCO DELAY_FUNCTION EXISTE - DEFINIÇÃO FORÇADA
 // ============================================================================
@@ -244,6 +247,14 @@ setTimeout(function() {
     console.log('✅ Bloco delay_function encontrado no toolbox!');
   } else {
     console.error('❌ Bloco delay_function NÃO encontrado no toolbox!');
+  }
+  
+  // Notificar o sistema i18n que o Blockly está pronto
+  if (window.i18n) {
+    console.log('🌐 Notificando sistema i18n que Blockly está pronto...');
+    window.dispatchEvent(new CustomEvent('blocklyReady', { 
+      detail: { workspace: workspace } 
+    }));
   }
 }, 1000);
 

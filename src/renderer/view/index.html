@@ -451,6 +451,24 @@
         variableModal.style.display = 'none';
       }
     });
+
+    // Função para testar tradução dos blocos (disponível no console)
+    window.testBlockTranslation = function() {
+      if (window.i18n) {
+        console.log('🧪 Testando tradução dos blocos...');
+        window.i18n.forceTranslateBlocks();
+      } else {
+        console.log('❌ Sistema i18n não disponível');
+      }
+    };
+
+    // Adicionar evento de teclado para teste rápido (Ctrl+Shift+T)
+    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.shiftKey && event.key === 'T') {
+        event.preventDefault();
+        window.testBlockTranslation();
+      }
+    });
   </script>
 </body>
 </html>
