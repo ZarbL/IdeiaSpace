@@ -839,35 +839,35 @@ body {
 
 /* Estilos para blocos HMC5883 específicos */
 .blocklyBlock[data-type="hmc5883_init"] {
-  border: 2px solid #E74C3C !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_begin"] {
-  border: 2px solid #DC143C !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type*="hmc5883_mag"] {
-  border: 2px solid #FF6B6B !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_heading"] {
-  border: 2px solid #8B0000 !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_set_gain"] {
-  border: 2px solid #B22222 !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_direction_text"] {
-  border: 2px solid #CD853F !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_declination"] {
-  border: 2px solid #A0522D !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_field_strength"] {
-  border: 2px solid #FF1493 !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_sensor_info"] {
@@ -876,15 +876,71 @@ body {
 }
 
 .blocklyBlock[data-type="hmc5883_sensor_object"] {
-  border: 2px solid #800000 !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_event_declare"] {
-  border: 2px solid #8B0000 !important;
+  border: 2px solid #9932CC !important;
 }
 
 .blocklyBlock[data-type="hmc5883_get_event"] {
-  border: 2px solid #8B0000 !important;
+  border: 2px solid #9932CC !important;
+}
+
+.blocklyBlock[data-type="hmc5883_atan2"] {
+  border: 2px solid #9932CC !important;
+}
+
+.blocklyBlock[data-type="hmc5883_display_sensor"] {
+  border: 2px solid #9932CC !important;
+}
+
+/* Garantir que o bloco de biblioteca HMC5883 mantenha a cor padrão de bibliotecas */
+.blocklyBlock[data-type="library_hmc5883"] {
+  border: 2px solid #3c3c3c !important;
+}
+
+/* Bloco de correção de direção (heading_correction) - HMC5883 relacionado */
+.blocklyBlock[data-type="heading_correction"] {
+  border: 2px solid #9932CC !important;
+  background: linear-gradient(135deg, #9932CC 0%, #7B2C85 100%) !important;
+}
+
+/* Forçar cor roxa para o bloco heading_correction em qualquer contexto */
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="heading_correction"],
+.blocklyFlyout .blocklyBlock[data-type="heading_correction"],
+.blocklyBlock[data-type="heading_correction"] {
+  background: #9932CC !important;
+  border: 2px solid #9932CC !important;
+  fill: #9932CC !important;
+}
+
+.blocklyBlock[data-type="heading_correction"] .blocklyPath,
+.blocklyBlock[data-type="heading_correction"] path,
+.blocklyBlock[data-type="heading_correction"] rect {
+  fill: #9932CC !important;
+  stroke: #7B2C85 !important;
+}
+
+/* Estilos para blocos BMP180 específicos - Vermelho Terracota */
+.blocklyBlock[data-type="bmp180_init"] {
+  border: 2px solid #8a2e2e !important;
+}
+
+.blocklyBlock[data-type="bmp180_temperature"] {
+  border: 2px solid #8a2e2e !important;
+}
+
+.blocklyBlock[data-type="bmp180_pressure"] {
+  border: 2px solid #8a2e2e !important;
+}
+
+.blocklyBlock[data-type="bmp180_altitude"] {
+  border: 2px solid #8a2e2e !important;
+}
+
+.blocklyBlock[data-type="library_bmp180"] {
+  border: 2px solid #3c3c3c !important;
 }
 
 /* Estilos específicos para o workspace do Blockly no modo escuro */
@@ -1307,102 +1363,118 @@ body {
   transition: all 0.3s ease !important;
 }
 
-/* BLOCOS BMP180 - Tons de Terracota/Laranja */
+/* BLOCOS BMP180 - Tons de Vermelho Terracota */
 .blocklyBlock[data-type="bmp180_init"] {
-  border: 2px solid #DC7633 !important;
-  background: linear-gradient(135deg, #DC7633 0%, #CA6F1E 100%) !important;
+  border: 2px solid #8a2e2e !important;
+  background: linear-gradient(135deg, #8a2e2e 0%, #7a2525 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(220, 118, 51, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(138, 46, 46, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bmp180_pressure"] {
-  border: 2px solid #3498DB !important;
-  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+  border: 2px solid #8a2e2e !important;
+  background: linear-gradient(135deg, #8a2e2e 0%, #7a2525 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(138, 46, 46, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bmp180_temperature"] {
-  border: 2px solid #E67E22 !important;
-  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border: 2px solid #8a2e2e !important;
+  background: linear-gradient(135deg, #8a2e2e 0%, #7a2525 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(138, 46, 46, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bmp180_altitude"] {
-  border: 2px solid #28B463 !important;
-  background: linear-gradient(135deg, #28B463 0%, #229954 100%) !important;
+  border: 2px solid #8a2e2e !important;
+  background: linear-gradient(135deg, #8a2e2e 0%, #7a2525 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(40, 180, 99, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(138, 46, 46, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
-/* BLOCOS BH1750 - Tons de Amarelo/Dourado (Luminosidade) */
+/* BLOCOS BH1750 - Cor #fccf03 (Luminosidade) */
 .blocklyBlock[data-type="bh1750_init"] {
-  border: 2px solid #F1C40F !important;
-  background: linear-gradient(135deg, #F1C40F 0%, #F39C12 100%) !important;
+  border: 2px solid #fccf03 !important;
+  background: linear-gradient(135deg, #fccf03 0%, #e6b803 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(241, 196, 15, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(252, 207, 3, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bh1750_light_level"] {
-  border: 2px solid #FFD700 !important;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  border: 2px solid #fccf03 !important;
+  background: linear-gradient(135deg, #fccf03 0%, #e6b803 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(252, 207, 3, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bh1750_set_mode"] {
-  border: 2px solid #F39C12 !important;
-  background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%) !important;
+  border: 2px solid #fccf03 !important;
+  background: linear-gradient(135deg, #fccf03 0%, #e6b803 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(252, 207, 3, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="bh1750_begin"] {
-  border: 2px solid #FFCC00 !important;
-  background: linear-gradient(135deg, #FFCC00 0%, #FF9900 100%) !important;
+  border: 2px solid #fccf03 !important;
+  background: linear-gradient(135deg, #fccf03 0%, #e6b803 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(255, 204, 0, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(252, 207, 3, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="library_bh1750"] {
-  border: 2px solid #F4D03F !important;
-  background: linear-gradient(135deg, #F4D03F 0%, #F1C40F 100%) !important;
+  border: 2px solid #fccf03 !important;
+  background: linear-gradient(135deg, #fccf03 0%, #e6b803 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(244, 208, 63, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(252, 207, 3, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
-/* BLOCOS DHT - Tons de Teal/Verde-azulado */
+/* BLOCOS DHT - Ferrari Red */
 .blocklyBlock[data-type="dht_init"] {
-  border: 2px solid #17A2B8 !important;
-  background: linear-gradient(135deg, #17A2B8 0%, #138496 100%) !important;
+  border: 2px solid #FF2800 !important;
+  background: linear-gradient(135deg, #FF2800 0%, #DC143C 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 40, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="dht_temperature"] {
-  border: 2px solid #E67E22 !important;
-  background: linear-gradient(135deg, #E67E22 0%, #DC7633 100%) !important;
+  border: 2px solid #FF2800 !important;
+  background: linear-gradient(135deg, #FF2800 0%, #DC143C 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 40, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type="dht_humidity"] {
-  border: 2px solid #20B2AA !important;
-  background: linear-gradient(135deg, #20B2AA 0%, #17A2B8 100%) !important;
+  border: 2px solid #FF2800 !important;
+  background: linear-gradient(135deg, #FF2800 0%, #DC143C 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(32, 178, 170, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 40, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_begin"] {
+  border: 2px solid #FF2800 !important;
+  background: linear-gradient(135deg, #FF2800 0%, #DC143C 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 40, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="dht_heat_index"] {
+  border: 2px solid #FF2800 !important;
+  background: linear-gradient(135deg, #FF2800 0%, #DC143C 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 40, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 

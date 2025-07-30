@@ -488,7 +488,7 @@ Blockly.Blocks['bmp180_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#CD853F");
+    this.setColour("#8a2e2e");
     this.setTooltip("Inicializa o sensor BMP180 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -503,7 +503,7 @@ Blockly.Blocks['bmp180_pressure'] = {
     this.appendDummyInput()
         .appendField("📊 Pressão");
     this.setOutput(true, 'Number');
-    this.setColour("#CD853F");
+    this.setColour("#8a2e2e");
     this.setTooltip('Lê o valor de pressão do BMP180 em Pascals');
     this.setHelpUrl('');
   }
@@ -518,7 +518,7 @@ Blockly.Blocks['bmp180_temperature'] = {
     this.appendDummyInput()
         .appendField("🌡️ Temperatura");
     this.setOutput(true, 'Number');
-    this.setColour("#CD853F");
+    this.setColour("#8a2e2e");
     this.setTooltip('Lê o valor de temperatura do BMP180 em graus Celsius');
     this.setHelpUrl('');
   }
@@ -533,7 +533,7 @@ Blockly.Blocks['bmp180_altitude'] = {
     this.appendDummyInput()
         .appendField("📏 Altura");
     this.setOutput(true, 'Number');
-    this.setColour("#CD853F");
+    this.setColour("#8a2e2e");
     this.setTooltip('Lê o valor de altitude do BMP180 em metros');
     this.setHelpUrl('');
   }
@@ -567,7 +567,7 @@ Blockly.Blocks['bh1750_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFC000");
+    this.setColour("#fccf03");
     this.setTooltip("Inicializa o sensor BH1750 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -582,7 +582,7 @@ Blockly.Blocks['bh1750_light_level'] = {
     this.appendDummyInput()
         .appendField("☀️ Luminosidade (lux)");
     this.setOutput(true, 'Number');
-    this.setColour("#FFC000");
+    this.setColour("#fccf03");
     this.setTooltip('Lê o valor de luminosidade do BH1750 em lux');
     this.setHelpUrl('');
   }
@@ -606,7 +606,7 @@ Blockly.Blocks['bh1750_set_mode'] = {
         ]), "MODE");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFC000");
+    this.setColour("#fccf03");
     this.setTooltip("Configura o modo de medição do sensor BH1750");
     this.setHelpUrl("");
   }
@@ -622,7 +622,7 @@ Blockly.Blocks['bh1750_begin'] = {
         .appendField("🚀 Iniciar BH1750");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFC000");
+    this.setColour("#fccf03");
     this.setTooltip("Inicia a comunicação com o sensor BH1750");
     this.setHelpUrl("");
   }
@@ -812,7 +812,7 @@ Blockly.Blocks['hmc5883_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip("Inicializa o magnetômetro/bússola HMC5883 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -828,7 +828,7 @@ Blockly.Blocks['hmc5883_begin'] = {
         .appendField("🚀 HMC5883 Begin");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip("Inicia a comunicação com o magnetômetro HMC5883");
     this.setHelpUrl("");
   }
@@ -843,7 +843,7 @@ Blockly.Blocks['hmc5883_mag_x'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - X");
     this.setOutput(true, 'Number');
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip('Lê o valor do campo magnético no eixo X em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -858,7 +858,7 @@ Blockly.Blocks['hmc5883_mag_y'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - Y");
     this.setOutput(true, 'Number');
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip('Lê o valor do campo magnético no eixo Y em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -873,7 +873,7 @@ Blockly.Blocks['hmc5883_mag_z'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - Z");
     this.setOutput(true, 'Number');
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip('Lê o valor do campo magnético no eixo Z em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -888,7 +888,7 @@ Blockly.Blocks['hmc5883_heading'] = {
     this.appendDummyInput()
         .appendField("🧭 Direção da Bússola (graus)");
     this.setOutput(true, 'Number');
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip('Calcula a direção da bússola em graus (0-360°) baseado nos valores X e Y');
     this.setHelpUrl('');
   }
@@ -913,7 +913,7 @@ Blockly.Blocks['hmc5883_set_gain'] = {
         ]), "GAIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#8B008B");
+    this.setColour("#9932CC");
     this.setTooltip("Configura o ganho/sensibilidade do magnetômetro HMC5883 (Gauss)");
     this.setHelpUrl("");
   }
@@ -929,7 +929,7 @@ Blockly.Blocks['hmc5883_event_declare'] = {
         .appendField("📡 sensors_event_t event;");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#8B0000");
+    this.setColour("#9932CC");
     this.setTooltip('Declara uma variável de evento para o sensor HMC5883');
     this.setHelpUrl('');
   }
@@ -945,7 +945,7 @@ Blockly.Blocks['hmc5883_get_event'] = {
         .appendField("🔄 mag.getEvent(&event);");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#8B0000");
+    this.setColour("#9932CC");
     this.setTooltip('Obtém os dados mais recentes do magnetômetro HMC5883');
     this.setHelpUrl('');
   }
@@ -962,7 +962,7 @@ Blockly.Blocks['hmc5883_declination'] = {
         .appendField(new Blockly.FieldNumber(0, -180, 180, 0.1), "DECLINATION")
         .appendField("graus");
     this.setOutput(true, 'Number');
-    this.setColour("#A0522D");
+    this.setColour("#9932CC");
     this.setTooltip('Define o ângulo de declinação magnética da sua localização para correção da bússola');
     this.setHelpUrl('');
   }
@@ -978,7 +978,7 @@ Blockly.Blocks['hmc5883_direction_text'] = {
         .setCheck("Number")
         .appendField("🧭 Direção Cardinal:");
     this.setOutput(true, 'String');
-    this.setColour("#CD853F");
+    this.setColour("#9932CC");
     this.setTooltip('Converte o ângulo da bússola em direção cardinal (N, NE, E, SE, S, SW, W, NW)');
     this.setHelpUrl('');
   }
@@ -994,7 +994,7 @@ Blockly.Blocks['hmc5883_sensor_object'] = {
         .appendField("🧭 Inicializador HMC5883");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#800000");
+    this.setColour("#9932CC");
     this.setTooltip('Declara o objeto do sensor HMC5883 com ID único');
     this.setHelpUrl('');
   }
@@ -1009,7 +1009,7 @@ Blockly.Blocks['hmc5883_field_strength'] = {
     this.appendDummyInput()
         .appendField("🧲 Intensidade Total do Campo");
     this.setOutput(true, 'Number');
-    this.setColour("#FF1493");
+    this.setColour("#9932CC");
     this.setTooltip('Calcula a intensidade total do campo magnético usando sqrt(X² + Y² + Z²)');
     this.setHelpUrl('');
   }
@@ -1063,7 +1063,7 @@ Blockly.Blocks['hmc5883_atan2'] = {
     this.appendDummyInput()
         .appendField("📐 Atan2 (Y, X)");
     this.setOutput(true, 'Number');
-    this.setColour("#8B0000");
+    this.setColour("#9932CC");
     this.setTooltip('Calcula atan2(event.magnetic.y, event.magnetic.x) para determinar o ângulo da bússola em radianos');
     this.setHelpUrl('');
   }
@@ -1229,7 +1229,7 @@ Blockly.Blocks['heading_correction'] = {
         .appendField("converter para graus");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#D68910");
+    this.setColour("#9932CC");
     this.setTooltip('Corrige o heading com declinação magnética, normaliza entre 0-2π e converte para graus. Cria a variável headingDegrees. Usado em navegação aeroespacial.');
     this.setHelpUrl('');
   }
@@ -1337,7 +1337,7 @@ Blockly.Blocks['dht_init'] = {
         ]), "PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#32CD32");
+    this.setColour("#FF2800");
     this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
     this.setHelpUrl('');
   }
@@ -1353,7 +1353,7 @@ Blockly.Blocks['dht_temperature'] = {
         .appendField("🌡️")
         .appendField("Temperatura DHT");
     this.setOutput(true, 'Number');
-    this.setColour("#32CD32");
+    this.setColour("#FF2800");
     this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
     this.setHelpUrl('');
   }
@@ -1369,7 +1369,7 @@ Blockly.Blocks['dht_humidity'] = {
         .appendField("💧")
         .appendField("Umidade DHT");
     this.setOutput(true, 'Number');
-    this.setColour("#32CD32");
+    this.setColour("#FF2800");
     this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
     this.setHelpUrl('');
   }
@@ -1386,7 +1386,7 @@ Blockly.Blocks['dht_begin'] = {
         .appendField("DHT Begin");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#32CD32");
+    this.setColour("#FF2800");
     this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
     this.setHelpUrl('');
   }
@@ -1411,7 +1411,7 @@ Blockly.Blocks['dht_heat_index'] = {
         .setCheck(["String", "Boolean"])
         .appendField("Condição:");
     this.setOutput(true, 'Number');
-    this.setColour("#32CD32");
+    this.setColour("#FF2800");
     this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
     this.setHelpUrl('');
   }

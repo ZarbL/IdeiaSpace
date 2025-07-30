@@ -243,7 +243,7 @@ const i18n = {
             ]), "SDA_PIN");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(120);
+        this.setColour("#8a2e2e");
         this.setTooltip("Inicializa o sensor BMP180 com os pinos SCL e SDA especificados");
         this.setHelpUrl("");
       };
@@ -254,7 +254,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('pressure') || "📊 Pressão");
         this.setOutput(true, 'Number');
-        this.setColour(200);
+        this.setColour("#8a2e2e");
         this.setTooltip('Lê o valor de pressão do BMP180 em Pascals');
         this.setHelpUrl('');
       };
@@ -265,7 +265,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('temperature') || "🌡️ Temperatura");
         this.setOutput(true, 'Number');
-        this.setColour(30);
+        this.setColour("#8a2e2e");
         this.setTooltip('Lê o valor de temperatura do BMP180 em graus Celsius');
         this.setHelpUrl('');
       };
@@ -276,7 +276,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('altitude') || "📏 Altura");
         this.setOutput(true, 'Number');
-        this.setColour(260);
+        this.setColour("#8a2e2e");
         this.setTooltip('Lê o valor de altitude do BMP180 em metros');
         this.setHelpUrl('');
       };
@@ -297,7 +297,7 @@ const i18n = {
             ]), "SDA_PIN");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(45);
+        this.setColour("#fccf03");
         this.setTooltip("Inicializa o sensor BH1750 com os pinos SCL e SDA especificados");
         this.setHelpUrl("");
       };
@@ -308,7 +308,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('light_level_lux') || "☀️ Luminosidade (lux)");
         this.setOutput(true, 'Number');
-        this.setColour(60);
+        this.setColour("#fccf03");
         this.setTooltip('Lê o valor de luminosidade do BH1750 em lux');
         this.setHelpUrl('');
       };
@@ -328,7 +328,7 @@ const i18n = {
             ]), "MODE");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(45);
+        this.setColour("#fccf03");
         this.setTooltip("Configura o modo de medição do sensor BH1750");
         this.setHelpUrl("");
       };
@@ -340,7 +340,7 @@ const i18n = {
             .appendField(window.i18n.t('start_bh1750') || "🚀 Iniciar BH1750");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(45);
+        this.setColour("#fccf03");
         this.setTooltip("Inicia a comunicação com o sensor BH1750");
         this.setHelpUrl("");
       };
@@ -507,7 +507,7 @@ const i18n = {
             .appendField(window.i18n.t('convert_to_degrees') || "converter para graus");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour("#D68910");
+        this.setColour("#9932CC");
         this.setTooltip('Corrige o heading com declinação magnética, normaliza entre 0-2π e converte para graus. Cria a variável headingDegrees. Usado em navegação aeroespacial.');
         this.setHelpUrl('');
       };
@@ -697,7 +697,7 @@ const i18n = {
             ]), "PIN");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(120);
+        this.setColour("#FF2800");
         this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
         this.setHelpUrl('');
       };
@@ -708,7 +708,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('dht_temperature') || "🌡️ Temperatura DHT");
         this.setOutput(true, 'Number');
-        this.setColour(30);
+        this.setColour("#FF2800");
         this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
         this.setHelpUrl('');
       };
@@ -719,7 +719,7 @@ const i18n = {
         this.appendDummyInput()
             .appendField(window.i18n.t('dht_humidity') || "💧 Umidade DHT");
         this.setOutput(true, 'Number');
-        this.setColour(200);
+        this.setColour("#FF2800");
         this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
         this.setHelpUrl('');
       };
@@ -731,7 +731,7 @@ const i18n = {
             .appendField(window.i18n.t('dht_begin') || "🚀 DHT Begin");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(120);
+        this.setColour("#FF2800");
         this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
         this.setHelpUrl('');
       };
@@ -751,7 +751,7 @@ const i18n = {
             .setCheck(["String", "Boolean"])
             .appendField(window.i18n.t('condition_input') || "Condição:");
         this.setOutput(true, 'Number');
-        this.setColour(30);
+        this.setColour("#FF2800");
         this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
         this.setHelpUrl('');
       };
