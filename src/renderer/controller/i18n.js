@@ -513,6 +513,128 @@ const i18n = {
       };
     }
     
+    // Redefinir blocos de Bibliotecas (Libraries)
+    if (Blockly.Blocks['library_bmp180']) {
+      Blockly.Blocks['library_bmp180'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_library_bmp180') || "Incluir biblioteca BMP180");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui as bibliotecas necessárias para o sensor BMP180 (pressão, temperatura, altitude)');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_mpu6050']) {
+      Blockly.Blocks['library_mpu6050'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_library_mpu6050') || "Incluir biblioteca MPU6050");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui as bibliotecas necessárias para o sensor MPU6050 (acelerômetro e giroscópio)');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_dht']) {
+      Blockly.Blocks['library_dht'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_library_dht') || "Incluir biblioteca DHT")
+            .appendField(new Blockly.FieldDropdown([
+              ["DHT11", "DHT11"],
+              ["DHT22", "DHT22"]
+            ]), "TYPE");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui as bibliotecas necessárias para sensores DHT11/DHT22 (temperatura e umidade)');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_wire']) {
+      Blockly.Blocks['library_wire'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_library_wire') || "Incluir biblioteca Wire (I2C)");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui a biblioteca Wire para comunicação I2C');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_arduino_basic']) {
+      Blockly.Blocks['library_arduino_basic'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_basic_arduino_libraries') || "Incluir bibliotecas básicas Arduino");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui as bibliotecas básicas do Arduino (pinMode, digitalWrite, digitalRead, etc.)');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_sensor']) {
+      Blockly.Blocks['library_sensor'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('adafruit_library') || "Biblioteca AdaFruit");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui a biblioteca Adafruit_Sensor.h necessária para sensores Adafruit');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_bh1750']) {
+      Blockly.Blocks['library_bh1750'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('include_library_bh1750') || "Incluir biblioteca BH1750");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui as bibliotecas necessárias para o sensor BH1750 (luminosidade)');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_hmc5883']) {
+      Blockly.Blocks['library_hmc5883'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('hmc5883_library') || "Biblioteca HMC5883");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui a biblioteca Adafruit_HMC5883_U.h para magnetômetro/bússola');
+        this.setHelpUrl('');
+      };
+    }
+    
+    if (Blockly.Blocks['library_math']) {
+      Blockly.Blocks['library_math'].init = function() {
+        this.appendDummyInput()
+            .appendField("📚")
+            .appendField(window.i18n.t('math_library') || "Biblioteca Math");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(60);
+        this.setTooltip('Inclui a biblioteca math.h para constantes matemáticas (PI, funções trigonométricas, etc.)');
+        this.setHelpUrl('');
+      };
+    }
+    
     // Redefinir blocos DHT (Temperature and Humidity)
     if (Blockly.Blocks['dht_init']) {
       Blockly.Blocks['dht_init'].init = function() {
@@ -884,6 +1006,51 @@ const i18n = {
           { text: '🧭 Corrigir direção', key: 'correct_heading' },
           { text: 'declinação:', key: 'declination_input' },
           { text: 'converter para graus', key: 'convert_to_degrees' }
+        ]
+      },
+      'library_bmp180': {
+        fields: [
+          { text: 'Incluir biblioteca BMP180', key: 'include_library_bmp180' }
+        ]
+      },
+      'library_mpu6050': {
+        fields: [
+          { text: 'Incluir biblioteca MPU6050', key: 'include_library_mpu6050' }
+        ]
+      },
+      'library_dht': {
+        fields: [
+          { text: 'Incluir biblioteca DHT', key: 'include_library_dht' }
+        ]
+      },
+      'library_wire': {
+        fields: [
+          { text: 'Incluir biblioteca Wire (I2C)', key: 'include_library_wire' }
+        ]
+      },
+      'library_arduino_basic': {
+        fields: [
+          { text: 'Incluir bibliotecas básicas Arduino', key: 'include_basic_arduino_libraries' }
+        ]
+      },
+      'library_sensor': {
+        fields: [
+          { text: 'Biblioteca AdaFruit', key: 'adafruit_library' }
+        ]
+      },
+      'library_bh1750': {
+        fields: [
+          { text: 'Incluir biblioteca BH1750', key: 'include_library_bh1750' }
+        ]
+      },
+      'library_hmc5883': {
+        fields: [
+          { text: 'Biblioteca HMC5883', key: 'hmc5883_library' }
+        ]
+      },
+      'library_math': {
+        fields: [
+          { text: 'Biblioteca Math', key: 'math_library' }
         ]
       }
     };

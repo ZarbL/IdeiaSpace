@@ -71,6 +71,17 @@
   "declination_input": "declinação:",
   "convert_to_degrees": "converter para graus",
   
+  "_comment_libraries": "Blocos de Bibliotecas",
+  "include_library_bmp180": "Incluir biblioteca BMP180",
+  "include_library_mpu6050": "Incluir biblioteca MPU6050", 
+  "include_library_dht": "Incluir biblioteca DHT",
+  "include_library_wire": "Incluir biblioteca Wire (I2C)",
+  "include_basic_arduino_libraries": "Incluir bibliotecas básicas Arduino",
+  "adafruit_library": "Biblioteca AdaFruit",
+  "include_library_bh1750": "Incluir biblioteca BH1750",
+  "hmc5883_library": "Biblioteca HMC5883",
+  "math_library": "Biblioteca Math",
+  
   "_comment_categories": "Categorias do Toolbox",
   "CAT_LOGIC": "Lógica",
   "CAT_CONTROL": "Controle",
@@ -136,7 +147,6 @@
   "variableInvalidName": "⚠️ Por favor, digite um nome válido para a variável!",
   "variableAlreadyExists": "❌ Uma variável com este nome já existe!",
   
-  "_comment_libraries": "Bibliotecas",
   "library_arduino_basic": "📚 Arduino Básico",
   "library_wire": "🔌 Wire (I2C)",
   "library_adafruit": "🎛️ Adafruit Unified Sensor",
