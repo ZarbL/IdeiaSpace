@@ -837,36 +837,6 @@ body {
   background-color: transparent !important;
 }
 
-/* Estilos para blocos MPU6050 específicos */
-.blocklyBlock[data-type="mpu6050_init"] {
-  border: 2px solid #4CAF50 !important;
-}
-
-.blocklyBlock[data-type*="mpu6050_accel"] {
-  border: 2px solid #2196F3 !important;
-}
-
-.blocklyBlock[data-type*="mpu6050_gyro"] {
-  border: 2px solid #9C27B0 !important;
-}
-
-.blocklyBlock[data-type="mpu6050_read"] {
-  border: 2px solid #00BCD4 !important;
-}
-
-/* Estilos para blocos de configuração MPU6050 */
-.blocklyBlock[data-type="mpu6050_set_accel_range"] {
-  border: 2px solid #FF9800 !important;
-}
-
-.blocklyBlock[data-type="mpu6050_set_gyro_range"] {
-  border: 2px solid #FF5722 !important;
-}
-
-.blocklyBlock[data-type="mpu6050_set_filter_bandwidth"] {
-  border: 2px solid #795548 !important;
-}
-
 /* Estilos para blocos HMC5883 específicos */
 .blocklyBlock[data-type="hmc5883_init"] {
   border: 2px solid #E74C3C !important;
@@ -1272,36 +1242,68 @@ body {
   transition: all 0.3s ease !important;
 }
 
-/* BLOCOS MPU6050 - Tons de Azul Tecnológico */
+/* BLOCOS MPU6050 - Tons de Laranja (Medidas Inerciais) */
 .blocklyBlock[data-type="mpu6050_init"] {
-  border: 2px solid #2E86AB !important;
-  background: linear-gradient(135deg, #2E86AB 0%, #1B4F72 100%) !important;
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(46, 134, 171, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type*="mpu6050_accel"] {
-  border: 2px solid #5DADE2 !important;
-  background: linear-gradient(135deg, #5DADE2 0%, #2E86AB 100%) !important;
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(93, 173, 226, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type*="mpu6050_gyro"] {
-  border: 2px solid #85C1E9 !important;
-  background: linear-gradient(135deg, #85C1E9 0%, #5DADE2 100%) !important;
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(133, 193, 233, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 .blocklyBlock[data-type*="mpu6050_set"] {
-  border: 2px solid #1B4F72 !important;
-  background: linear-gradient(135deg, #1B4F72 0%, #154360 100%) !important;
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
   border-radius: 6px !important;
-  box-shadow: 0 3px 10px rgba(27, 79, 114, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="mpu6050_read"] {
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="mpu6050_sensors_event"] {
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="mpu6050_get_event"] {
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="mpu6050_not"] {
+  border: 2px solid #FF8C00 !important;
+  background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(255, 140, 0, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
@@ -1452,4 +1454,96 @@ body {
   font-weight: 600 !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
   fill: #FFFFFF !important;
+}
+
+/* ============================================================================
+   FORÇAR CORES MPU6050 - MAIOR ESPECIFICIDADE (FINAL DO CSS)
+   ============================================================================ */
+
+/* GARANTIR que todos os blocos MPU6050 sejam LARANJA - Máxima Especificidade */
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="mpu6050_init"],
+.blocklyBlock[data-type="mpu6050_init"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type*="mpu6050_accel"],
+.blocklyBlock[data-type*="mpu6050_accel"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type*="mpu6050_gyro"],
+.blocklyBlock[data-type*="mpu6050_gyro"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type*="mpu6050_set"],
+.blocklyBlock[data-type*="mpu6050_set"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="mpu6050_read"],
+.blocklyBlock[data-type="mpu6050_read"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="mpu6050_sensors_event"],
+.blocklyBlock[data-type="mpu6050_sensors_event"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="mpu6050_get_event"],
+.blocklyBlock[data-type="mpu6050_get_event"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+.blocklySvg .blocklyWorkspace .blocklyBlock[data-type="mpu6050_not"],
+.blocklyBlock[data-type="mpu6050_not"] {
+  background: #FF8C00 !important;
+  border: 2px solid #FF8C00 !important;
+  fill: #FF8C00 !important;
+}
+
+/* Forçar cor laranja em TODOS os elementos SVG dos blocos MPU6050 */
+.blocklyBlock[data-type*="mpu6050"] .blocklyPath,
+.blocklyBlock[data-type*="mpu6050"] path,
+.blocklyBlock[data-type*="mpu6050"] rect {
+  fill: #FF8C00 !important;
+  stroke: #FF7F00 !important;
+}
+
+/* Cor laranja específica para toolbox/flyout */
+.blocklyFlyout .blocklyBlock[data-type*="mpu6050"] .blocklyPath,
+.blocklyFlyout .blocklyBlock[data-type*="mpu6050"] path,
+.blocklyFlyout .blocklyBlock[data-type*="mpu6050"] rect {
+  fill: #FF8C00 !important;
+  stroke: #FF7F00 !important;
+}
+
+/* SOBRESCREVER qualquer cor padrão do Blockly para MPU6050 */
+g.blocklyBlock[data-type*="mpu6050"] > path,
+g.blocklyBlock[data-type*="mpu6050"] > rect,
+.blocklyBlockBackground[data-type*="mpu6050"],
+.blocklyPath[data-type*="mpu6050"] {
+  fill: #FF8C00 !important;
+  stroke: #FF7F00 !important;
+}
+
+/* Regra final catch-all para elementos MPU6050 */
+*[data-type*="mpu6050"] {
+  background-color: #FF8C00 !important;
+  fill: #FF8C00 !important;
 }

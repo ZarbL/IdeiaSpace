@@ -1,5 +1,37 @@
 const { ipcRenderer } = require('electron');
 
+// Função para forçar cores laranja nos blocos MPU6050
+function forceMPU6050Colors() {
+  console.log('🎨 Forçando cores laranja para blocos MPU6050...');
+  
+  // Lista de todos os tipos de blocos MPU6050
+  const mpu6050BlockTypes = [
+    'mpu6050_init', 'mpu6050_read', 'mpu6050_not',
+    'mpu6050_accel_x', 'mpu6050_accel_y', 'mpu6050_accel_z',
+    'mpu6050_gyro_x', 'mpu6050_gyro_y', 'mpu6050_gyro_z',
+    'mpu6050_set_accel_range', 'mpu6050_set_gyro_range', 
+    'mpu6050_set_filter_bandwidth', 'mpu6050_sensors_event',
+    'mpu6050_get_event'
+  ];
+  
+  // Forçar cor laranja para cada tipo de bloco
+  mpu6050BlockTypes.forEach(blockType => {
+    if (Blockly.Blocks[blockType]) {
+      // Tentar redefinir a cor se o bloco já existe
+      const originalInit = Blockly.Blocks[blockType].init;
+      if (originalInit) {
+        Blockly.Blocks[blockType].init = function() {
+          originalInit.call(this);
+          this.setColour("#FF8C00"); // Forçar cor laranja
+        };
+      }
+      console.log(`🟠 Cor laranja aplicada ao bloco: ${blockType}`);
+    }
+  });
+  
+  console.log('✅ Cores laranja aplicadas aos blocos MPU6050');
+}
+
 // Função para garantir que os blocos MPU6050 estejam definidos
 function ensureMPU6050Blocks() {
   console.log('🔧 Verificando e forçando definição dos blocos MPU6050...');
@@ -25,7 +57,7 @@ function ensureMPU6050Blocks() {
               [window.i18n ? window.i18n.t('GYRO_Z') : 'Giro Z', 'GYRO_Z']
             ]), 'MPU6050_AXIS');
         this.setOutput(true, 'Number');
-        this.setColour(210);
+        this.setColour("#FF8C00");
         this.setTooltip(tooltip);
         this.setHelpUrl('');
       }
@@ -64,7 +96,7 @@ function ensureMPU6050Blocks() {
         this.appendDummyInput()
             .appendField(notText);
         this.setOutput(true, 'Boolean');
-        this.setColour(210);
+        this.setColour("#FF8C00");
         this.setTooltip(tooltip);
         this.setHelpUrl('');
       }
@@ -82,6 +114,9 @@ function ensureMPU6050Blocks() {
     
     console.log('✅ Bloco mpu6050_not (!mpu) definido com sucesso');
   }
+  
+  // Forçar atualização das cores dos blocos MPU6050
+  forceMPU6050Colors();
 }
 
 // Função para atualizar traduções dos blocos quando o idioma mudar
@@ -150,6 +185,7 @@ window.addEventListener('languageChanged', function(event) {
 // Aguardar carregamento completo e então definir blocos
 setTimeout(() => {
   ensureMPU6050Blocks();
+  forceMPU6050Colors(); // Forçar cores após definição dos blocos
 }, 1000);
 
 // Inicializar Blockly
@@ -172,6 +208,11 @@ const workspace = Blockly.inject('blocklyDiv', {
     scaleSpeed: 1.2
   }
 });
+
+// APLICAR CORES IMEDIATAMENTE APÓS INICIALIZAÇÃO DO BLOCKLY
+console.log('🎨 Forçando cores MPU6050 imediatamente após inicialização...');
+ensureMPU6050Blocks();
+forceMPU6050Colors();
 
 // Disponibilizar workspace globalmente para o sistema de tradução
 window.blocklyWorkspace = workspace;
@@ -230,6 +271,12 @@ if (!Blockly.Cpp['delay_function']) {
 setTimeout(function() {
   console.log('🔄 Atualizando toolbox...');
   workspace.updateToolbox(document.getElementById('toolbox'));
+  
+  // Forçar cores após atualização do toolbox
+  setTimeout(() => {
+    console.log('🎨 Aplicando cores após primeira atualização do toolbox...');
+    forceMPU6050Colors();
+  }, 100);
 }, 100);
 
 // Verificação final após carregamento
@@ -256,6 +303,17 @@ setTimeout(function() {
       detail: { workspace: workspace } 
     }));
   }
+  
+  // Verificação final das cores dos blocos MPU6050
+  console.log('🎨 Verificação final das cores dos blocos MPU6050...');
+  const mpu6050Types = ['mpu6050_init', 'mpu6050_read', 'mpu6050_not'];
+  mpu6050Types.forEach(type => {
+    if (Blockly.Blocks[type]) {
+      console.log(`🔍 Bloco ${type} encontrado`);
+      // Forçar cor laranja uma última vez
+      forceMPU6050Colors();
+    }
+  });
 }, 1000);
 
 // Elementos da interface
@@ -506,7 +564,7 @@ function updateVariableToolboxFallback() {
           <block type="library_dht"></block>
         </category>
         <category name="${t('CAT_SENSORS')}" colour="#0c0931">
-          <category name="${t('CAT_MPU6050')}" colour="#2e2e8a">
+          <category name="${t('CAT_MPU6050')}" colour="#FF8C00">
             <block type="mpu6050_init"></block>
             <sep></sep>
             <block type="mpu6050_accel_x"></block>
@@ -584,6 +642,15 @@ workspace.addChangeListener(function(event) {
       event.type === Blockly.Events.BLOCK_DELETE ||
       event.type === Blockly.Events.BLOCK_MOVE) {
     generateCode();
+    
+    // Verificar se blocos MPU6050 foram criados e aplicar cores
+    if (event.type === Blockly.Events.BLOCK_CREATE) {
+      const createdBlock = workspace.getBlockById(event.blockId);
+      if (createdBlock && createdBlock.type && createdBlock.type.includes('mpu6050')) {
+        console.log('🟠 Bloco MPU6050 criado, aplicando cor laranja:', createdBlock.type);
+        createdBlock.setColour('#FF8C00');
+      }
+    }
   }
 });
 

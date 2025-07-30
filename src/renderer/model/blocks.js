@@ -263,7 +263,7 @@ Blockly.Blocks['mpu6050_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip("Inicializa o sensor MPU6050 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -278,7 +278,7 @@ Blockly.Blocks['mpu6050_accel_x'] = {
     this.appendDummyInput()
         .appendField("📊 Aceleração - X");
     this.setOutput(true, 'Number');
-    this.setColour(230);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de aceleração no eixo X do MPU6050');
     this.setHelpUrl('');
   }
@@ -293,7 +293,7 @@ Blockly.Blocks['mpu6050_accel_y'] = {
     this.appendDummyInput()
         .appendField("📊 Aceleração - Y");
     this.setOutput(true, 'Number');
-    this.setColour(230);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de aceleração no eixo Y do MPU6050');
     this.setHelpUrl('');
   }
@@ -308,7 +308,7 @@ Blockly.Blocks['mpu6050_accel_z'] = {
     this.appendDummyInput()
         .appendField("📊 Aceleração - Z");
     this.setOutput(true, 'Number');
-    this.setColour(230);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de aceleração no eixo Z do MPU6050');
     this.setHelpUrl('');
   }
@@ -323,7 +323,7 @@ Blockly.Blocks['mpu6050_gyro_x'] = {
     this.appendDummyInput()
         .appendField("🌀 Giro - X");
     this.setOutput(true, 'Number');
-    this.setColour(270);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de rotação no eixo X do MPU6050');
     this.setHelpUrl('');
   }
@@ -338,7 +338,7 @@ Blockly.Blocks['mpu6050_gyro_y'] = {
     this.appendDummyInput()
         .appendField("🌀 Giro - Y");
     this.setOutput(true, 'Number');
-    this.setColour(270);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de rotação no eixo Y do MPU6050');
     this.setHelpUrl('');
   }
@@ -353,7 +353,7 @@ Blockly.Blocks['mpu6050_gyro_z'] = {
     this.appendDummyInput()
         .appendField("🌀 Giro - Z");
     this.setOutput(true, 'Number');
-    this.setColour(270);
+    this.setColour("#FF8C00");
     this.setTooltip('Lê o valor de rotação no eixo Z do MPU6050');
     this.setHelpUrl('');
   }
@@ -375,7 +375,7 @@ Blockly.Blocks['mpu6050_set_accel_range'] = {
         ]), "ACCEL_RANGE");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip('Configura o range do acelerômetro do MPU6050');
     this.setHelpUrl('');
   }
@@ -397,7 +397,7 @@ Blockly.Blocks['mpu6050_set_gyro_range'] = {
         ]), "GYRO_RANGE");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip('Configura o range do giroscópio do MPU6050');
     this.setHelpUrl('');
   }
@@ -422,7 +422,7 @@ Blockly.Blocks['mpu6050_set_filter_bandwidth'] = {
         ]), "FILTER_BANDWIDTH");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip('Configura a largura de banda do filtro do MPU6050');
     this.setHelpUrl('');
   }
@@ -438,7 +438,7 @@ Blockly.Blocks['mpu6050_sensors_event'] = {
         .appendField("📡 sensors_event_t a, g, temp;");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip('Declara as variáveis de evento dos sensores do MPU6050');
     this.setHelpUrl('');
   }
@@ -454,7 +454,7 @@ Blockly.Blocks['mpu6050_get_event'] = {
         .appendField("🔄 mpu.getEvent(&a, &g, &temp);");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#FF8C00");
     this.setTooltip('Obtém os eventos dos sensores do MPU6050');
     this.setHelpUrl('');
   }
@@ -488,7 +488,7 @@ Blockly.Blocks['bmp180_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#CD853F");
     this.setTooltip("Inicializa o sensor BMP180 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -503,7 +503,7 @@ Blockly.Blocks['bmp180_pressure'] = {
     this.appendDummyInput()
         .appendField("📊 Pressão");
     this.setOutput(true, 'Number');
-    this.setColour(200);
+    this.setColour("#CD853F");
     this.setTooltip('Lê o valor de pressão do BMP180 em Pascals');
     this.setHelpUrl('');
   }
@@ -518,7 +518,7 @@ Blockly.Blocks['bmp180_temperature'] = {
     this.appendDummyInput()
         .appendField("🌡️ Temperatura");
     this.setOutput(true, 'Number');
-    this.setColour(30);
+    this.setColour("#CD853F");
     this.setTooltip('Lê o valor de temperatura do BMP180 em graus Celsius');
     this.setHelpUrl('');
   }
@@ -533,7 +533,7 @@ Blockly.Blocks['bmp180_altitude'] = {
     this.appendDummyInput()
         .appendField("📏 Altura");
     this.setOutput(true, 'Number');
-    this.setColour(260);
+    this.setColour("#CD853F");
     this.setTooltip('Lê o valor de altitude do BMP180 em metros');
     this.setHelpUrl('');
   }
@@ -567,7 +567,7 @@ Blockly.Blocks['bh1750_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFC000");
     this.setTooltip("Inicializa o sensor BH1750 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -582,7 +582,7 @@ Blockly.Blocks['bh1750_light_level'] = {
     this.appendDummyInput()
         .appendField("☀️ Luminosidade (lux)");
     this.setOutput(true, 'Number');
-    this.setColour(60);
+    this.setColour("#FFC000");
     this.setTooltip('Lê o valor de luminosidade do BH1750 em lux');
     this.setHelpUrl('');
   }
@@ -606,7 +606,7 @@ Blockly.Blocks['bh1750_set_mode'] = {
         ]), "MODE");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFC000");
     this.setTooltip("Configura o modo de medição do sensor BH1750");
     this.setHelpUrl("");
   }
@@ -622,7 +622,7 @@ Blockly.Blocks['bh1750_begin'] = {
         .appendField("🚀 Iniciar BH1750");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFC000");
     this.setTooltip("Inicia a comunicação com o sensor BH1750");
     this.setHelpUrl("");
   }
@@ -812,7 +812,7 @@ Blockly.Blocks['hmc5883_init'] = {
         ]), "SDA_PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#E74C3C");
+    this.setColour("#8B008B");
     this.setTooltip("Inicializa o magnetômetro/bússola HMC5883 com os pinos SCL e SDA especificados");
     this.setHelpUrl("");
   }
@@ -828,7 +828,7 @@ Blockly.Blocks['hmc5883_begin'] = {
         .appendField("🚀 HMC5883 Begin");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#DC143C");
+    this.setColour("#8B008B");
     this.setTooltip("Inicia a comunicação com o magnetômetro HMC5883");
     this.setHelpUrl("");
   }
@@ -843,7 +843,7 @@ Blockly.Blocks['hmc5883_mag_x'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - X");
     this.setOutput(true, 'Number');
-    this.setColour("#FF6B6B");
+    this.setColour("#8B008B");
     this.setTooltip('Lê o valor do campo magnético no eixo X em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -858,7 +858,7 @@ Blockly.Blocks['hmc5883_mag_y'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - Y");
     this.setOutput(true, 'Number');
-    this.setColour("#FF6B6B");
+    this.setColour("#8B008B");
     this.setTooltip('Lê o valor do campo magnético no eixo Y em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -873,7 +873,7 @@ Blockly.Blocks['hmc5883_mag_z'] = {
     this.appendDummyInput()
         .appendField("🧲 Campo Magnético - Z");
     this.setOutput(true, 'Number');
-    this.setColour("#FF6B6B");
+    this.setColour("#8B008B");
     this.setTooltip('Lê o valor do campo magnético no eixo Z em microTesla (μT)');
     this.setHelpUrl('');
   }
@@ -888,7 +888,7 @@ Blockly.Blocks['hmc5883_heading'] = {
     this.appendDummyInput()
         .appendField("🧭 Direção da Bússola (graus)");
     this.setOutput(true, 'Number');
-    this.setColour("#8B0000");
+    this.setColour("#8B008B");
     this.setTooltip('Calcula a direção da bússola em graus (0-360°) baseado nos valores X e Y');
     this.setHelpUrl('');
   }
@@ -913,7 +913,7 @@ Blockly.Blocks['hmc5883_set_gain'] = {
         ]), "GAIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#B22222");
+    this.setColour("#8B008B");
     this.setTooltip("Configura o ganho/sensibilidade do magnetômetro HMC5883 (Gauss)");
     this.setHelpUrl("");
   }
@@ -1181,7 +1181,7 @@ Blockly.Blocks['math_boolean'] = {
           ["0 (false)", "0"]
         ]), "BOOL_VALUE");
     this.setOutput(true, 'Boolean');
-    this.setColour("#e80074"); // Cor pink da categoria Matemática
+    this.setColour(230); // Cor azul padrão da categoria Matemática do Blockly
     this.setTooltip('Retorna um valor booleano: 1 para verdadeiro ou 0 para falso');
     this.setHelpUrl('');
   }
@@ -1207,7 +1207,7 @@ Blockly.Blocks['math_pi'] = {
           ["2π/3", "2 * M_PI / 3"]
         ]), "PI_VALUE");
     this.setOutput(true, 'Number');
-    this.setColour("#D68910"); // Cor laranja da categoria Matemática
+    this.setColour(230); // Cor azul padrão da categoria Matemática do Blockly
     this.setTooltip('Retorna valores da constante matemática Pi (π) e suas variações');
     this.setHelpUrl('');
   }
@@ -1255,7 +1255,7 @@ Blockly.Blocks['text_print'] = {
         .appendField(new Blockly.FieldCheckbox('TRUE'), 'ADD_NEWLINE');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour('#5C7CFA');
+    this.setColour('#00FFFF');
     this.setTooltip('Imprime texto no console serial. Marque a caixa para adicionar quebra de linha.');
     this.setHelpUrl('');
   }
@@ -1271,7 +1271,7 @@ Blockly.Blocks['text'] = {
         .appendField('💬')
         .appendField(new Blockly.FieldTextInput(''), 'TEXT');
     this.setOutput(true, 'String');
-    this.setColour('#5C7CFA');
+    this.setColour('#00FFFF');
     this.setTooltip('Campo de texto para inserir strings');
     this.setHelpUrl('');
   }
@@ -1290,7 +1290,7 @@ Blockly.Blocks['text_join'] = {
         .setCheck(['String', 'Number'])
         .appendField('com');
     this.setOutput(true, 'String');
-    this.setColour('#5C7CFA');
+    this.setColour('#00FFFF');
     this.setTooltip('Junta dois textos em um só');
     this.setHelpUrl('');
   }
@@ -1298,229 +1298,7 @@ Blockly.Blocks['text_join'] = {
 
 // Bloco Text Print definido com sucesso
 
-// ============================================================================
-// SISTEMA DE CORES PARA BLOCOS CUSTOMIZADOS
-// ============================================================================
-
-// Aplicar cores consistentes aos blocos customizados existentes
-
-// Blocos de delay - Roxo
-if (Blockly.Blocks['delay_block']) {
-  const originalDelayInit = Blockly.Blocks['delay_block'].init;
-  Blockly.Blocks['delay_block'].init = function() {
-    originalDelayInit.call(this);
-    this.setColour("#8E44AD");
-  };
-}
-
-// Blocos de hardware - Laranja
-if (Blockly.Blocks['digital_write']) {
-  const originalDigitalWriteInit = Blockly.Blocks['digital_write'].init;
-  Blockly.Blocks['digital_write'].init = function() {
-    originalDigitalWriteInit.call(this);
-    this.setColour("#FF6B35");
-  };
-}
-
-if (Blockly.Blocks['digital_read']) {
-  const originalDigitalReadInit = Blockly.Blocks['digital_read'].init;
-  Blockly.Blocks['digital_read'].init = function() {
-    originalDigitalReadInit.call(this);
-    this.setColour("#58D68D");
-  };
-}
-
-// Blocos de variáveis - Azul
-if (Blockly.Blocks['variable_declaration']) {
-  const originalVarDeclInit = Blockly.Blocks['variable_declaration'].init;
-  Blockly.Blocks['variable_declaration'].init = function() {
-    originalVarDeclInit.call(this);
-    this.setColour("#3498DB");
-  };
-}
-
-// Blocos MPU6050 - Azul tecnológico
-if (Blockly.Blocks['mpu6050_init']) {
-  const originalMPUInit = Blockly.Blocks['mpu6050_init'].init;
-  Blockly.Blocks['mpu6050_init'].init = function() {
-    originalMPUInit.call(this);
-    this.setColour("#2E86AB");
-  };
-}
-
-// Aplicar cores aos outros blocos MPU6050
-const mpuAccelBlocks = ['mpu6050_accel_x', 'mpu6050_accel_y', 'mpu6050_accel_z'];
-mpuAccelBlocks.forEach(blockType => {
-  if (Blockly.Blocks[blockType]) {
-    const originalInit = Blockly.Blocks[blockType].init;
-    Blockly.Blocks[blockType].init = function() {
-      originalInit.call(this);
-      this.setColour("#5DADE2");
-    };
-  }
-});
-
-const mpuGyroBlocks = ['mpu6050_gyro_x', 'mpu6050_gyro_y', 'mpu6050_gyro_z'];
-mpuGyroBlocks.forEach(blockType => {
-  if (Blockly.Blocks[blockType]) {
-    const originalInit = Blockly.Blocks[blockType].init;
-    Blockly.Blocks[blockType].init = function() {
-      originalInit.call(this);
-      this.setColour("#85C1E9");
-    };
-  }
-});
-
-const mpuConfigBlocks = ['mpu6050_set_accel_range', 'mpu6050_set_gyro_range', 'mpu6050_set_filter_bandwidth'];
-mpuConfigBlocks.forEach(blockType => {
-  if (Blockly.Blocks[blockType]) {
-    const originalInit = Blockly.Blocks[blockType].init;
-    Blockly.Blocks[blockType].init = function() {
-      originalInit.call(this);
-      this.setColour("#1B4F72");
-    };
-  }
-});
-
-// Blocos BH1750 - Amarelo/Dourado (Luminosidade)
-if (Blockly.Blocks['bh1750_init']) {
-  const originalBH1750Init = Blockly.Blocks['bh1750_init'].init;
-  Blockly.Blocks['bh1750_init'].init = function() {
-    originalBH1750Init.call(this);
-    this.setColour("#F1C40F");
-  };
-}
-
-if (Blockly.Blocks['bh1750_light_level']) {
-  const originalBH1750Light = Blockly.Blocks['bh1750_light_level'].init;
-  Blockly.Blocks['bh1750_light_level'].init = function() {
-    originalBH1750Light.call(this);
-    this.setColour("#FFD700");
-  };
-}
-
-if (Blockly.Blocks['bh1750_set_mode']) {
-  const originalBH1750Mode = Blockly.Blocks['bh1750_set_mode'].init;
-  Blockly.Blocks['bh1750_set_mode'].init = function() {
-    originalBH1750Mode.call(this);
-    this.setColour("#F39C12");
-  };
-}
-
-if (Blockly.Blocks['bh1750_begin']) {
-  const originalBH1750Begin = Blockly.Blocks['bh1750_begin'].init;
-  Blockly.Blocks['bh1750_begin'].init = function() {
-    originalBH1750Begin.call(this);
-    this.setColour("#FFCC00");
-  };
-}
-
-if (Blockly.Blocks['library_bh1750']) {
-  const originalLibBH1750 = Blockly.Blocks['library_bh1750'].init;
-  Blockly.Blocks['library_bh1750'].init = function() {
-    originalLibBH1750.call(this);
-    this.setColour("#F4D03F");
-  };
-}
-
-// Blocos BMP180 - Terracota/Laranja
-if (Blockly.Blocks['bmp180_init']) {
-  const originalBMPInit = Blockly.Blocks['bmp180_init'].init;
-  Blockly.Blocks['bmp180_init'].init = function() {
-    originalBMPInit.call(this);
-    this.setColour("#DC7633");
-  };
-}
-
-if (Blockly.Blocks['bmp180_pressure']) {
-  const originalBMPPressure = Blockly.Blocks['bmp180_pressure'].init;
-  Blockly.Blocks['bmp180_pressure'].init = function() {
-    originalBMPPressure.call(this);
-    this.setColour("#3498DB");
-  };
-}
-
-if (Blockly.Blocks['bmp180_temperature']) {
-  const originalBMPTemp = Blockly.Blocks['bmp180_temperature'].init;
-  Blockly.Blocks['bmp180_temperature'].init = function() {
-    originalBMPTemp.call(this);
-    this.setColour("#E67E22");
-  };
-}
-
-if (Blockly.Blocks['bmp180_altitude']) {
-  const originalBMPAlt = Blockly.Blocks['bmp180_altitude'].init;
-  Blockly.Blocks['bmp180_altitude'].init = function() {
-    originalBMPAlt.call(this);
-    this.setColour("#28B463");
-  };
-}
-
-// Blocos de estrutura Arduino já definidos com cores corretas
-
-// Blocos de bibliotecas - Roxo escuro
-const libraryBlocks = ['library_bmp180', 'library_bh1750', 'library_mpu6050', 'library_dht', 'library_wire', 'library_arduino_basic', 'library_sensor', 'library_hmc5883', 'library_math'];
-libraryBlocks.forEach(blockType => {
-  if (Blockly.Blocks[blockType]) {
-    const originalInit = Blockly.Blocks[blockType].init;
-    Blockly.Blocks[blockType].init = function() {
-      originalInit.call(this);
-      this.setColour("#7D3C98");
-    };
-  }
-});
-
-// Blocos de tempo - Roxo
-if (Blockly.Blocks['delay_function']) {
-  const originalDelayFunc = Blockly.Blocks['delay_function'].init;
-  Blockly.Blocks['delay_function'].init = function() {
-    originalDelayFunc.call(this);
-    this.setColour("#9B59B6");
-  };
-}
-
-// Blocos de texto - Verde
-if (Blockly.Blocks['text_print']) {
-  const originalTextPrint = Blockly.Blocks['text_print'].init;
-  Blockly.Blocks['text_print'].init = function() {
-    originalTextPrint.call(this);
-    this.setColour("#2ECC71");
-  };
-}
-
-if (Blockly.Blocks['text']) {
-  const originalText = Blockly.Blocks['text'].init;
-  Blockly.Blocks['text'].init = function() {
-    originalText.call(this);
-    this.setColour("#27AE60");
-  };
-}
-
-if (Blockly.Blocks['text_join']) {
-  const originalTextJoin = Blockly.Blocks['text_join'].init;
-  Blockly.Blocks['text_join'].init = function() {
-    originalTextJoin.call(this);
-    this.setColour("#28B463");
-  };
-}
-
-// Bloco booleano matemático - Laranja
-if (Blockly.Blocks['math_boolean']) {
-  const originalMathBool = Blockly.Blocks['math_boolean'].init;
-  Blockly.Blocks['math_boolean'].init = function() {
-    originalMathBool.call(this);
-    this.setColour("#D68910");
-  };
-}
-
-// Bloco PI matemático - Laranja
-if (Blockly.Blocks['math_pi']) {
-  const originalMathPi = Blockly.Blocks['math_pi'].init;
-  Blockly.Blocks['math_pi'].init = function() {
-    originalMathPi.call(this);
-    this.setColour("#D68910");
-  };
-}
+// Blocos de estrutura Arduino definidos com sucesso
 
 // Blocos de estrutura Arduino definidos com sucesso
 // ============================================================================
@@ -1559,7 +1337,7 @@ Blockly.Blocks['dht_init'] = {
         ]), "PIN");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#32CD32");
     this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
     this.setHelpUrl('');
   }
@@ -1575,7 +1353,7 @@ Blockly.Blocks['dht_temperature'] = {
         .appendField("🌡️")
         .appendField("Temperatura DHT");
     this.setOutput(true, 'Number');
-    this.setColour(30);
+    this.setColour("#32CD32");
     this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
     this.setHelpUrl('');
   }
@@ -1591,7 +1369,7 @@ Blockly.Blocks['dht_humidity'] = {
         .appendField("💧")
         .appendField("Umidade DHT");
     this.setOutput(true, 'Number');
-    this.setColour(200);
+    this.setColour("#32CD32");
     this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
     this.setHelpUrl('');
   }
@@ -1608,7 +1386,7 @@ Blockly.Blocks['dht_begin'] = {
         .appendField("DHT Begin");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#32CD32");
     this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
     this.setHelpUrl('');
   }
@@ -1633,7 +1411,7 @@ Blockly.Blocks['dht_heat_index'] = {
         .setCheck(["String", "Boolean"])
         .appendField("Condição:");
     this.setOutput(true, 'Number');
-    this.setColour(30);
+    this.setColour("#32CD32");
     this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
     this.setHelpUrl('');
   }
@@ -1657,7 +1435,7 @@ Blockly.Blocks['arduino_setup'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#E74C3C");
+    this.setColour(120);
     this.setTooltip('Função setup() do Arduino - executa uma vez no início');
     this.setHelpUrl('');
   }
@@ -1675,7 +1453,7 @@ Blockly.Blocks['arduino_loop'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#E67E22");
+    this.setColour(120);
     this.setTooltip('Função loop() do Arduino - executa continuamente');
     this.setHelpUrl('');
   }
@@ -1693,7 +1471,7 @@ Blockly.Blocks['arduino_serial_begin'] = {
         .appendField(")");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#F39C12");
+    this.setColour(120);
     this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
     this.setHelpUrl('');
   }
@@ -1708,7 +1486,7 @@ Blockly.Blocks['serial_not'] = {
     this.appendDummyInput()
         .appendField('❌ !Serial');
     this.setOutput(true, 'Boolean');
-    this.setColour("#F39C12");
+    this.setColour(120);
     this.setTooltip('Verifica se a comunicação serial NÃO está disponível');
     this.setHelpUrl('');
   }
@@ -1726,128 +1504,10 @@ Blockly.Blocks['void_display'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#9B59B6");
+    this.setColour(120);
     this.setTooltip('Função para exibir detalhes dos sensores - útil para debug e informações');
     this.setHelpUrl('');
   }
 };
 
 // Blocos de estrutura Arduino definidos com sucesso
-
-// ============================================================================
-// DHT SENSOR BLOCKS - SENSORES DHT11/DHT22
-// ============================================================================
-
-/**
- * Block for initializing DHT sensor.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_init'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🔧")
-        .appendField("Inicializar DHT")
-        .appendField(new Blockly.FieldDropdown([
-          ["DHT11", "DHT11"],
-          ["DHT22", "DHT22"]
-        ]), "TYPE")
-        .appendField("no pino")
-        .appendField(new Blockly.FieldDropdown([
-          ["2", "2"],
-          ["3", "3"],
-          ["4", "4"],
-          ["5", "5"],
-          ["6", "6"],
-          ["7", "7"],
-          ["8", "8"],
-          ["9", "9"],
-          ["10", "10"],
-          ["11", "11"],
-          ["12", "12"],
-          ["13", "13"],
-          ["14", "14"],
-          ["15", "15"]
-        ]), "PIN");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(120);
-    this.setTooltip('Inicializa o sensor DHT11 ou DHT22 no pino especificado');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for reading DHT temperature.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_temperature'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🌡️")
-        .appendField("Temperatura DHT");
-    this.setOutput(true, 'Number');
-    this.setColour(30);
-    this.setTooltip('Lê o valor de temperatura do sensor DHT em graus Celsius');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for reading DHT humidity.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_humidity'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("💧")
-        .appendField("Umidade DHT");
-    this.setOutput(true, 'Number');
-    this.setColour(200);
-    this.setTooltip('Lê o valor de umidade do sensor DHT em porcentagem');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for DHT begin initialization.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_begin'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🚀")
-        .appendField("DHT Begin");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(120);
-    this.setTooltip('Inicializa o sensor DHT - deve ser usado no setup()');
-    this.setHelpUrl('');
-  }
-};
-
-/**
- * Block for calculating heat index.
- * @this {Blockly.Block}
- */
-Blockly.Blocks['dht_heat_index'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("🌡️🔥")
-        .appendField("Calcular Índice de Calor");
-    this.appendValueInput("TEMPERATURE")
-        .setCheck("Number")
-        .appendField("Temperatura:");
-    this.appendValueInput("HUMIDITY")
-        .setCheck("Number")
-        .appendField("Umidade:");
-    this.appendValueInput("UNIT")
-        .setCheck(["String", "Boolean"])
-        .appendField("Condição:");
-    this.setOutput(true, 'Number');
-    this.setColour(30);
-    this.setTooltip('Calcula o índice de calor usando temperatura, umidade e unidade (true para Fahrenheit, false para Celsius)');
-    this.setHelpUrl('');
-  }
-};
-
-// Blocos DHT definidos com sucesso
