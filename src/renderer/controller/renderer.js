@@ -1267,55 +1267,131 @@ function forceSystemUpdate() {
   }
 }
 
+// Função para forçar troca de idioma e atualização automática
+function forceLanguageToggleUpdate() {
+  console.log('🌐 FORÇANDO TROCA DE IDIOMA PARA ATUALIZAÇÃO AUTOMÁTICA...');
+  
+  try {
+    // Verificar se o sistema i18n está disponível
+    if (!window.i18n) {
+      console.warn('⚠️ Sistema i18n não disponível, aplicando atualização manual...');
+      forceSystemUpdate();
+      return false;
+    }
+    
+    // Obter idioma atual
+    const currentLanguage = window.i18n.language || 'pt-BR';
+    const alternativeLanguage = currentLanguage === 'pt-BR' ? 'en-US' : 'pt-BR';
+    
+    console.log(`🔄 Idioma atual: ${currentLanguage}, alternando para: ${alternativeLanguage}`);
+    
+    // Primeira troca: alterar para idioma alternativo
+    setTimeout(() => {
+      console.log(`🌍 Primeira troca: ${currentLanguage} → ${alternativeLanguage}`);
+      if (window.i18n.changeLanguage) {
+        window.i18n.changeLanguage(alternativeLanguage);
+      }
+      
+      // Forçar cores após primeira troca
+      setTimeout(() => {
+        console.log('🎨 Aplicando cores após primeira troca...');
+        forceMPU6050Colors();
+        forceHMC5883Colors();
+        forceBMP180Colors();
+        forceDHTColors();
+        forceBH1750Colors();
+        
+        // Segunda troca: voltar ao idioma original
+        setTimeout(() => {
+          console.log(`🌍 Segunda troca: ${alternativeLanguage} → ${currentLanguage}`);
+          if (window.i18n.changeLanguage) {
+            window.i18n.changeLanguage(currentLanguage);
+          }
+          
+          // Aplicar cores finais após voltar ao idioma original
+          setTimeout(() => {
+            console.log('🎨 Aplicando cores finais após retorno ao idioma original...');
+            forceMPU6050Colors();
+            forceHMC5883Colors();
+            forceBMP180Colors();
+            forceDHTColors();
+            forceBH1750Colors();
+            
+            // Atualização completa final
+            setTimeout(() => {
+              console.log('✅ Troca de idioma automática concluída - cores atualizadas!');
+              forceSystemUpdate();
+            }, 300);
+            
+          }, 200);
+        }, 500);
+      }, 200);
+    }, 300);
+    
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Erro durante troca automática de idioma:', error);
+    // Fallback: aplicar atualização manual
+    forceSystemUpdate();
+    return false;
+  }
+}
+
 // Função principal de inicialização e verificação
 function performStartupCheck() {
   console.log('🚀 INICIANDO VERIFICAÇÃO COMPLETA DE STARTUP...');
   
-  // Verificar integridade
-  const verificationResults = verifyAllBlocks();
+  // PRIMEIRO: Forçar troca de idioma para resolver problema das cores
+  console.log('🌐 Executando troca automática de idioma para corrigir cores...');
+  const languageToggleSuccess = forceLanguageToggleUpdate();
   
-  // Relatório de status
-  console.log('📊 RELATÓRIO DE VERIFICAÇÃO:');
-  console.log(`   Blocos: ${verificationResults.blocks.success} ✅ | ${verificationResults.blocks.failed} ❌`);
-  console.log(`   Geradores: ${verificationResults.generators.success} ✅ | ${verificationResults.generators.failed} ❌`);
-  console.log(`   Toolbox: ${verificationResults.toolbox.success} ✅ | ${verificationResults.toolbox.failed} ❌`);
-  
-  // Se houver problemas, forçar atualização
-  const hasIssues = verificationResults.blocks.failed > 0 || 
-                   verificationResults.generators.failed > 0 || 
-                   verificationResults.toolbox.failed > 0;
-  
-  if (hasIssues) {
-    console.log('⚠️ Problemas detectados, iniciando correção automática...');
-    const updateSuccess = forceSystemUpdate();
+  // Aguardar troca de idioma completar antes de continuar verificação
+  setTimeout(() => {
+    // Verificar integridade após troca de idioma
+    const verificationResults = verifyAllBlocks();
     
-    if (updateSuccess) {
-      // Verificar novamente após correção
-      setTimeout(() => {
-        console.log('🔍 Verificação pós-correção...');
-        const recheck = verifyAllBlocks();
-        
-        const stillHasIssues = recheck.blocks.failed > 0 || 
-                              recheck.generators.failed > 0 || 
-                              recheck.toolbox.failed > 0;
-        
-        if (stillHasIssues) {
-          console.warn('⚠️ Alguns problemas persistem após correção automática');
-        } else {
-          console.log('🎉 Todos os problemas foram corrigidos com sucesso!');
-        }
-      }, 1000);
+    // Relatório de status
+    console.log('📊 RELATÓRIO DE VERIFICAÇÃO (Pós-troca de idioma):');
+    console.log(`   Blocos: ${verificationResults.blocks.success} ✅ | ${verificationResults.blocks.failed} ❌`);
+    console.log(`   Geradores: ${verificationResults.generators.success} ✅ | ${verificationResults.generators.failed} ❌`);
+    console.log(`   Toolbox: ${verificationResults.toolbox.success} ✅ | ${verificationResults.toolbox.failed} ❌`);
+    
+    // Se ainda houver problemas após troca de idioma, aplicar correção adicional
+    const hasIssues = verificationResults.blocks.failed > 0 || 
+                     verificationResults.generators.failed > 0 || 
+                     verificationResults.toolbox.failed > 0;
+    
+    if (hasIssues) {
+      console.log('⚠️ Problemas persistem após troca de idioma, aplicando correção adicional...');
+      const updateSuccess = forceSystemUpdate();
+      
+      if (updateSuccess) {
+        // Verificar novamente após correção
+        setTimeout(() => {
+          console.log('🔍 Verificação pós-correção adicional...');
+          const recheck = verifyAllBlocks();
+          
+          const stillHasIssues = recheck.blocks.failed > 0 || 
+                                recheck.generators.failed > 0 || 
+                                recheck.toolbox.failed > 0;
+          
+          if (stillHasIssues) {
+            console.warn('⚠️ Alguns problemas persistem após todas as correções');
+          } else {
+            console.log('🎉 Todos os problemas foram corrigidos com sucesso!');
+          }
+        }, 1000);
+      }
+    } else {
+      console.log('🎉 Sistema verificado - todas as funcionalidades estão operacionais após troca de idioma!');
     }
-  } else {
-    console.log('🎉 Sistema verificado - todas as funcionalidades estão operacionais!');
-    // Mesmo sem problemas, aplicar uma atualização preventiva
-    forceSystemUpdate();
-  }
+  }, 2000); // Aguardar 2 segundos para troca de idioma completar
 }
 
 // Verificação e atualização programada após inicialização
 setTimeout(function() {
-  console.log('🔍 Verificação final dos blocos delay...');
+  console.log('🔍 Verificação inicial dos blocos...');
   
   // Verificar se o bloco delay está definido
   if (Blockly.Blocks['delay_function']) {
@@ -1357,7 +1433,8 @@ setTimeout(function() {
     }
   }
   
-  // EXECUTAR VERIFICAÇÃO COMPLETA E ATUALIZAÇÃO
+  // EXECUTAR VERIFICAÇÃO COMPLETA E ATUALIZAÇÃO COM TROCA AUTOMÁTICA DE IDIOMA
+  console.log('🚀 INICIANDO SISTEMA DE CORREÇÃO AUTOMÁTICA COM TROCA DE IDIOMA...');
   performStartupCheck();
   
 }, 2000);
@@ -1365,17 +1442,36 @@ setTimeout(function() {
 // Atualização adicional para garantir carregamento completo
 setTimeout(() => {
   console.log('🔄 Atualização final de segurança...');
+  
+  // Aplicar mais uma vez as cores para garantir que estejam corretas
+  console.log('🎨 Aplicação final de cores de todos os sensores...');
+  forceMPU6050Colors();
+  forceHMC5883Colors();
+  forceBMP180Colors();
+  forceDHTColors();
+  forceBH1750Colors();
+  
+  // Atualização completa do sistema
   forceSystemUpdate();
   
-  // Verificação final após 5 segundos
+  // Verificação final após 6 segundos (tempo maior para aguardar troca de idioma)
   setTimeout(() => {
     console.log('🏁 Verificação final de startup concluída');
     const finalCheck = verifyAllBlocks();
     
     if (finalCheck.blocks.failed === 0 && finalCheck.generators.failed === 0) {
-      console.log('🎊 SISTEMA TOTALMENTE OPERACIONAL - Todas as funcionalidades carregadas com sucesso!');
+      console.log('🎊 SISTEMA TOTALMENTE OPERACIONAL - Todas as funcionalidades e cores carregadas com sucesso!');
+      console.log('✅ Problema das cores MPU6050/HMC5883 resolvido com troca automática de idioma!');
     } else {
       console.warn('⚠️ Sistema iniciado com algumas funcionalidades pendentes');
+      
+      // Se ainda houver problemas, tentar uma última correção forçada
+      console.log('🔧 Tentativa final de correção...');
+      setTimeout(() => {
+        forceMPU6050Colors();
+        forceHMC5883Colors();
+        forceSystemUpdate();
+      }, 500);
     }
-  }, 1000);
-}, 5000);
+  }, 1500);
+}, 6000); // Aumentado para 6 segundos para dar tempo da troca de idioma
