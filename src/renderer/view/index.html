@@ -68,6 +68,488 @@
     </div>
   </div>
 
+  <!-- Modal para Arduino CLI - Redesenhado com fundo claro -->
+  <div id="arduino-cli-modal" class="arduino-modal-overlay">
+    <div class="arduino-modal-container">
+      
+      <!-- Header do Modal -->
+      <header class="modal-header-clean">
+        <div class="modal-header-left">
+          <div class="modal-icon-modern">⚡</div>
+          <div class="modal-title-modern">
+            <h2>Arduino Development Environment</h2>
+            <span class="modal-subtitle-modern">Compile, Upload & Monitor</span>
+          </div>
+        </div>
+        <div class="modal-header-right">
+          <div class="connection-status" id="arduino-connection-status">
+            <span class="status-dot"></span>
+            <span class="status-text">Disconnected</span>
+          </div>
+          <button id="arduino-cli-close" class="modal-close-modern">×</button>
+        </div>
+      </header>
+
+      <!-- Navegação por Abas -->
+      <nav class="modal-tabs-clean">
+        <button class="tab-btn-clean active" data-tab="upload">
+          <span class="tab-icon">📤</span>
+          <span class="tab-label">Upload</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="sensors">
+          <span class="tab-icon">📈</span>
+          <span class="tab-label">Serial Plotter</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="console">
+          <span class="tab-icon">🖥️</span>
+          <span class="tab-label">Console</span>
+          <span class="tab-badge" id="console-count">0</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="code">
+          <span class="tab-icon">📄</span>
+          <span class="tab-label">Código</span>
+        </button>
+      </nav>
+
+      <!-- Conteúdo Principal -->
+      <main class="modal-main-content">
+        
+        <!-- Painel Lateral - Configurações -->
+        <aside class="modal-sidebar">
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">🔌 Conexão</h4>
+            
+            <!-- Status da Conexão -->
+            <div class="connection-indicator" id="ws-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text">Servidor Offline</span>
+            </div>
+
+            <!-- Seleção de Porta -->
+            <div class="form-group">
+              <label class="form-label">Porta Serial</label>
+              <div class="input-with-button">
+                <select id="port-select" class="form-select" disabled>
+                  <option value="">Conectando...</option>
+                </select>
+                <button id="refresh-ports" class="refresh-btn" title="Atualizar">🔄</button>
+              </div>
+              <small class="form-help" id="port-info">0 porta(s) disponível(eis)</small>
+            </div>
+
+            <!-- Baud Rate -->
+            <div class="form-group">
+              <label class="form-label">Baud Rate</label>
+              <select id="baud-rate-select" class="form-select">
+                <option value="9600">9600</option>
+                <option value="115200" selected>115200</option>
+                <option value="230400">230400</option>
+              </select>
+            </div>
+
+            <!-- Botão Conectar -->
+            <button id="connect-btn" class="connect-button" disabled>
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">Conectar</span>
+            </button>
+          </div>
+
+          <!-- Estatísticas -->
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">� Estatísticas</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-label">Mensagens</span>
+                <span class="stat-value" id="stats-messages">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Status</span>
+                <span class="stat-value" id="stats-status">Desconectado</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Área de Conteúdo Principal -->
+        <section class="content-area">
+          
+          <!-- Aba Upload -->
+          <div class="tab-content active" data-tab="upload">
+            <div class="content-header">
+              <h3>📤 Upload & Compilação</h3>
+              <div class="status-badge" id="upload-status">Pronto</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="form-section">
+                <h4>Configuração da Placa</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Tipo de Placa</label>
+                    <select id="board-select" class="form-select">
+                      <option value="esp32:esp32:esp32wrover">ESP32 WROVER</option>
+                      <option value="esp32:esp32:esp32">ESP32 Dev Module</option>
+                      <option value="arduino:avr:uno">Arduino Uno</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Porta de Upload</label>
+                    <select id="upload-port-select" class="form-select">
+                      <option value="">Selecionar porta...</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-section">
+                <h4>Ações</h4>
+                <div class="action-buttons">
+                  <button id="upload-code" class="btn-primary" disabled>
+                    <span class="btn-icon">📤</span>
+                    <span>Upload Código</span>
+                  </button>
+                  <button id="compile-code" class="btn-secondary">
+                    <span class="btn-icon">⚙️</span>
+                    <span>Compilar</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba Serial Plotter -->
+          <div class="tab-content" data-tab="sensors">
+            <div class="content-header">
+              <h3>📈 Serial Plotter</h3>
+              <div class="status-badge">Monitoramento</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="chart-container">
+                <canvas id="sensor-chart" class="sensor-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba Console -->
+          <div class="tab-content" data-tab="console">
+            <div class="content-header">
+              <h3>🖥️ Console Serial</h3>
+              <div class="status-badge">Ativo</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="console-container">
+                <div class="console-output" id="console-output"></div>
+                <div class="console-input">
+                  <input type="text" id="console-input" placeholder="Digite um comando..." class="form-input">
+                  <button id="send-command" class="btn-primary">Enviar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba Código -->
+          <div class="tab-content" data-tab="code">
+            <div class="content-header">
+              <h3>📄 Código Gerado</h3>
+              <div class="status-badge">Visualização</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="code-container">
+                <pre id="generated-code" class="code-display">// Código será gerado aqui...</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+            
+            <div class="serial-upload-layout">
+              <!-- Upload Controls -->
+              <div class="serial-upload-controls">
+                <h4 class="serial-upload-controls-title">📤 Upload e Deploy</h4>
+                
+                <!-- Board Selection -->
+                <div class="serial-form-group">
+                  <label class="serial-form-label">🔧 Placa de Destino:</label>
+                  <select id="board-select" class="serial-form-control">
+                    <option value="esp32:esp32:esp32wrover">🔧 ESP32 WROVER</option>
+                    <option value="esp32:esp32:esp32">📱 ESP32 Dev Module</option>
+                    <option value="esp32:esp32:esp32doit-devkit-v1">🛠️ DOIT ESP32 DevKit V1</option>
+                    <option value="arduino:avr:uno">🔵 Arduino Uno</option>
+                    <option value="arduino:avr:mega">🟢 Arduino Mega</option>
+                  </select>
+                </div>
+
+                <!-- Upload Port -->
+                <div class="serial-form-group">
+                  <label class="serial-form-label">🔌 Porta de Upload:</label>
+                  <div class="serial-port-selection">
+                    <select id="upload-port-select" class="serial-form-control">
+                      <option value="">Selecionar porta...</option>
+                    </select>
+                    <button id="refresh-upload-ports" class="serial-refresh-btn">🔄</button>
+                  </div>
+                </div>
+
+                <!-- Code Info -->
+                <div class="serial-code-info">
+                  <div class="serial-info-title">📄 Informações do Código:</div>
+                  <div class="serial-code-stats">
+                    <div>📏 Linhas: <span id="code-lines">0</span></div>
+                    <div>📝 Caracteres: <span id="code-chars">0</span></div>
+                    <div>🎯 Status: <span id="code-status">❌ Código vazio</span></div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="serial-action-buttons">
+                  <button id="upload-code" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
+                  
+                  <!-- Sensor Selection -->
+                  <div class="serial-sensor-selection">
+                    <label class="serial-form-label">🔧 Sensor para Instalar Bibliotecas:</label>
+                    <select id="sensor-select" class="serial-form-control">
+                      <option value="MPU6050">🏃 MPU6050 - Acelerômetro/Giroscópio</option>
+                      <option value="DHT">🌡️ DHT - Temperatura/Umidade</option>
+                      <option value="HMC5883">🧭 HMC5883 - Magnetômetro/Bússola</option>
+                      <option value="BMP180">📊 BMP180 - Pressão/Altitude</option>
+                      <option value="BH1750">💡 BH1750 - Luminosidade</option>
+                    </select>
+                  </div>
+                  
+                  <button id="install-libraries" class="serial-btn-libraries">📦 Instalar Bibliotecas</button>
+                </div>
+
+                <!-- Upload Progress -->
+                <div class="serial-upload-progress" id="upload-progress" style="display: none;">
+                  <div class="serial-progress-bar">
+                    <div class="serial-progress-fill" id="upload-progress-fill"></div>
+                  </div>
+                  <div class="serial-progress-text" id="upload-progress-text">0%</div>
+                </div>
+
+                <!-- Tips -->
+                <div class="serial-tips">
+                  <div class="serial-info-title">💡 Dicas Gerais:</div>
+                  <div class="serial-tips-content">
+                    <div>• Arraste blocos no workspace primeiro</div>
+                    <div>• Conecte a ESP32 via USB</div>
+                    <div>• Selecione a porta correta</div>
+                    <div>• O monitor serial inicia automaticamente</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compilation Logs -->
+              <div class="serial-logs-panel">
+                <div class="serial-logs-header">
+                  <h4 class="serial-logs-title">🖥️ Logs de Compilação</h4>
+                  <button id="clear-logs" class="serial-btn-clear">🗑️ Limpar</button>
+                </div>
+                <div class="serial-logs-container">
+                  <div id="compilation-logs" class="serial-logs-content">
+                    <div class="serial-logs-empty">
+                      <div class="serial-logs-icon">🔨</div>
+                      <div class="serial-logs-message">Logs de Compilação</div>
+                      <div class="serial-logs-hint">Clique em "Upload" para ver os logs</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Serial Plotter Tab -->
+          <div class="serial-tab-content" data-tab="sensors">
+            <div class="serial-plotter-container">
+              <!-- Plotter Controls -->
+              <div class="serial-plotter-controls">
+                <div class="serial-plotter-header">
+                  <div class="serial-plotter-info">
+                    <div class="serial-plotter-icon">📈</div>
+                    <div>
+                      <h3 class="serial-plotter-title">Serial Plotter - MPU6050</h3>
+                      <p class="serial-plotter-status" id="plotter-status">Conecte ao ESP32 para visualizar dados</p>
+                    </div>
+                  </div>
+                  <div class="serial-plotter-actions">
+                    <button id="plotter-pause" class="serial-btn-pause">⏸️ Pausar</button>
+                    <button id="plotter-clear" class="serial-btn-clear">🗑️ Limpar</button>
+                    <button id="plotter-export" class="serial-btn-export" disabled>📊 Export CSV</button>
+                  </div>
+                </div>
+
+                <!-- Sensor Selection -->
+                <div class="serial-sensor-checkboxes">
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="accel-x" checked>
+                    <span class="serial-checkbox-color" style="color: #ef4444;">●</span>
+                    <span>Accel X</span>
+                  </label>
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="accel-y" checked>
+                    <span class="serial-checkbox-color" style="color: #10b981;">●</span>
+                    <span>Accel Y</span>
+                  </label>
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="accel-z" checked>
+                    <span class="serial-checkbox-color" style="color: #3b82f6;">●</span>
+                    <span>Accel Z</span>
+                  </label>
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="gyro-x" checked>
+                    <span class="serial-checkbox-color" style="color: #f59e0b;">●</span>
+                    <span>Gyro X</span>
+                  </label>
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="gyro-y" checked>
+                    <span class="serial-checkbox-color" style="color: #8b5cf6;">●</span>
+                    <span>Gyro Y</span>
+                  </label>
+                  <label class="serial-checkbox-label">
+                    <input type="checkbox" id="gyro-z" checked>
+                    <span class="serial-checkbox-color" style="color: #06b6d4;">●</span>
+                    <span>Gyro Z</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Chart Area -->
+              <div class="serial-chart-area">
+                <div id="sensor-chart" class="serial-chart">
+                  <div class="serial-chart-empty">
+                    <div class="serial-chart-icon">📊</div>
+                    <div class="serial-chart-title">Serial Plotter</div>
+                    <div class="serial-chart-message">Conecte ao ESP32 com MPU6050 para ver os gráficos</div>
+                    <div class="serial-chart-legend">
+                      <div>• Acelerômetro: linhas contínuas (X=vermelho, Y=verde, Z=azul)</div>
+                      <div>• Giroscópio: linhas tracejadas (X=amarelo, Y=roxo, Z=ciano)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Current Values -->
+              <div class="serial-current-values" id="current-values" style="display: none;">
+                <h4 class="serial-values-title">📊 Valores Atuais do MPU6050</h4>
+                <div class="serial-values-grid">
+                  <div class="serial-values-section">
+                    <h5 class="serial-values-section-title">🏃 Acelerômetro (m/s²)</h5>
+                    <div class="serial-values-list">
+                      <div class="serial-value-item">
+                        <span style="color: #ef4444;">X:</span>
+                        <span id="accel-x-value">0.000</span>
+                      </div>
+                      <div class="serial-value-item">
+                        <span style="color: #10b981;">Y:</span>
+                        <span id="accel-y-value">0.000</span>
+                      </div>
+                      <div class="serial-value-item">
+                        <span style="color: #3b82f6;">Z:</span>
+                        <span id="accel-z-value">0.000</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="serial-values-section">
+                    <h5 class="serial-values-section-title">� Giroscópio (°/s)</h5>
+                    <div class="serial-values-list">
+                      <div class="serial-value-item">
+                        <span style="color: #f59e0b;">X:</span>
+                        <span id="gyro-x-value">0.000</span>
+                      </div>
+                      <div class="serial-value-item">
+                        <span style="color: #8b5cf6;">Y:</span>
+                        <span id="gyro-y-value">0.000</span>
+                      </div>
+                      <div class="serial-value-item">
+                        <span style="color: #06b6d4;">Z:</span>
+                        <span id="gyro-z-value">0.000</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Console Tab -->
+          <div class="serial-tab-content" data-tab="console">
+            <div class="serial-console-panel">
+              <div class="serial-console-header">
+                <h3 class="serial-console-title">🖥️ Console Serial</h3>
+                <div class="serial-console-actions">
+                  <button id="clear-console" class="serial-btn-clear">🗑️ Limpar</button>
+                  <button id="copy-console" class="serial-btn-copy">📋 Copiar</button>
+                </div>
+              </div>
+              
+              <div class="serial-console-container">
+                <div id="arduino-console" class="serial-console-content">
+                  <div class="serial-console-empty">
+                    <div class="serial-console-icon">📡</div>
+                    <div class="serial-console-message">Console Serial</div>
+                    <div class="serial-console-hint">Conecte a uma porta serial</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Command Input -->
+              <div class="serial-command-input" id="command-input" style="display: none;">
+                <input type="text" id="command-text" class="serial-command-field" placeholder="Digite um comando para enviar ao ESP32...">
+                <button id="send-command" class="serial-btn-send">📤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Tab -->
+          <div class="serial-tab-content" data-tab="code">
+            <div class="serial-code-panel">
+              <div class="serial-code-header">
+                <h3 class="serial-code-title">📄 Código C++ Gerado</h3>
+                <div class="serial-code-actions">
+                  <button id="copy-code" class="serial-btn-copy">📋 Copiar</button>
+                  <button id="download-code" class="serial-btn-download">💾 Download</button>
+                </div>
+              </div>
+              
+              <div class="serial-code-info">
+                <div class="serial-code-info-text">
+                  💡 Quebra de linha automática habilitada - código sempre ajustado à largura do modal
+                </div>
+                <div class="serial-code-stats">
+                  <span>📏 Linhas: <span id="code-lines-display">0</span></span>
+                  <span>📝 Caracteres: <span id="code-chars-display">0</span></span>
+                  <span>🔍 Tamanho: <span id="code-size-display">0</span> KB</span>
+                </div>
+              </div>
+              
+              <div class="serial-code-container">
+                <div class="serial-code-content">
+                  <pre id="code-display-full" class="serial-code-text">// Nenhum código foi gerado ainda
+// Use o editor de blocos para criar seu programa Arduino
+// Os blocos serão convertidos automaticamente em código C++</pre>
+                </div>
+              </div>
+              
+              <div class="serial-code-footer">
+                <div class="serial-code-footer-text">
+                  💡 <strong>Dica:</strong> Use Ctrl+F para buscar no código, ou role horizontalmente se necessário
+                </div>
+                <div class="serial-code-validation" id="code-validation">
+                  ⚠️ Adicione os blocos setup() e loop()
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <xml id="toolbox" class="toolbox">
     <category name="Lógica" colour="#1d1856" data-translate-name="CAT_LOGIC">
       <block type="controls_if"></block>
@@ -164,6 +646,7 @@
     </category>
     <category name="Sensores" colour="#0c0931" data-translate-name="CAT_SENSORS">
       <category name="MPU6050" colour="#FF8C00" data-translate-name="CAT_MPU6050">
+        <block type="mpu6050_declare_object"></block>
         <block type="mpu6050_init"></block>
         <sep></sep>
         <block type="mpu6050_set_accel_range"></block>
@@ -180,10 +663,6 @@
         <block type="mpu6050_gyro_x"></block>
         <block type="mpu6050_gyro_y"></block>
         <block type="mpu6050_gyro_z"></block>
-        <sep></sep>
-        <block type="mpu6050_read"></block>
-        <sep></sep>
-        <block type="mpu6050_not"></block>
       </category>
       <category name="BMP180" colour="#8a2e2e" data-translate-name="CAT_BMP180">
         <block type="bmp180_init"></block>
@@ -193,7 +672,7 @@
         <block type="bmp180_altitude"></block>
       </category>
       <category name="BH1750" colour="#fccf03" data-translate-name="CAT_BH1750">
-        <block type="bh1750_init"></block>
+        <block type="bh1750_declare_object"></block>
         <block type="bh1750_begin"></block>
         <sep></sep>
         <block type="bh1750_set_mode"></block>
@@ -250,201 +729,234 @@
   <script src="../controller/renderer.js"></script>
   <script src="../../../debug_delay_block.js"></script>
   <script>
-    // Funcionalidade do botão copiar
+    // ============================================================================
+    // AGUARDAR DOM CARREGAR COMPLETAMENTE
+    // ============================================================================
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM carregado, inicializando event listeners...');
+      
+      // ============================================================================
+      // FUNCIONALIDADE DO BOTÃO COPIAR
+      // ============================================================================
       const copyButton = document.getElementById('copyButton');
       const codeDisplay = document.getElementById('code-display');
       const copyFeedback = document.getElementById('copyFeedback');
 
-      copyButton.addEventListener('click', function() {
-        // Pega o texto do código
-        const codeText = codeDisplay.textContent || codeDisplay.innerText;
-        
-        // Copia para a área de transferência
-        navigator.clipboard.writeText(codeText).then(function() {
-          // Mostra feedback de sucesso
-          const t = getCurrentTranslation();
-          copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
+      if (copyButton && codeDisplay && copyFeedback) {
+        copyButton.addEventListener('click', function() {
+          console.log('📋 Botão copiar clicado');
+          // Pega o texto do código
+          const codeText = codeDisplay.textContent || codeDisplay.innerText;
           
-          // Volta ao estado normal após 2 segundos
-          setTimeout(function() {
-            copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', t.copyTooltip);
-          }, 2000);
-        }).catch(function(err) {
-          // Fallback para navegadores mais antigos
-          const textArea = document.createElement('textarea');
-          textArea.value = codeText;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-          
-          // Mostra feedback
-          const t = getCurrentTranslation();
-          copyFeedback.classList.add('show');
-          copyButton.setAttribute('data-tooltip', t.copiedTooltip);
-          
-          setTimeout(function() {
-            copyFeedback.classList.remove('show');
-            copyButton.setAttribute('data-tooltip', t.copyTooltip);
-          }, 2000);
+          // Copia para a área de transferência
+          navigator.clipboard.writeText(codeText).then(function() {
+            // Mostra feedback de sucesso
+            const t = getCurrentTranslation();
+            copyFeedback.classList.add('show');
+            copyButton.setAttribute('data-tooltip', t.copiedTooltip);
+            
+            // Volta ao estado normal após 2 segundos
+            setTimeout(function() {
+              copyFeedback.classList.remove('show');
+              copyButton.setAttribute('data-tooltip', t.copyTooltip);
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback para navegadores mais antigos
+            const textArea = document.createElement('textarea');
+            textArea.value = codeText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Mostra feedback
+            const t = getCurrentTranslation();
+            copyFeedback.classList.add('show');
+            copyButton.setAttribute('data-tooltip', t.copiedTooltip);
+            
+            setTimeout(function() {
+              copyFeedback.classList.remove('show');
+              copyButton.setAttribute('data-tooltip', t.copyTooltip);
+            }, 2000);
+          });
         });
-      });
-    });
-
-    // Funcionalidade do dark mode
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const body = document.body;
-    const logoImg = document.getElementById('logoImg');
-
-    // Função para trocar logo baseado no tema
-    function updateLogo() {
-      if (body.classList.contains('dark-mode')) {
-        logoImg.src = '../../assets/logo.png'; // Logo original para modo escuro
       } else {
-        logoImg.src = '../../assets/Logo2 (2).png'; // Logo alternativa para modo claro
+        console.error('❌ Elementos do botão copiar não encontrados');
       }
-    }
 
-    // Verificar se há preferência salva
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      body.classList.add('dark-mode');
-      darkModeToggle.textContent = '☀️';
-    }
-    
-    // Atualizar logo baseado no tema inicial
-    updateLogo();
+      // ============================================================================
+      // FUNCIONALIDADE DO DARK MODE
+      // ============================================================================
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      const body = document.body;
+      const logoImg = document.getElementById('logoImg');
 
-    darkModeToggle.addEventListener('click', function() {
-      body.classList.toggle('dark-mode');
-      
-      // Atualizar logo após mudança de tema
-      updateLogo();
-      
-      const t = translations[currentLanguage];
-      if (body.classList.contains('dark-mode')) {
-        darkModeToggle.textContent = '☀️';
-        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight);
-        localStorage.setItem('theme', 'dark');
-      } else {
-        darkModeToggle.textContent = '🌙';
-        darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip);
-        localStorage.setItem('theme', 'light');
-      }
-    });
-
-    // Funcionalidade do seletor de idioma integrada com i18n.js
-    const languageToggle = document.getElementById('languageToggle');
-    const languageDropdown = document.getElementById('languageDropdown');
-
-    // Idioma atual (será sincronizado com i18n.js)
-    let currentLanguage = localStorage.getItem('language') || 'pt-BR';
-
-    // Função para obter tradução atual (compatibilidade com código existente)
-    function getCurrentTranslation() {
-      if (window.i18n && window.i18n.translations[currentLanguage]) {
-        return window.i18n.translations[currentLanguage];
-      }
-      // Fallback básico
-      return {
-        copyTooltip: currentLanguage === 'pt-BR' ? 'Copiar código' : 'Copy code',
-        copiedTooltip: currentLanguage === 'pt-BR' ? 'Copiado!' : 'Copied!',
-        copyFeedback: currentLanguage === 'pt-BR' ? 'Código copiado para a área de transferência!' : 'Code copied to clipboard!'
-      };
-    }
-
-    // Aplicar idioma salvo ao carregar
-    if (currentLanguage === 'en-US') {
-      languageToggle.textContent = '🇺🇸';
-    }
-
-    // Toggle dropdown
-    languageToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      languageDropdown.classList.toggle('show');
-    });
-
-    // Fechar dropdown ao clicar fora
-    document.addEventListener('click', function() {
-      languageDropdown.classList.remove('show');
-    });
-
-    // Seleção de idioma - integração com i18n.js
-    document.querySelectorAll('.language-option').forEach(option => {
-      option.addEventListener('click', async function() {
-        const selectedLang = this.getAttribute('data-lang');
-        currentLanguage = selectedLang;
-        
-        // Usar o sistema i18n.js se disponível
-        if (window.i18n) {
-          await window.i18n.setLanguage(selectedLang);
+      // Função para trocar logo baseado no tema
+      function updateLogo() {
+        if (body.classList.contains('dark-mode')) {
+          logoImg.src = '../../assets/logo.png'; // Logo original para modo escuro
         } else {
-          localStorage.setItem('language', selectedLang);
+          logoImg.src = '../../assets/Logo2 (2).png'; // Logo alternativa para modo claro
+        }
+      }
+
+      if (darkModeToggle && body && logoImg) {
+        // Verificar se há preferência salva
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          body.classList.add('dark-mode');
+          darkModeToggle.textContent = '☀️';
         }
         
-        // Atualizar bandeira
-        if (selectedLang === 'en-US') {
+        // Atualizar logo baseado no tema inicial
+        updateLogo();
+
+        darkModeToggle.addEventListener('click', function() {
+          console.log('🌙 Dark mode toggle clicado');
+          body.classList.toggle('dark-mode');
+          
+          // Atualizar logo após mudança de tema
+          updateLogo();
+          
+          const t = getCurrentTranslation();
+          if (body.classList.contains('dark-mode')) {
+            darkModeToggle.textContent = '☀️';
+            darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight || 'Modo claro');
+            localStorage.setItem('theme', 'dark');
+          } else {
+            darkModeToggle.textContent = '🌙';
+            darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip || 'Modo escuro');
+            localStorage.setItem('theme', 'light');
+          }
+        });
+      } else {
+        console.error('❌ Elementos do dark mode não encontrados');
+      }
+
+      // ============================================================================
+      // FUNCIONALIDADE DO SELETOR DE IDIOMA
+      // ============================================================================
+      const languageToggle = document.getElementById('languageToggle');
+      const languageDropdown = document.getElementById('languageDropdown');
+
+      // Idioma atual (será sincronizado com i18n.js)
+      let currentLanguage = localStorage.getItem('language') || 'pt-BR';
+
+      // Função para obter tradução atual (compatibilidade com código existente)
+      function getCurrentTranslation() {
+        if (window.i18n && window.i18n.translations && window.i18n.translations[currentLanguage]) {
+          return window.i18n.translations[currentLanguage];
+        }
+        // Fallback básico
+        return {
+          copyTooltip: currentLanguage === 'pt-BR' ? 'Copiar código' : 'Copy code',
+          copiedTooltip: currentLanguage === 'pt-BR' ? 'Copiado!' : 'Copied!',
+          copyFeedback: currentLanguage === 'pt-BR' ? 'Código copiado para a área de transferência!' : 'Code copied to clipboard!',
+          darkModeTooltip: currentLanguage === 'pt-BR' ? 'Modo escuro' : 'Dark mode',
+          darkModeTooltipLight: currentLanguage === 'pt-BR' ? 'Modo claro' : 'Light mode'
+        };
+      }
+
+      if (languageToggle && languageDropdown) {
+        // Aplicar idioma salvo ao carregar
+        if (currentLanguage === 'en-US') {
           languageToggle.textContent = '🇺🇸';
-        } else {
-          languageToggle.textContent = '🇧🇷';
         }
-        
-        // Fechar dropdown
-        languageDropdown.classList.remove('show');
-      });
-    });
 
-    // Listener para mudanças de idioma do i18n.js
-    window.addEventListener('languageChanged', function(event) {
-      currentLanguage = event.detail.language;
-      console.log('🌐 Interface atualizada para idioma:', currentLanguage);
-    });
+        // Toggle dropdown
+        languageToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          languageDropdown.classList.toggle('show');
+        });
 
-    // Funcionalidade do modal de variáveis
-    const variableModal = document.getElementById('variable-modal');
-    const createVariableBtn = document.getElementById('create-variable-btn');
-    const cancelVariableBtn = document.getElementById('cancel-variable-btn');
-    const closeModalSpan = document.getElementsByClassName('close')[0];
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function() {
+          languageDropdown.classList.remove('show');
+        });
 
-    // Quando o usuário clica no botão de criar nova variável
-    document.querySelector('button[callbackKey="CREATE_VARIABLE"]').addEventListener('click', function() {
-      variableModal.style.display = 'block';
-    });
+        // Seleção de idioma - integração com i18n.js
+        document.querySelectorAll('.language-option').forEach(option => {
+          option.addEventListener('click', async function() {
+            const selectedLang = this.getAttribute('data-lang');
+            currentLanguage = selectedLang;
+            
+            // Usar o sistema i18n.js se disponível
+            if (window.i18n) {
+              await window.i18n.setLanguage(selectedLang);
+            } else {
+              localStorage.setItem('language', selectedLang);
+            }
+            
+            // Atualizar bandeira
+            if (selectedLang === 'en-US') {
+              languageToggle.textContent = '🇺🇸';
+            } else {
+              languageToggle.textContent = '🇧🇷';
+            }
+            
+            // Fechar dropdown
+            languageDropdown.classList.remove('show');
+          });
+        });
 
-    // Quando o usuário clica no botão de criar variável no modal
-    createVariableBtn.addEventListener('click', function() {
-      const variableName = document.getElementById('variable-name').value.trim();
-      
-      if (variableName) {
-        // Fecha o modal
-        variableModal.style.display = 'none';
-        
-        // Limpa o campo de entrada
-        document.getElementById('variable-name').value = '';
+        // Listener para mudanças de idioma do i18n.js
+        window.addEventListener('languageChanged', function(event) {
+          currentLanguage = event.detail.language;
+          console.log('🌐 Interface atualizada para idioma:', currentLanguage);
+        });
       } else {
-        alert('Por favor, digite um nome válido para a variável.');
+        console.error('❌ Elementos do seletor de idioma não encontrados');
       }
-    });
 
-    // Quando o usuário clica no botão de cancelar no modal
-    cancelVariableBtn.addEventListener('click', function() {
-      variableModal.style.display = 'none';
-    });
+      // ============================================================================
+      // FUNCIONALIDADE DO MODAL DE VARIÁVEIS
+      // ============================================================================
+      const variableModal = document.getElementById('variable-modal');
+      const createVariableBtn = document.getElementById('create-variable-btn');
+      const cancelVariableBtn = document.getElementById('cancel-variable-btn');
+      const closeModalSpan = document.getElementsByClassName('close')[0];
+      const createVariableButton = document.querySelector('button[callbackKey="CREATE_VARIABLE"]');
 
-    // Quando o usuário clica no "x" para fechar o modal
-    closeModalSpan.addEventListener('click', function() {
-      variableModal.style.display = 'none';
-    });
+      if (variableModal && createVariableBtn && cancelVariableBtn && closeModalSpan && createVariableButton) {
+        // Quando o usuário clica no botão de criar nova variável
+        createVariableButton.addEventListener('click', function() {
+          variableModal.style.display = 'block';
+        });
 
-    // Fecha o modal se o usuário clicar fora dele
-    window.addEventListener('click', function(event) {
-      if (event.target == variableModal) {
-        variableModal.style.display = 'none';
+        // Quando o usuário clica no botão de criar variável no modal
+        createVariableBtn.addEventListener('click', function() {
+          const variableName = document.getElementById('variable-name').value.trim();
+          
+          if (variableName) {
+            // Fecha o modal
+            variableModal.style.display = 'none';
+            
+            // Limpa o campo de entrada
+            document.getElementById('variable-name').value = '';
+          } else {
+            alert('Por favor, digite um nome válido para a variável.');
+          }
+        });
+
+        // Quando o usuário clica no botão de cancelar no modal
+        cancelVariableBtn.addEventListener('click', function() {
+          variableModal.style.display = 'none';
+        });
+
+        // Quando o usuário clica no "x" para fechar o modal
+        closeModalSpan.addEventListener('click', function() {
+          variableModal.style.display = 'none';
+        });
+
+        // Fecha o modal se o usuário clicar fora dele
+        window.addEventListener('click', function(event) {
+          if (event.target == variableModal) {
+            variableModal.style.display = 'none';
+          }
+        });
+      } else {
+        console.error('❌ Elementos do modal de variáveis não encontrados');
       }
-    });
 
     // Função para testar tradução dos blocos (disponível no console)
     window.testBlockTranslation = function() {
@@ -463,6 +975,15 @@
         window.testBlockTranslation();
       }
     });
+
+      // ============================================================================
+      // ARDUINO CLI MODAL FUNCTIONALITY - Now handled by renderer.js
+      // ============================================================================
+      
+      console.log('🔄 Arduino CLI modal functionality moved to renderer.js');
+
+      console.log('✅ Todos os event listeners configurados com sucesso');
+    }); // Fim do DOMContentLoaded
   </script>
 </body>
 </html>

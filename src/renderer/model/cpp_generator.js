@@ -900,11 +900,26 @@ Blockly.Cpp['mpu6050_read'] = function(block) {
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
+// Gerador de código para declaração do objeto MPU6050
+Blockly.Cpp['mpu6050_declare_object'] = function(block) {
+  // Gera apenas a declaração do objeto MPU6050
+  var code = 'Adafruit_MPU6050 mpu;\n';
+  return code;
+};
+
 // Gerador de código para inicialização do MPU6050
 Blockly.Cpp['mpu6050_init'] = function(block) {
-  // Gera apenas a declaração do objeto MPU6050
-  // Não gerar bibliotecas automaticamente - usuário deve usar a aba Bibliotecas
-  var code = 'Adafruit_MPU6050 mpu;\n';
+  var scl_pin = block.getFieldValue('SCL_PIN');
+  var sda_pin = block.getFieldValue('SDA_PIN');
+  
+  // Gera código de inicialização conforme especificado
+  var code = '// Try to initialize!\n';
+  code += 'if (!mpu.begin()) {\n';
+  code += '  Serial.println("Failed to find MPU6050 chip");\n';
+  code += '  while (1) {\n';
+  code += '    delay(10);\n';
+  code += '  }\n';
+  code += '}\n';
   
   return code;
 };
@@ -989,15 +1004,13 @@ Blockly.Cpp['bmp180_init'] = function(block) {
   var sclPin = block.getFieldValue('SCL_PIN');
   var sdaPin = block.getFieldValue('SDA_PIN');
   
-  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
-  Blockly.Cpp.includes_['bmp180'] = '#include <Adafruit_BMP085.h>';
-  Blockly.Cpp.definitions_['bmp180_obj'] = 'Adafruit_BMP085 bmp;';
+  // Gera código de inicialização conforme especificado
+  var code = 'if (!bmp.begin()) {\n';
+  code += '  Serial.println("Could not find a valid BMP180 sensor, check wiring!");\n';
+  code += '  while (1);\n';
+  code += '}\n';
   
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
-  Blockly.Cpp.setups_['bmp180_begin'] = 'if (!bmp.begin()) {\n    Serial.println("BMP180 sensor não encontrado!");\n    while (1) {}\n  }';
-  
-  return '';
+  return code;
 };
 
 // Gerador de código para leitura de pressão do BMP180
@@ -1040,21 +1053,14 @@ Blockly.Cpp['bmp180_altitude'] = function(block) {
 // BH1750 CODE GENERATORS - Sensor de Luminosidade
 // ============================================================================
 
-// Gerador de código para inicialização do BH1750
-Blockly.Cpp['bh1750_init'] = function(block) {
-  var sclPin = block.getFieldValue('SCL_PIN');
-  var sdaPin = block.getFieldValue('SDA_PIN');
-  
+// Gerador de código para declaração do objeto BH1750
+Blockly.Cpp['bh1750_declare_object'] = function(block) {
   // Gera a declaração do objeto BH1750
   var code = 'BH1750 lightMeter;\n';
-  
-  // Configura setup automático para Wire e inicialização
-  Blockly.Cpp.setups_ = Blockly.Cpp.setups_ || {};
-  Blockly.Cpp.setups_['wire_begin'] = 'Wire.begin(' + sdaPin + ', ' + sclPin + ');';
-  Blockly.Cpp.setups_['bh1750_begin'] = 'if (!lightMeter.begin()) {\n    Serial.println("BH1750 sensor não encontrado!");\n    while (1) {}\n  }';
-  
   return code;
 };
+
+
 
 // Gerador de código para leitura de luminosidade do BH1750
 Blockly.Cpp['bh1750_light_level'] = function(block) {

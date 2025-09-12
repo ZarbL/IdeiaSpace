@@ -242,6 +242,22 @@ Blockly.Blocks['string_declaration'] = {
 };
 
 /**
+ * Block for MPU6050 object declaration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['mpu6050_declare_object'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("📦 Declarar objeto MPU6050");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FF8C00");
+    this.setTooltip("Declara o objeto MPU6050: Adafruit_MPU6050 mpu;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
  * Block for MPU6050 initialization.
  * @this {Blockly.Block}
  */
@@ -546,32 +562,22 @@ Blockly.Blocks['bmp180_altitude'] = {
 // ============================================================================
 
 /**
- * Block for BH1750 initialization.
+ * Block for BH1750 object declaration.
  * @this {Blockly.Block}
  */
-Blockly.Blocks['bh1750_init'] = {
+Blockly.Blocks['bh1750_declare_object'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("💡 Inicializar BH1750")
-        .appendField("SCL:")
-        .appendField(new Blockly.FieldDropdown([
-          ["5", "5"],
-          ["21", "21"],
-          ["22", "22"]
-        ]), "SCL_PIN")
-        .appendField("SDA:")
-        .appendField(new Blockly.FieldDropdown([
-          ["4", "4"],
-          ["20", "20"],
-          ["21", "21"]
-        ]), "SDA_PIN");
+        .appendField("📦 Declarar objeto BH1750");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#fccf03");
-    this.setTooltip("Inicializa o sensor BH1750 com os pinos SCL e SDA especificados");
+    this.setTooltip("Declara o objeto BH1750: BH1750 lightMeter;");
     this.setHelpUrl("");
   }
 };
+
+
 
 /**
  * Block for reading BH1750 light level in lux.

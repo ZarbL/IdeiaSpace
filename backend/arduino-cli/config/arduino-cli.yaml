@@ -1,0 +1,29 @@
+{
+  "board_manager": {
+    "additional_urls": [
+      "https://espressif.github.io/arduino-esp32/package_esp32_index.json",
+      "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json"
+    ]
+  },
+  "daemon": {
+    "port": "50051"
+  },
+  "directories": {
+    "data": "C:\\Users\\lfsz1\\Desktop\\Projetos\\IdeiaElectron\\IdeiaSpace\\backend\\arduino-cli\\config\\data",
+    "downloads": "C:\\Users\\lfsz1\\Desktop\\Projetos\\IdeiaElectron\\IdeiaSpace\\backend\\arduino-cli\\config\\downloads",
+    "user": "C:\\Users\\lfsz1\\Desktop\\Projetos\\IdeiaElectron\\IdeiaSpace\\backend\\arduino-cli\\config\\user"
+  },
+  "library": {
+    "enable_unsafe_install": false
+  },
+  "logging": {
+    "level": "info",
+    "format": "text"
+  },
+  "metrics": {
+    "enabled": false
+  },
+  "sketch": {
+    "always_export_binaries": false
+  }
+}

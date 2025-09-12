@@ -293,6 +293,704 @@ window.addEventListener('languageChanged', function(event) {
   }, 100);
 });
 
+// ============================================================================
+// SERIAL MONITOR MODAL FUNCTIONALITY - React Equivalent
+// ============================================================================
+
+// Global variables for serial monitor
+let serialMonitorState = {
+  isConnected: false,
+  websocket: null,
+  currentTab: 'upload',
+  baudRate: '9600',
+  selectedPort: '',
+  availablePorts: [],
+  sensorData: [],
+  consoleHistory: []
+};
+
+// Chart data for real-time plotting
+let chartData = {
+  accelX: [], accelY: [], accelZ: [],
+  gyroX: [], gyroY: [], gyroZ: [],
+  timestamps: []
+};
+
+// Serial Monitor Modal Functions
+function openSerialMonitorModal() {
+  console.log('🖥️ Abrindo Serial Monitor Modal...');
+  const modal = document.getElementById('arduino-cli-modal');
+  if (modal) {
+    // Add show class to make modal visible
+    modal.classList.add('show');
+    
+    // Initialize modal state
+    initializeSerialMonitor();
+    
+    // Set default active tab
+    switchTab('upload');
+    
+    // Update available ports
+    refreshPorts();
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeSerialMonitorModal() {
+  console.log('🖥️ Fechando Serial Monitor Modal...');
+  const modal = document.getElementById('arduino-cli-modal');
+  if (modal) {
+    // Remove show class to hide modal
+    modal.classList.remove('show');
+    
+    // Disconnect if connected
+    if (serialMonitorState.isConnected) {
+      disconnectSerial();
+    }
+    
+    // Clear data
+    clearSensorData();
+    
+    // Restore body scrolling
+    document.body.style.overflow = 'auto';
+  }
+}
+
+function initializeSerialMonitor() {
+  console.log('🔧 Inicializando Serial Monitor...');
+  
+  // Reset state
+  serialMonitorState.currentTab = 'upload';
+  serialMonitorState.isConnected = false;
+  
+  // Update UI
+  updateConnectionStatus();
+  updateTabVisibility();
+}
+
+// Tab Management
+function switchTab(tabName) {
+  console.log(`📋 Mudando para aba: ${tabName}`);
+  
+  serialMonitorState.currentTab = tabName;
+  
+  // Update tab buttons
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+  if (activeTab) {
+    activeTab.classList.add('active');
+  }
+  
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  const activeContent = document.getElementById(`${tabName}-tab`);
+  if (activeContent) {
+    activeContent.classList.add('active');
+  }
+  
+  // Tab-specific initialization
+  switch(tabName) {
+    case 'upload':
+      updateUploadTab();
+      break;
+    case 'serial-plotter':
+      initializeChart();
+      break;
+    case 'console':
+      updateConsoleTab();
+      break;
+    case 'code':
+      updateCodeTab();
+      break;
+  }
+}
+
+// Port Management
+function refreshPorts() {
+  console.log('🔍 Atualizando lista de portas...');
+  
+  // Simulate port detection (in real implementation, use Arduino CLI)
+  const simulatedPorts = ['COM3', 'COM4', '/dev/ttyUSB0', '/dev/ttyACM0'];
+  
+  serialMonitorState.availablePorts = simulatedPorts;
+  
+  // Update port selector
+  const portSelector = document.getElementById('port-selector');
+  if (portSelector) {
+    portSelector.innerHTML = '<option value="">Selecione uma porta...</option>';
+    
+    simulatedPorts.forEach(port => {
+      const option = document.createElement('option');
+      option.value = port;
+      option.textContent = port;
+      portSelector.appendChild(option);
+    });
+  }
+  
+  updateRefreshButton();
+}
+
+function updateRefreshButton() {
+  const refreshBtn = document.getElementById('refresh-ports-btn');
+  if (refreshBtn) {
+    refreshBtn.disabled = false;
+    refreshBtn.innerHTML = '🔄';
+    
+    // Animate button
+    setTimeout(() => {
+      refreshBtn.innerHTML = '🔄 Atualizar';
+    }, 500);
+  }
+}
+
+// Connection Management
+function connectSerial() {
+  console.log('🔌 Conectando porta serial...');
+  
+  const port = document.getElementById('port-selector').value;
+  const baudRate = document.getElementById('baud-rate').value;
+  
+  if (!port) {
+    showSerialNotification('⚠️ Selecione uma porta primeiro!', 'warning');
+    return;
+  }
+  
+  // Simulate connection (in real implementation, use WebSocket or Arduino CLI)
+  setTimeout(() => {
+    serialMonitorState.isConnected = true;
+    serialMonitorState.selectedPort = port;
+    serialMonitorState.baudRate = baudRate;
+    
+    updateConnectionStatus();
+    showSerialNotification(`✅ Conectado à porta ${port}`, 'success');
+    
+    // Start simulated data stream
+    startDataSimulation();
+    
+  }, 1000);
+}
+
+function disconnectSerial() {
+  console.log('🔌 Desconectando porta serial...');
+  
+  if (serialMonitorState.websocket) {
+    serialMonitorState.websocket.close();
+  }
+  
+  serialMonitorState.isConnected = false;
+  stopDataSimulation();
+  
+  updateConnectionStatus();
+  showSerialNotification('🔌 Desconectado', 'info');
+}
+
+function updateConnectionStatus() {
+  const statusDiv = document.querySelector('.status-indicator');
+  const connectBtn = document.getElementById('connect-btn');
+  const disconnectBtn = document.getElementById('disconnect-btn');
+  
+  if (statusDiv) {
+    if (serialMonitorState.isConnected) {
+      statusDiv.className = 'status-indicator status-connected';
+      statusDiv.innerHTML = '<div class="status-dot"></div>Conectado';
+    } else {
+      statusDiv.className = 'status-indicator status-disconnected';
+      statusDiv.innerHTML = '<div class="status-dot"></div>Desconectado';
+    }
+  }
+  
+  // Update connection badge in header
+  const connectionBadge = document.getElementById('arduino-connection-status');
+  if (connectionBadge) {
+    const isConnected = serialMonitorState.isConnected;
+    connectionBadge.className = isConnected ? 'connection-badge connected' : 'connection-badge';
+    connectionBadge.innerHTML = `<span class="connection-dot"></span>${isConnected ? 'Connected' : 'Disconnected'}`;
+  }
+  
+  if (connectBtn) connectBtn.disabled = serialMonitorState.isConnected;
+  if (disconnectBtn) disconnectBtn.disabled = !serialMonitorState.isConnected;
+}
+
+// Upload Tab Functions
+function updateUploadTab() {
+  console.log('📤 Atualizando aba Upload...');
+  
+  const compileBtn = document.getElementById('compile-btn');
+  const uploadBtn = document.getElementById('upload-btn');
+  
+  // Enable buttons based on connection status
+  if (compileBtn) compileBtn.disabled = false;
+  if (uploadBtn) uploadBtn.disabled = !serialMonitorState.isConnected;
+}
+
+function compileSketch() {
+  console.log('⚙️ Compilando sketch...');
+  
+  const code = generateCode();
+  if (!code) {
+    showSerialNotification('❌ Nenhum código para compilar!', 'error');
+    return;
+  }
+  
+  // Simulate compilation
+  const compileBtn = document.getElementById('compile-btn');
+  if (compileBtn) {
+    compileBtn.disabled = true;
+    compileBtn.textContent = '⚙️ Compilando...';
+    
+    setTimeout(() => {
+      compileBtn.disabled = false;
+      compileBtn.textContent = '⚙️ Compilar';
+      showSerialNotification('✅ Compilação concluída!', 'success');
+    }, 2000);
+  }
+}
+
+function uploadSketch() {
+  console.log('📤 Fazendo upload do sketch...');
+  
+  if (!serialMonitorState.isConnected) {
+    showSerialNotification('❌ Conecte-se a uma porta primeiro!', 'error');
+    return;
+  }
+  
+  const code = generateCode();
+  if (!code) {
+    showSerialNotification('❌ Nenhum código para fazer upload!', 'error');
+    return;
+  }
+  
+  // Simulate upload
+  const uploadBtn = document.getElementById('upload-btn');
+  if (uploadBtn) {
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = '📤 Fazendo Upload...';
+    
+    updateProgress(0);
+    
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 20;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(progressInterval);
+        
+        setTimeout(() => {
+          uploadBtn.disabled = false;
+          uploadBtn.textContent = '📤 Upload';
+          updateProgress(0);
+          showSerialNotification('✅ Upload concluído!', 'success');
+        }, 500);
+      }
+      updateProgress(progress);
+    }, 300);
+  }
+}
+
+function updateProgress(percent) {
+  const progressFill = document.querySelector('.progress-fill');
+  const progressText = document.querySelector('.progress-text');
+  
+  if (progressFill) {
+    progressFill.style.width = `${percent}%`;
+  }
+  
+  if (progressText) {
+    progressText.textContent = `${Math.round(percent)}%`;
+  }
+}
+
+// Serial Plotter Functions
+function initializeChart() {
+  console.log('📊 Inicializando gráfico...');
+  
+  const chartSvg = document.getElementById('sensor-chart');
+  if (!chartSvg) return;
+  
+  // Clear existing chart
+  chartSvg.innerHTML = '';
+  
+  // Create SVG elements
+  const width = chartSvg.clientWidth || 800;
+  const height = chartSvg.clientHeight || 300;
+  
+  chartSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  
+  // Add grid
+  createChartGrid(chartSvg, width, height);
+  
+  // Add axes
+  createChartAxes(chartSvg, width, height);
+  
+  // Create data lines
+  createDataLines(chartSvg);
+  
+  // Update legend
+  updateChartLegend();
+}
+
+function createChartGrid(svg, width, height) {
+  const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  gridGroup.setAttribute('class', 'chart-grid');
+  
+  // Vertical grid lines
+  for (let x = 0; x <= width; x += 80) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x);
+    line.setAttribute('y1', 0);
+    line.setAttribute('x2', x);
+    line.setAttribute('y2', height);
+    line.setAttribute('class', 'chart-grid');
+    gridGroup.appendChild(line);
+  }
+  
+  // Horizontal grid lines
+  for (let y = 0; y <= height; y += 60) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', 0);
+    line.setAttribute('y1', y);
+    line.setAttribute('x2', width);
+    line.setAttribute('y2', y);
+    line.setAttribute('class', 'chart-grid');
+    gridGroup.appendChild(line);
+  }
+  
+  svg.appendChild(gridGroup);
+}
+
+function createChartAxes(svg, width, height) {
+  const axesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  axesGroup.setAttribute('class', 'chart-axes');
+  
+  // X axis
+  const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  xAxis.setAttribute('x1', 0);
+  xAxis.setAttribute('y1', height / 2);
+  xAxis.setAttribute('x2', width);
+  xAxis.setAttribute('y2', height / 2);
+  xAxis.setAttribute('class', 'chart-axis');
+  axesGroup.appendChild(xAxis);
+  
+  // Y axis
+  const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  yAxis.setAttribute('x1', 50);
+  yAxis.setAttribute('y1', 0);
+  yAxis.setAttribute('x2', 50);
+  yAxis.setAttribute('y2', height);
+  yAxis.setAttribute('class', 'chart-axis');
+  axesGroup.appendChild(yAxis);
+  
+  svg.appendChild(axesGroup);
+}
+
+function createDataLines(svg) {
+  const sensors = ['accel-x', 'accel-y', 'accel-z', 'gyro-x', 'gyro-y', 'gyro-z'];
+  
+  sensors.forEach(sensor => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('id', `line-${sensor}`);
+    path.setAttribute('class', `chart-line ${sensor}`);
+    path.setAttribute('fill', 'none');
+    svg.appendChild(path);
+  });
+}
+
+function updateChartLegend() {
+  const legend = document.querySelector('.chart-legend');
+  if (!legend) return;
+  
+  const sensors = [
+    { key: 'accel-x', label: 'Accel X', color: '#ff4444' },
+    { key: 'accel-y', label: 'Accel Y', color: '#44ff44' },
+    { key: 'accel-z', label: 'Accel Z', color: '#4444ff' },
+    { key: 'gyro-x', label: 'Gyro X', color: '#ffaa44' },
+    { key: 'gyro-y', label: 'Gyro Y', color: '#ff44aa' },
+    { key: 'gyro-z', label: 'Gyro Z', color: '#44aaff' }
+  ];
+  
+  legend.innerHTML = '';
+  
+  sensors.forEach(sensor => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <div class="legend-color" style="background-color: ${sensor.color}"></div>
+      <span>${sensor.label}</span>
+    `;
+    legend.appendChild(item);
+  });
+}
+
+// Console Functions
+function updateConsoleTab() {
+  console.log('💬 Atualizando aba Console...');
+  
+  const consoleOutput = document.getElementById('console-output');
+  if (consoleOutput && serialMonitorState.consoleHistory.length > 0) {
+    consoleOutput.textContent = serialMonitorState.consoleHistory.join('\n');
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+  }
+}
+
+function sendSerialCommand() {
+  const input = document.getElementById('console-input');
+  if (!input || !input.value.trim()) return;
+  
+  const command = input.value.trim();
+  
+  if (!serialMonitorState.isConnected) {
+    showSerialNotification('❌ Não conectado à porta serial!', 'error');
+    return;
+  }
+  
+  // Add to console history
+  serialMonitorState.consoleHistory.push(`> ${command}`);
+  
+  // Simulate response (in real implementation, send via WebSocket)
+  setTimeout(() => {
+    serialMonitorState.consoleHistory.push(`Arduino: Received "${command}"`);
+    updateConsoleTab();
+  }, 100);
+  
+  // Clear input
+  input.value = '';
+  
+  // Update console
+  updateConsoleTab();
+}
+
+function clearConsole() {
+  serialMonitorState.consoleHistory = [];
+  updateConsoleTab();
+  
+  const consoleOutput = document.getElementById('console-output');
+  if (consoleOutput) {
+    consoleOutput.textContent = '';
+  }
+}
+
+// Code Tab Functions
+function updateCodeTab() {
+  console.log('📝 Atualizando aba Code...');
+  
+  const codeEditor = document.getElementById('code-editor');
+  if (codeEditor) {
+    const code = generateCode();
+    codeEditor.value = code || '// Nenhum código gerado ainda\n// Adicione blocos no workspace para ver o código aqui';
+  }
+}
+
+// Data Simulation (replace with real WebSocket in production)
+let dataSimulationInterval;
+
+function startDataSimulation() {
+  if (dataSimulationInterval) {
+    clearInterval(dataSimulationInterval);
+  }
+  
+  console.log('🔄 Iniciando simulação de dados...');
+  
+  dataSimulationInterval = setInterval(() => {
+    // Generate random sensor data
+    const accelX = (Math.random() - 0.5) * 20;
+    const accelY = (Math.random() - 0.5) * 20;
+    const accelZ = (Math.random() - 0.5) * 20;
+    const gyroX = (Math.random() - 0.5) * 500;
+    const gyroY = (Math.random() - 0.5) * 500;
+    const gyroZ = (Math.random() - 0.5) * 500;
+    
+    // Add to chart data
+    const timestamp = Date.now();
+    chartData.timestamps.push(timestamp);
+    chartData.accelX.push(accelX);
+    chartData.accelY.push(accelY);
+    chartData.accelZ.push(accelZ);
+    chartData.gyroX.push(gyroX);
+    chartData.gyroY.push(gyroY);
+    chartData.gyroZ.push(gyroZ);
+    
+    // Keep only last 100 points
+    if (chartData.timestamps.length > 100) {
+      Object.keys(chartData).forEach(key => {
+        chartData[key] = chartData[key].slice(-100);
+      });
+    }
+    
+    // Update displays
+    updateSensorDisplay(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+    
+    if (serialMonitorState.currentTab === 'serial-plotter') {
+      updateChart();
+    }
+    
+    // Add to console if tab is active
+    if (serialMonitorState.currentTab === 'console') {
+      serialMonitorState.consoleHistory.push(`Data: AX=${accelX.toFixed(2)} AY=${accelY.toFixed(2)} AZ=${accelZ.toFixed(2)}`);
+      if (serialMonitorState.consoleHistory.length > 50) {
+        serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-50);
+      }
+      updateConsoleTab();
+    }
+    
+  }, 100); // 10Hz update rate
+}
+
+function stopDataSimulation() {
+  if (dataSimulationInterval) {
+    clearInterval(dataSimulationInterval);
+    dataSimulationInterval = null;
+  }
+  console.log('⏹️ Simulação de dados parada');
+}
+
+function updateSensorDisplay(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
+  const dataDisplay = document.querySelector('.sensor-data');
+  if (!dataDisplay) return;
+  
+  dataDisplay.innerHTML = `
+    <div class="data-row">
+      <span class="data-label">Accel X:</span>
+      <span class="data-value">${accelX.toFixed(2)} m/s²</span>
+    </div>
+    <div class="data-row">
+      <span class="data-label">Accel Y:</span>
+      <span class="data-value">${accelY.toFixed(2)} m/s²</span>
+    </div>
+    <div class="data-row">
+      <span class="data-label">Accel Z:</span>
+      <span class="data-value">${accelZ.toFixed(2)} m/s²</span>
+    </div>
+    <div class="data-row">
+      <span class="data-label">Gyro X:</span>
+      <span class="data-value">${gyroX.toFixed(2)} °/s</span>
+    </div>
+    <div class="data-row">
+      <span class="data-label">Gyro Y:</span>
+      <span class="data-value">${gyroY.toFixed(2)} °/s</span>
+    </div>
+    <div class="data-row">
+      <span class="data-label">Gyro Z:</span>
+      <span class="data-value">${gyroZ.toFixed(2)} °/s</span>
+    </div>
+  `;
+}
+
+function updateChart() {
+  const chartSvg = document.getElementById('sensor-chart');
+  if (!chartSvg) return;
+  
+  const width = chartSvg.clientWidth || 800;
+  const height = chartSvg.clientHeight || 300;
+  
+  const sensors = ['accelX', 'accelY', 'accelZ', 'gyroX', 'gyroY', 'gyroZ'];
+  
+  sensors.forEach((sensor, index) => {
+    const data = chartData[sensor];
+    if (!data || data.length < 2) return;
+    
+    const path = document.getElementById(`line-${sensor.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+    if (!path) return;
+    
+    // Scale data to chart
+    const maxVal = Math.max(...data.map(Math.abs));
+    const minX = 50;
+    const maxX = width - 20;
+    const minY = 20;
+    const maxY = height - 20;
+    const midY = height / 2;
+    
+    let pathData = '';
+    
+    data.forEach((value, i) => {
+      const x = minX + (i / (data.length - 1)) * (maxX - minX);
+      const y = midY - (value / (maxVal || 1)) * (midY - minY) * 0.8;
+      
+      if (i === 0) {
+        pathData += `M ${x} ${y}`;
+      } else {
+        pathData += ` L ${x} ${y}`;
+      }
+    });
+    
+    path.setAttribute('d', pathData);
+  });
+}
+
+function clearSensorData() {
+  chartData = {
+    accelX: [], accelY: [], accelZ: [],
+    gyroX: [], gyroY: [], gyroZ: [],
+    timestamps: []
+  };
+  
+  serialMonitorState.sensorData = [];
+  serialMonitorState.consoleHistory = [];
+  
+  const dataDisplay = document.querySelector('.sensor-data');
+  if (dataDisplay) {
+    dataDisplay.innerHTML = '<div class="data-row"><span class="data-label">Status:</span><span class="data-value">Aguardando dados...</span></div>';
+  }
+}
+
+// Notification system for serial monitor
+function showSerialNotification(message, type = 'info') {
+  console.log(`📢 Serial Notification [${type}]: ${message}`);
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `serial-notification serial-notification-${type}`;
+  notification.textContent = message;
+  
+  // Styles
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '80px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '8px',
+    color: 'white',
+    fontWeight: '600',
+    fontSize: '14px',
+    zIndex: '10002',
+    animation: 'slideInRight 0.3s ease-out',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+    maxWidth: '300px',
+    wordWrap: 'break-word'
+  });
+  
+  // Colors based on type
+  const colors = {
+    success: 'linear-gradient(135deg, #00cfe5, #28a745)',
+    error: 'linear-gradient(135deg, #ff4757, #dc3545)',
+    warning: 'linear-gradient(135deg, #ffc107, #fd7e14)',
+    info: 'linear-gradient(135deg, #17a2b8, #007bff)'
+  };
+  
+  notification.style.background = colors[type] || colors.info;
+  
+  // Add to DOM
+  document.body.appendChild(notification);
+  
+  // Remove after 4 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease-in';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+}
+
 // Aguardar carregamento completo e então definir blocos
 setTimeout(() => {
   ensureMPU6050Blocks();
@@ -825,8 +1523,8 @@ function updateVariableToolboxFallback() {
   }
 }
 
-// Event listeners
-startButton.addEventListener('click', executeCode);
+// Event listeners (commented out - now using Serial Monitor Modal)
+// startButton.addEventListener('click', executeCode);
 
 // Listener para mudanças no workspace
 workspace.addChangeListener(function(event) {
@@ -869,6 +1567,179 @@ ipcRenderer.on('execution-result', (event, result) => {
 
 // Gerar código inicial
 generateCode();
+
+// ============================================================================
+// SERIAL MONITOR MODAL EVENT LISTENERS - DOM Ready Setup
+// ============================================================================
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎯 Configurando event listeners do Serial Monitor...');
+  
+  // Serial Monitor Modal buttons - Connect to Execute button (startButton)
+  const executeBtn = document.getElementById('startButton');
+  if (executeBtn) {
+    executeBtn.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default behavior
+      openSerialMonitorModal();
+    });
+    console.log('✅ Botão Executar conectado ao Serial Monitor');
+  }
+  
+  // Close modal button
+  const closeModalBtn = document.querySelector('#arduino-cli-modal .close-button');
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', closeSerialMonitorModal);
+  }
+  
+  // Tab buttons
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.getAttribute('data-tab');
+      if (tabName) {
+        switchTab(tabName);
+      }
+    });
+  });
+  
+  // Connection buttons
+  const connectBtn = document.getElementById('connect-btn');
+  if (connectBtn) {
+    connectBtn.addEventListener('click', connectSerial);
+  }
+  
+  const disconnectBtn = document.getElementById('disconnect-btn');
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener('click', disconnectSerial);
+  }
+  
+  const refreshPortsBtn = document.getElementById('refresh-ports-btn');
+  if (refreshPortsBtn) {
+    refreshPortsBtn.addEventListener('click', refreshPorts);
+  }
+  
+  // Upload buttons
+  const compileBtn = document.getElementById('compile-btn');
+  if (compileBtn) {
+    compileBtn.addEventListener('click', compileSketch);
+  }
+  
+  const uploadBtn = document.getElementById('upload-btn');
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', uploadSketch);
+  }
+  
+  // Console buttons
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) {
+    sendBtn.addEventListener('click', sendSerialCommand);
+  }
+  
+  const consoleInput = document.getElementById('console-input');
+  if (consoleInput) {
+    consoleInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendSerialCommand();
+      }
+    });
+  }
+  
+  const clearConsoleBtn = document.getElementById('clear-console-btn');
+  if (clearConsoleBtn) {
+    clearConsoleBtn.addEventListener('click', clearConsole);
+  }
+  
+  // Modal click outside to close
+  const serialModal = document.getElementById('arduino-cli-modal');
+  if (serialModal) {
+    serialModal.addEventListener('click', function(e) {
+      if (e.target === serialModal) {
+        closeSerialMonitorModal();
+      }
+    });
+  }
+  
+  // Port selector change event
+  const portSelector = document.getElementById('port-selector');
+  if (portSelector) {
+    portSelector.addEventListener('change', function() {
+      serialMonitorState.selectedPort = this.value;
+      console.log(`🔌 Porta selecionada: ${this.value}`);
+    });
+  }
+  
+  // Baud rate change event
+  const baudRateSelector = document.getElementById('baud-rate');
+  if (baudRateSelector) {
+    baudRateSelector.addEventListener('change', function() {
+      serialMonitorState.baudRate = this.value;
+      console.log(`⚡ Baud rate selecionado: ${this.value}`);
+    });
+  }
+  
+  // Keyboard shortcuts for modal
+  document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('arduino-cli-modal');
+    if (modal && modal.classList.contains('show')) {
+      // ESC to close modal
+      if (e.key === 'Escape') {
+        closeSerialMonitorModal();
+      }
+      
+      // Ctrl+1-4 for tab switching
+      if (e.ctrlKey) {
+        switch(e.key) {
+          case '1':
+            e.preventDefault();
+            switchTab('upload');
+            break;
+          case '2':
+            e.preventDefault();
+            switchTab('serial-plotter');
+            break;
+          case '3':
+            e.preventDefault();
+            switchTab('console');
+            break;
+          case '4':
+            e.preventDefault();
+            switchTab('code');
+            break;
+        }
+      }
+    }
+  });
+  
+  // Initialize chart resize observer
+  const chartContainer = document.querySelector('.chart-area');
+  if (chartContainer && window.ResizeObserver) {
+    const resizeObserver = new ResizeObserver(entries => {
+      if (serialMonitorState.currentTab === 'serial-plotter') {
+        setTimeout(() => {
+          initializeChart();
+        }, 100);
+      }
+    });
+    
+    resizeObserver.observe(chartContainer);
+  }
+  
+  console.log('✅ Todos os event listeners do Serial Monitor configurados');
+});
+
+// Fallback for older browsers or if DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+  // DOMContentLoaded listener above will handle it
+} else {
+  // DOM is already ready, run setup immediately
+  setTimeout(() => {
+    console.log('⚡ DOM já carregado, configurando Serial Monitor imediatamente...');
+    
+    // Run the same setup code
+    const event = new Event('DOMContentLoaded');
+    document.dispatchEvent(event);
+  }, 100);
+}
 
 // Registrar callback DEPOIS que tudo estiver carregado
 setTimeout(() => {
