@@ -333,6 +333,9 @@ function openSerialMonitorModal() {
     // Update available ports
     refreshPorts();
     
+    // Sincronizar código atual com o modal
+    updateCodeTab();
+    
     // Prevent body scrolling
     document.body.style.overflow = 'hidden';
   }
@@ -376,22 +379,22 @@ function switchTab(tabName) {
   
   serialMonitorState.currentTab = tabName;
   
-  // Update tab buttons
-  document.querySelectorAll('.tab-button').forEach(btn => {
+  // Update tab buttons - correção para a classe correta
+  document.querySelectorAll('.tab-btn-clean').forEach(btn => {
     btn.classList.remove('active');
   });
   
-  const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+  const activeTab = document.querySelector(`button[data-tab="${tabName}"]`);
   if (activeTab) {
     activeTab.classList.add('active');
   }
   
-  // Update tab content
+  // Update tab content - correção para buscar pelo atributo data-tab
   document.querySelectorAll('.tab-content').forEach(content => {
     content.classList.remove('active');
   });
   
-  const activeContent = document.getElementById(`${tabName}-tab`);
+  const activeContent = document.querySelector(`.tab-content[data-tab="${tabName}"]`);
   if (activeContent) {
     activeContent.classList.add('active');
   }
@@ -778,15 +781,109 @@ function clearConsole() {
   }
 }
 
+// Code Statistics Update Function - Atualiza modal e área principal
+function updateCodeStats(code) {
+  // Elementos do modal
+  const codeLinesDisplay = document.getElementById('code-lines-display');
+  const codeCharsDisplay = document.getElementById('code-chars-display');
+  const codeSizeDisplay = document.getElementById('code-size-display');
+  const codeValidation = document.getElementById('code-validation');
+  
+  // Elementos da área principal
+  const codeLines = document.getElementById('code-lines');
+  const codeChars = document.getElementById('code-chars');
+  const codeStatus = document.getElementById('code-status');
+  
+  if (code && code.trim() !== '' && !code.includes('// Nenhum bloco')) {
+    const lines = code.split('\n').length;
+    const chars = code.length;
+    const sizeKB = (chars / 1024).toFixed(2);
+    
+    // Atualizar elementos do modal
+    if (codeLinesDisplay) codeLinesDisplay.textContent = lines;
+    if (codeCharsDisplay) codeCharsDisplay.textContent = chars;
+    if (codeSizeDisplay) codeSizeDisplay.textContent = sizeKB;
+    
+    // Atualizar elementos da área principal
+    if (codeLines) codeLines.textContent = lines;
+    if (codeChars) codeChars.textContent = chars;
+    
+    // Determinar status e validação
+    const hasSetupAndLoop = code.includes('void setup()') && code.includes('void loop()');
+    
+    if (hasSetupAndLoop) {
+      // Código válido
+      if (codeValidation) {
+        codeValidation.textContent = '✅ Código válido com setup() e loop()';
+        codeValidation.style.color = '#28a745';
+      }
+      if (codeStatus) {
+        codeStatus.textContent = '✅ Código válido';
+        codeStatus.style.color = '#28a745';
+      }
+    } else {
+      // Código incompleto
+      if (codeValidation) {
+        codeValidation.textContent = '⚠️ Adicione os blocos setup() e loop()';
+        codeValidation.style.color = '#ffc107';
+      }
+      if (codeStatus) {
+        codeStatus.textContent = '⚠️ Incompleto';
+        codeStatus.style.color = '#ffc107';
+      }
+    }
+  } else {
+    // Código vazio
+    if (codeLinesDisplay) codeLinesDisplay.textContent = '0';
+    if (codeCharsDisplay) codeCharsDisplay.textContent = '0';
+    if (codeSizeDisplay) codeSizeDisplay.textContent = '0';
+    if (codeLines) codeLines.textContent = '0';
+    if (codeChars) codeChars.textContent = '0';
+    
+    if (codeValidation) {
+      codeValidation.textContent = '⚠️ Adicione os blocos setup() e loop()';
+      codeValidation.style.color = '#ffc107';
+    }
+    if (codeStatus) {
+      codeStatus.textContent = '❌ Código vazio';
+      codeStatus.style.color = '#dc3545';
+    }
+  }
+}
+
 // Code Tab Functions
 function updateCodeTab() {
   console.log('📝 Atualizando aba Code...');
   
-  const codeEditor = document.getElementById('code-editor');
-  if (codeEditor) {
-    const code = generateCode();
-    codeEditor.value = code || '// Nenhum código gerado ainda\n// Adicione blocos no workspace para ver o código aqui';
+  // Obter código atual do elemento principal (evita regenerar)
+  const mainCodeDisplay = document.getElementById('code-display');
+  let currentCode = '';
+  
+  if (mainCodeDisplay) {
+    currentCode = mainCodeDisplay.textContent || '';
   }
+  
+  // Se não há código no elemento principal, gerar novo
+  if (!currentCode || currentCode.includes('// Nenhum bloco para gerar código')) {
+    currentCode = generateCode() || '';
+  }
+  
+  const codeDisplayFull = document.getElementById('code-display-full');
+  const generatedCode = document.getElementById('generated-code');
+  
+  const codeText = currentCode || '// Nenhum código gerado ainda\n// Adicione blocos no workspace para ver o código aqui';
+  
+  // Atualizar elementos do modal
+  if (codeDisplayFull) {
+    codeDisplayFull.textContent = codeText;
+  }
+  
+  if (generatedCode) {
+    generatedCode.textContent = codeText;
+  }
+  
+  // Atualizar estatísticas
+  updateCodeStats(codeText);
 }
 
 // Data Simulation (replace with real WebSocket in production)
@@ -1259,16 +1356,50 @@ function generateCode() {
 
     console.log('📝 Código gerado:', code);
 
-    // Exibir o código gerado
+    // Exibir o código gerado no painel lateral
     codeDisplay.textContent = code || '// Nenhum bloco para gerar código';
+
+    // Sincronizar com o elemento do modal Arduino CLI
+    const codeDisplayFull = document.getElementById('code-display-full');
+    if (codeDisplayFull) {
+      codeDisplayFull.textContent = code || '// Nenhum código foi gerado ainda\n// Use o editor de blocos para criar seu programa Arduino\n// Os blocos serão convertidos automaticamente em código C++';
+    }
+
+    // Sincronizar com o elemento generated-code do modal (se existir)
+    const generatedCode = document.getElementById('generated-code');
+    if (generatedCode) {
+      generatedCode.textContent = code || '// Código será gerado aqui...';
+    }
+
+    // Sempre atualizar estatísticas (modal e área principal)
+    updateCodeStats(code || '');
 
     return code;
   } catch (error) {
     console.error('❌ Erro ao gerar código:', error);
-    codeDisplay.textContent = '// Erro ao gerar código: ' + error.message;
+    const errorMessage = '// Erro ao gerar código: ' + error.message;
+    
+    codeDisplay.textContent = errorMessage;
+    
+    // Sincronizar erro com o modal também
+    const codeDisplayFull = document.getElementById('code-display-full');
+    if (codeDisplayFull) {
+      codeDisplayFull.textContent = errorMessage;
+    }
+    
+    const generatedCode = document.getElementById('generated-code');
+    if (generatedCode) {
+      generatedCode.textContent = errorMessage;
+    }
+    
+    // Atualizar estatísticas com erro (zero valores)
+    updateCodeStats('');
+    
     return null;
   }
 }
+
+
 
 // Função para executar o código
 function executeCode() {
@@ -1586,18 +1717,22 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Botão Executar conectado ao Serial Monitor');
   }
   
-  // Close modal button
-  const closeModalBtn = document.querySelector('#arduino-cli-modal .close-button');
+  // Close modal button - correção para o botão correto
+  const closeModalBtn = document.getElementById('arduino-cli-close');
   if (closeModalBtn) {
     closeModalBtn.addEventListener('click', closeSerialMonitorModal);
+    console.log('✅ Event listener adicionado ao botão de fechar do modal Arduino CLI');
+  } else {
+    console.error('❌ Botão #arduino-cli-close não encontrado!');
   }
   
-  // Tab buttons
-  document.querySelectorAll('.tab-button').forEach(btn => {
+  // Tab buttons - correção para a classe correta
+  document.querySelectorAll('.tab-btn-clean').forEach(btn => {
     btn.addEventListener('click', function() {
       const tabName = this.getAttribute('data-tab');
       if (tabName) {
         switchTab(tabName);
+        console.log(`📋 Aba selecionada: ${tabName}`);
       }
     });
   });
