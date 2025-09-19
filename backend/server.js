@@ -6,8 +6,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-// Usar mock temporariamente até o Arduino CLI ser configurado
-const ArduinoCLIService = require('./services/mock-arduino-cli-service');
+// Arduino CLI Service configurado e funcionando
+const ArduinoCLIService = require('./services/arduino-cli-service');
 const SerialService = require('./services/serial-service');
 
 class BackendServer {

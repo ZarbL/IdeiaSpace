@@ -105,3 +105,13 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Arduino CLI specific ignores
+backend/arduino-cli/config/data/inventory.yaml
+backend/arduino-cli/config/downloads/
+backend/arduino-cli/config/data/packages/
+backend/arduino-cli/config/data/cache/
+
+# Include only essential Arduino CLI files
+!backend/arduino-cli/LICENSE.txt
+!backend/arduino-cli/config/arduino-cli.yaml

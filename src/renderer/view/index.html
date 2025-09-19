@@ -33,17 +33,19 @@
   <div class="container">
     <div id="blocklyDiv" class="blockly-area"></div>
     <div class="side-panel">
-      <div class="code-header">
-        <h3 id="codeHeader" data-translate-key="cppCodeTitle">🧠 Código C++</h3>
+      <div class="code-section">
+        <div class="code-header">
+          <h3 id="codeHeader" data-translate-key="cppCodeTitle">🧠 Código C++</h3>
+        </div>
+        <pre id="code-display" class="code-box" data-translate-key-placeholder="cppCodePlaceholder">// Código C++ aparecerá aqui automaticamente</pre>
       </div>
-      <pre id="code-display" class="code-box" data-translate-key-placeholder="cppCodePlaceholder">// Código C++ aparecerá aqui automaticamente</pre>
       <div class="monitor-section">
         <div class="button-group">
-          <button id="startButton" class="icon-button tooltip" data-tooltip-key="runCodeTooltip">
-            ▶
+          <button id="startButton" class="execute-button tooltip" data-tooltip-key="runCodeTooltip">
+            Executar
           </button>
-          <button id="copyButton" class="icon-button tooltip" data-tooltip-key="copyCodeTooltip">
-            ⧉
+          <button id="copyButton" class="copy-button tooltip" data-tooltip-key="copyCodeTooltip">
+            ⧉ Copiar
           </button>
         </div>
         <div class="copy-feedback" id="copyFeedback" data-translate-key="copyFeedback">Código copiado para a área de transferência!</div>
@@ -52,11 +54,10 @@
     </div>
   </div>
 
-  <!-- Modal para criar variáveis -->
   <div id="variable-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2 data-translate-key="variableModalTitle">� Criar Nova Variável</h2>
+      <h2 data-translate-key="variableModalTitle">📝 Criar Nova Variável</h2>
       <div class="modal-body">
         <label for="variable-name" data-translate-key="variableNameLabel">Nome da variável:</label>
         <input type="text" id="variable-name" data-translate-key-placeholder="variableNamePlaceholder" placeholder="Digite o nome da variável..." maxlength="50">
@@ -68,11 +69,9 @@
     </div>
   </div>
 
-  <!-- Modal para Arduino CLI - Redesenhado com fundo claro -->
   <div id="arduino-cli-modal" class="arduino-modal-overlay">
     <div class="arduino-modal-container">
       
-      <!-- Header do Modal -->
       <header class="modal-header-clean">
         <div class="modal-header-left">
           <div class="modal-icon-modern">⚡</div>
@@ -90,7 +89,6 @@
         </div>
       </header>
 
-      <!-- Navegação por Abas -->
       <nav class="modal-tabs-clean">
         <button class="tab-btn-clean active" data-tab="upload">
           <span class="tab-icon">📤</span>
@@ -111,21 +109,39 @@
         </button>
       </nav>
 
-      <!-- Conteúdo Principal -->
       <main class="modal-main-content">
         
-        <!-- Painel Lateral - Configurações -->
         <aside class="modal-sidebar">
           <div class="sidebar-section">
             <h4 class="sidebar-title">🔌 Conexão</h4>
             
-            <!-- Status da Conexão -->
-            <div class="connection-indicator" id="ws-status-indicator">
+            <!-- Backend Status -->
+            <div class="connection-indicator" id="backend-status-indicator">
               <span class="indicator-dot offline"></span>
-              <span class="indicator-text">Servidor Offline</span>
+              <span class="indicator-text">Backend Offline</span>
+            </div>
+            
+            <!-- Backend Controls -->
+            <div class="form-group">
+              <div class="backend-controls">
+                <button id="start-backend-btn" class="backend-btn start">
+                  <span class="btn-icon">🚀</span>
+                  <span class="btn-text">Iniciar Backend</span>
+                </button>
+                <button id="stop-backend-btn" class="backend-btn stop" disabled>
+                  <span class="btn-icon">🛑</span>
+                  <span class="btn-text">Parar Backend</span>
+                </button>
+              </div>
+              <small class="form-help" id="backend-info">Backend Arduino CLI não iniciado</small>
             </div>
 
-            <!-- Seleção de Porta -->
+            <!-- WebSocket Status -->
+            <div class="connection-indicator" id="ws-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text">WebSocket Offline</span>
+            </div>
+
             <div class="form-group">
               <label class="form-label">Porta Serial</label>
               <div class="input-with-button">
@@ -137,7 +153,6 @@
               <small class="form-help" id="port-info">0 porta(s) disponível(eis)</small>
             </div>
 
-            <!-- Baud Rate -->
             <div class="form-group">
               <label class="form-label">Baud Rate</label>
               <select id="baud-rate-select" class="form-select">
@@ -147,16 +162,14 @@
               </select>
             </div>
 
-            <!-- Botão Conectar -->
             <button id="connect-btn" class="connect-button" disabled>
               <span class="btn-icon">🚀</span>
               <span class="btn-text">Conectar</span>
             </button>
           </div>
 
-          <!-- Estatísticas -->
           <div class="sidebar-section">
-            <h4 class="sidebar-title">� Estatísticas</h4>
+            <h4 class="sidebar-title">📊 Estatísticas</h4>
             <div class="stats-grid">
               <div class="stat-item">
                 <span class="stat-label">Mensagens</span>
@@ -170,10 +183,8 @@
           </div>
         </aside>
 
-        <!-- Área de Conteúdo Principal -->
         <section class="content-area">
           
-          <!-- Aba Upload -->
           <div class="tab-content active" data-tab="upload">
             <div class="content-header">
               <h3>📤 Upload & Compilação</h3>
@@ -217,7 +228,6 @@
             </div>
           </div>
 
-          <!-- Aba Serial Plotter -->
           <div class="tab-content" data-tab="sensors">
             <div class="content-header">
               <h3>📈 Serial Plotter</h3>
@@ -231,7 +241,6 @@
             </div>
           </div>
 
-          <!-- Aba Console -->
           <div class="tab-content" data-tab="console">
             <div class="content-header">
               <h3>🖥️ Console Serial</h3>
@@ -249,7 +258,6 @@
             </div>
           </div>
 
-          <!-- Aba Código -->
           <div class="tab-content" data-tab="code">
             <div class="content-header">
               <h3>📄 Código Gerado</h3>
@@ -268,11 +276,9 @@
   </div>
             
             <div class="serial-upload-layout">
-              <!-- Upload Controls -->
               <div class="serial-upload-controls">
                 <h4 class="serial-upload-controls-title">📤 Upload e Deploy</h4>
                 
-                <!-- Board Selection -->
                 <div class="serial-form-group">
                   <label class="serial-form-label">🔧 Placa de Destino:</label>
                   <select id="board-select" class="serial-form-control">
@@ -284,7 +290,6 @@
                   </select>
                 </div>
 
-                <!-- Upload Port -->
                 <div class="serial-form-group">
                   <label class="serial-form-label">🔌 Porta de Upload:</label>
                   <div class="serial-port-selection">
@@ -295,7 +300,6 @@
                   </div>
                 </div>
 
-                <!-- Code Info -->
                 <div class="serial-code-info">
                   <div class="serial-info-title">📄 Informações do Código:</div>
                   <div class="serial-code-stats">
@@ -305,11 +309,9 @@
                   </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="serial-action-buttons">
                   <button id="upload-code" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
                   
-                  <!-- Sensor Selection -->
                   <div class="serial-sensor-selection">
                     <label class="serial-form-label">🔧 Sensor para Instalar Bibliotecas:</label>
                     <select id="sensor-select" class="serial-form-control">
@@ -324,7 +326,6 @@
                   <button id="install-libraries" class="serial-btn-libraries">📦 Instalar Bibliotecas</button>
                 </div>
 
-                <!-- Upload Progress -->
                 <div class="serial-upload-progress" id="upload-progress" style="display: none;">
                   <div class="serial-progress-bar">
                     <div class="serial-progress-fill" id="upload-progress-fill"></div>
@@ -332,7 +333,6 @@
                   <div class="serial-progress-text" id="upload-progress-text">0%</div>
                 </div>
 
-                <!-- Tips -->
                 <div class="serial-tips">
                   <div class="serial-info-title">💡 Dicas Gerais:</div>
                   <div class="serial-tips-content">
@@ -344,7 +344,6 @@
                 </div>
               </div>
 
-              <!-- Compilation Logs -->
               <div class="serial-logs-panel">
                 <div class="serial-logs-header">
                   <h4 class="serial-logs-title">🖥️ Logs de Compilação</h4>
@@ -363,10 +362,8 @@
             </div>
           </div>
 
-          <!-- Serial Plotter Tab -->
           <div class="serial-tab-content" data-tab="sensors">
             <div class="serial-plotter-container">
-              <!-- Plotter Controls -->
               <div class="serial-plotter-controls">
                 <div class="serial-plotter-header">
                   <div class="serial-plotter-info">
@@ -383,7 +380,6 @@
                   </div>
                 </div>
 
-                <!-- Sensor Selection -->
                 <div class="serial-sensor-checkboxes">
                   <label class="serial-checkbox-label">
                     <input type="checkbox" id="accel-x" checked>
@@ -418,7 +414,6 @@
                 </div>
               </div>
 
-              <!-- Chart Area -->
               <div class="serial-chart-area">
                 <div id="sensor-chart" class="serial-chart">
                   <div class="serial-chart-empty">
@@ -433,7 +428,6 @@
                 </div>
               </div>
 
-              <!-- Current Values -->
               <div class="serial-current-values" id="current-values" style="display: none;">
                 <h4 class="serial-values-title">📊 Valores Atuais do MPU6050</h4>
                 <div class="serial-values-grid">
@@ -455,7 +449,7 @@
                     </div>
                   </div>
                   <div class="serial-values-section">
-                    <h5 class="serial-values-section-title">� Giroscópio (°/s)</h5>
+                    <h5 class="serial-values-section-title">🔄 Giroscópio (°/s)</h5>
                     <div class="serial-values-list">
                       <div class="serial-value-item">
                         <span style="color: #f59e0b;">X:</span>
@@ -476,7 +470,6 @@
             </div>
           </div>
 
-          <!-- Console Tab -->
           <div class="serial-tab-content" data-tab="console">
             <div class="serial-console-panel">
               <div class="serial-console-header">
@@ -497,7 +490,6 @@
                 </div>
               </div>
 
-              <!-- Command Input -->
               <div class="serial-command-input" id="command-input" style="display: none;">
                 <input type="text" id="command-text" class="serial-command-field" placeholder="Digite um comando para enviar ao ESP32...">
                 <button id="send-command" class="serial-btn-send">📤</button>
@@ -505,7 +497,6 @@
             </div>
           </div>
 
-          <!-- Code Tab -->
           <div class="serial-tab-content" data-tab="code">
             <div class="serial-code-panel">
               <div class="serial-code-header">
@@ -680,22 +671,18 @@
         <block type="bh1750_light_level"></block>
       </category>
       <category name="HMC5883" colour="#9932CC" data-translate-name="CAT_HMC5883">
-        <!-- Inicialização e configuração -->
         <block type="hmc5883_sensor_object"></block>
         <block type="hmc5883_init"></block>
         <block type="hmc5883_begin"></block>
         <block type="hmc5883_set_gain"></block>
         <sep></sep>
-        <!-- Leitura de dados -->
         <block type="hmc5883_event_declare"></block>
         <block type="hmc5883_get_event"></block>
         <sep></sep>
-        <!-- Campo magnético em cada eixo -->
         <block type="hmc5883_mag_x"></block>
         <block type="hmc5883_mag_y"></block>
         <block type="hmc5883_mag_z"></block>
         <sep></sep>
-        <!-- Cálculos avançados -->
         <block type="hmc5883_field_strength"></block>
         <block type="hmc5883_atan2"></block>
         <block type="heading_correction">
@@ -704,7 +691,6 @@
           </value>
         </block>
         <sep></sep>
-        <!-- Informações do sensor -->
         <block type="hmc5883_sensor_info"></block>
         <block type="hmc5883_display_sensor"></block>
       </category>
@@ -723,8 +709,8 @@
   <script src="../model/blocks.js"></script>
   <script src="../model/cpp_generator.js"></script>
   
-  <!-- Sistema de Internacionalização -->
   <script src="../controller/i18n.js"></script>
+  <script src="../controller/arduino-cli-client.js"></script>
   
   <script src="../controller/renderer.js"></script>
   <script src="../../../debug_delay_block.js"></script>

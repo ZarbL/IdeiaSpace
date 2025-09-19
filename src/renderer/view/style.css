@@ -66,6 +66,7 @@ body {
   display: flex;
   height: calc(100vh - 60px);
   width: 100vw;
+  overflow: hidden;
 }
 
 .blockly-area {
@@ -82,7 +83,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  overflow-y: auto;
+  overflow: hidden;
   border-left: 3px solid var(--accent-pink);
   box-shadow: -2px 0 10px rgba(232, 0, 116, 0.2);
 }
@@ -111,7 +112,9 @@ button#generate-btn:hover {
   border: 2px solid var(--accent-pink);
   border-radius: 12px;
   padding: 20px;
-  height: 200px;
+  flex: 1;
+  min-height: 300px;
+  max-height: calc(100vh - 200px);
   overflow-y: auto;
   white-space: pre-wrap;
   font-family: "Courier New", monospace;
@@ -119,8 +122,16 @@ button#generate-btn:hover {
   box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3);
 }
 
+.code-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .code-header {
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .code-header h3 {
@@ -163,15 +174,83 @@ button#generate-btn:hover {
 }
 
 .monitor-section {
-  margin-top: 8px;
+  margin-top: 15px;
+  flex-shrink: 0;
+  min-height: auto;
 }
 
 .button-group {
   display: flex;
+  flex-direction: row;
   gap: 15px;
   align-items: center;
   margin-bottom: 15px;
-  margin-left: 20px;
+}
+
+/* Botão Executar grande e proeminente */
+.execute-button {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: #ffffff;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 45px;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex: 1;
+}
+
+/* Botão Copiar harmonioso com o Executar */
+.copy-button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 100px;
+  height: 45px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+.execute-button:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(40, 167, 69, 0.6);
+}
+
+.execute-button:active {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #1e7e34, #155724);
+}
+
+.copy-button:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+}
+
+.copy-button:active {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #004085, #003366);
 }
 
 /* Botões minimalistas */
@@ -217,6 +296,28 @@ button#generate-btn:hover {
 
 .dark-mode .icon-button:active {
   background-color: #1a1a1a;
+}
+
+.dark-mode .execute-button {
+  background: linear-gradient(135deg, #e80074, #e80074);
+  color: #ffffff;
+  box-shadow: 0 4px 15px #e80074(246, 5, 206, 0.4);
+}
+
+.dark-mode .execute-button:hover {
+  background: linear-gradient(135deg, #e80074, #e80074);
+  box-shadow: 0 6px 25px rgba(246, 5, 186, 0.6);
+}
+
+.dark-mode .copy-button {
+  background: linear-gradient(135deg, #e80074, #e80074);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 4, 196, 0.4);
+}
+
+.dark-mode .copy-button:hover {
+  background: linear-gradient(135deg, #e80074, #e80074);
+  box-shadow: 0 6px 20px rgba(226, 5, 171, 0.6);
 }
 
 /* Tooltips */
@@ -274,9 +375,10 @@ button#generate-btn:hover {
 }
 
 .copy-feedback {
-  font-size: 0.9em;
+  font-size: 0.8em;
   color: #00cfe5;
-  margin-top: 8px;
+  margin-top: 5px;
+  margin-bottom: 0;
   opacity: 0;
   transition: opacity 0.3s ease;
   text-align: center;
@@ -364,8 +466,9 @@ button#generate-btn:hover {
 }
 
 #message {
-  margin-top: 20px;
-  font-size: 1.1em;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-size: 0.95em;
   color: var(--accent-pink);
   font-weight: 600;
 }
@@ -1884,6 +1987,16 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
   background: #28a745;
 }
 
+.indicator-dot.warning {
+  background: #ffc107;
+  animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
 .indicator-text {
   color: #495057;
   font-weight: 500;
@@ -1983,6 +2096,79 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
 
 .btn-icon {
   font-size: 18px;
+}
+
+/* ============================================================================
+   BACKEND CONTROL BUTTONS
+   ============================================================================ */
+
+.backend-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.backend-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.backend-btn .btn-icon {
+  font-size: 14px;
+}
+
+.backend-btn.start {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+.backend-btn.start:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.backend-btn.stop {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.backend-btn.stop:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.backend-btn:disabled {
+  background: #6c757d !important;
+  color: #adb5bd !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.backend-btn.loading {
+  pointer-events: none;
+}
+
+.backend-btn.loading .btn-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .stats-grid {

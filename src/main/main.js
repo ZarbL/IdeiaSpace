@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 
 // Fix GPU, cache, GLES2 and virtualization issues
 app.commandLine.appendSwitch('--disable-gpu-sandbox');
@@ -34,6 +34,20 @@ app.commandLine.appendSwitch('--disable-webgl2');
 
 // Disable hardware acceleration completely
 app.disableHardwareAcceleration();
+
+// ============================================================================
+// ARDUINO CLI BACKEND MANAGEMENT
+// ============================================================================
+
+let backendProcess = null;
+let backendStatus = {
+  running: false,
+  port: 3001,
+  wsPort: 8080,
+  pid: null,
+  startTime: null,
+  lastError: null
+};
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -86,4 +100,159 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// ============================================================================
+// IPC HANDLERS - ARDUINO CLI BACKEND
+// ============================================================================
+
+// Iniciar backend
+ipcMain.handle('start-arduino-backend', async () => {
+  console.log('🚀 Recebida solicitação para iniciar backend Arduino CLI');
+  
+  if (backendProcess && !backendProcess.killed) {
+    console.log('⚠️ Backend já está rodando');
+    return { success: false, error: 'Backend já está rodando' };
+  }
+
+  try {
+    const backendPath = path.join(__dirname, '../../backend/server.js');
+    
+    if (!fs.existsSync(backendPath)) {
+      throw new Error(`Arquivo backend não encontrado: ${backendPath}`);
+    }
+
+    console.log(`📂 Iniciando backend em: ${backendPath}`);
+    
+    backendProcess = spawn('node', [backendPath], {
+      cwd: path.join(__dirname, '../../backend'),
+      stdio: ['pipe', 'pipe', 'pipe'],
+      detached: false
+    });
+
+    backendStatus.running = true;
+    backendStatus.pid = backendProcess.pid;
+    backendStatus.startTime = new Date().toISOString();
+    backendStatus.lastError = null;
+
+    console.log(`✅ Backend iniciado com PID: ${backendProcess.pid}`);
+
+    // Log output do backend
+    backendProcess.stdout.on('data', (data) => {
+      console.log(`[Backend] ${data.toString()}`);
+    });
+
+    backendProcess.stderr.on('data', (data) => {
+      console.log(`[Backend Error] ${data.toString()}`);
+      backendStatus.lastError = data.toString();
+    });
+
+    backendProcess.on('close', (code) => {
+      console.log(`🛑 Backend processo terminou com código: ${code}`);
+      backendStatus.running = false;
+      backendStatus.pid = null;
+      backendProcess = null;
+    });
+
+    backendProcess.on('error', (error) => {
+      console.error('❌ Erro no processo backend:', error.message);
+      backendStatus.running = false;
+      backendStatus.lastError = error.message;
+      backendProcess = null;
+    });
+
+    // Aguardar um pouco para o backend inicializar
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    return { 
+      success: true, 
+      status: backendStatus,
+      message: 'Backend iniciado com sucesso!' 
+    };
+
+  } catch (error) {
+    console.error('❌ Erro ao iniciar backend:', error.message);
+    backendStatus.lastError = error.message;
+    return { success: false, error: error.message };
+  }
+});
+
+// Parar backend
+ipcMain.handle('stop-arduino-backend', async () => {
+  console.log('🛑 Recebida solicitação para parar backend Arduino CLI');
+  
+  if (!backendProcess || backendProcess.killed) {
+    console.log('⚠️ Backend não está rodando');
+    return { success: false, error: 'Backend não está rodando' };
+  }
+
+  try {
+    console.log(`🔪 Terminando processo backend PID: ${backendProcess.pid}`);
+    
+    // Tentar terminar graciosamente primeiro
+    backendProcess.kill('SIGTERM');
+    
+    // Se não terminar em 5 segundos, força a terminação
+    setTimeout(() => {
+      if (backendProcess && !backendProcess.killed) {
+        console.log('💀 Forçando terminação do backend...');
+        backendProcess.kill('SIGKILL');
+      }
+    }, 5000);
+    
+    backendStatus.running = false;
+    backendStatus.pid = null;
+    backendProcess = null;
+    
+    return { 
+      success: true, 
+      message: 'Backend parado com sucesso!' 
+    };
+
+  } catch (error) {
+    console.error('❌ Erro ao parar backend:', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+// Obter status do backend
+ipcMain.handle('get-arduino-backend-status', async () => {
+  return {
+    success: true,
+    status: backendStatus,
+    isRunning: backendProcess && !backendProcess.killed
+  };
+});
+
+// Testar conexão com backend
+ipcMain.handle('test-arduino-backend', async () => {
+  if (!backendStatus.running) {
+    return { success: false, error: 'Backend não está rodando' };
+  }
+
+  try {
+    const { default: fetch } = await import('node-fetch');
+    const response = await fetch(`http://localhost:${backendStatus.port}/health`);
+    const data = await response.json();
+    
+    return {
+      success: response.ok,
+      data: data,
+      status: backendStatus
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+      status: backendStatus
+    };
+  }
+});
+
+// Limpar processo ao fechar aplicação
+app.on('before-quit', () => {
+  if (backendProcess && !backendProcess.killed) {
+    console.log('🧹 Limpando processo backend antes de fechar...');
+    backendProcess.kill('SIGTERM');
+  }
 });

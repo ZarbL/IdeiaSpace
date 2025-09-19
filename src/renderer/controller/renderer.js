@@ -309,6 +309,15 @@ let serialMonitorState = {
   consoleHistory: []
 };
 
+// Backend state
+let backendState = {
+  isRunning: false,
+  isStarting: false,
+  isStopping: false,
+  lastError: null,
+  status: null
+};
+
 // Chart data for real-time plotting
 let chartData = {
   accelX: [], accelY: [], accelZ: [],
@@ -317,7 +326,7 @@ let chartData = {
 };
 
 // Serial Monitor Modal Functions
-function openSerialMonitorModal() {
+async function openSerialMonitorModal() {
   console.log('🖥️ Abrindo Serial Monitor Modal...');
   const modal = document.getElementById('arduino-cli-modal');
   if (modal) {
@@ -330,8 +339,44 @@ function openSerialMonitorModal() {
     // Set default active tab
     switchTab('upload');
     
-    // Update available ports
-    refreshPorts();
+    // Verificar status do backend primeiro
+    console.log('🔍 Verificando status do backend...');
+    await checkBackendStatus();
+    
+    // Inicializar Arduino CLI client
+    if (!window.arduinoCLI) {
+      window.arduinoCLI = new ArduinoCLIClient();
+      console.log('🔧 Arduino CLI Client inicializado');
+    }
+    
+    // Se backend estiver rodando, testar conexão e atualizar portas
+    if (backendState.isRunning) {
+      console.log('🔍 Testando conexão com backend...');
+      const connectionTest = await window.arduinoCLI.testConnection();
+      
+      if (connectionTest.success) {
+        console.log('✅ Backend conectado com sucesso');
+        await refreshPorts();
+      } else {
+        console.warn('⚠️ Backend não responde:', connectionTest.error);
+        updateBackendConnectionStatus(false);
+      }
+    } else {
+      console.log('ℹ️ Backend não está rodando. Use o botão "Iniciar Backend"');
+      
+      // Limpar seletores de porta
+      const portSelectors = [
+        document.getElementById('port-select'),
+        document.getElementById('upload-port-select')
+      ];
+      
+      portSelectors.forEach(selector => {
+        if (selector) {
+          selector.innerHTML = '<option value="">Inicie o backend primeiro</option>';
+          selector.disabled = true;
+        }
+      });
+    }
     
     // Sincronizar código atual com o modal
     updateCodeTab();
@@ -417,41 +462,335 @@ function switchTab(tabName) {
 }
 
 // Port Management
-function refreshPorts() {
+async function refreshPorts() {
   console.log('🔍 Atualizando lista de portas...');
   
-  // Simulate port detection (in real implementation, use Arduino CLI)
-  const simulatedPorts = ['COM3', 'COM4', '/dev/ttyUSB0', '/dev/ttyACM0'];
+  // Mostrar loading nos seletores
+  const portSelectors = [
+    document.getElementById('port-select'),
+    document.getElementById('upload-port-select')
+  ];
   
-  serialMonitorState.availablePorts = simulatedPorts;
+  portSelectors.forEach(selector => {
+    if (selector) {
+      selector.innerHTML = '<option value="">🔄 Carregando portas...</option>';
+      selector.disabled = true;
+    }
+  });
+
+  // Atualizar informação de portas
+  const portInfo = document.getElementById('port-info');
+  if (portInfo) {
+    portInfo.textContent = 'Buscando portas...';
+  }
   
-  // Update port selector
-  const portSelector = document.getElementById('port-selector');
-  if (portSelector) {
-    portSelector.innerHTML = '<option value="">Selecione uma porta...</option>';
+  try {
+    // Usar Arduino CLI para detectar portas reais
+    if (!window.arduinoCLI) {
+      window.arduinoCLI = new ArduinoCLIClient();
+    }
     
-    simulatedPorts.forEach(port => {
-      const option = document.createElement('option');
-      option.value = port;
-      option.textContent = port;
-      portSelector.appendChild(option);
+    const portsResult = await window.arduinoCLI.listPorts();
+    
+    if (portsResult.error) {
+      throw new Error(portsResult.error);
+    }
+    
+    const ports = portsResult.ports || [];
+    serialMonitorState.availablePorts = ports;
+    
+    console.log(`✅ ${ports.length} porta(s) detectada(s):`, ports);
+    
+    // Atualizar ambos os seletores de porta
+    portSelectors.forEach(selector => {
+      if (selector) {
+        selector.innerHTML = '<option value="">Selecione uma porta...</option>';
+        
+        ports.forEach(port => {
+          const option = document.createElement('option');
+          option.value = port.address;
+          
+          // Criar texto descritivo para a porta
+          let portText = port.address;
+          if (port.vid && port.pid) {
+            portText += ` (${port.protocolLabel})`;
+            // Identificar ESPs comuns
+            if (port.vid === '0x1A86' && port.pid === '0x7523') {
+              portText += ' - ESP32/ESP8266 (CH340)';
+            } else if (port.vid === '0x10C4' && port.pid === '0xEA60') {
+              portText += ' - ESP32 (CP2102)';
+            } else if (port.vid === '0x239A') {
+              portText += ' - Arduino/ESP';
+            }
+          }
+          
+          option.textContent = portText;
+          selector.appendChild(option);
+        });
+        
+        selector.disabled = false;
+      }
     });
+    
+    // Atualizar informação de portas
+    if (portInfo) {
+      if (ports.length === 0) {
+        portInfo.textContent = '❌ Nenhuma porta encontrada';
+        portInfo.style.color = '#e74c3c';
+      } else {
+        portInfo.textContent = `✅ ${ports.length} porta(s) disponível(eis)`;
+        portInfo.style.color = '#27ae60';
+      }
+    }
+    
+    // Atualizar status de conexão do backend
+    updateBackendConnectionStatus(true);
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar portas:', error.message);
+    
+    // Mostrar erro nos seletores
+    portSelectors.forEach(selector => {
+      if (selector) {
+        selector.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+        selector.disabled = true;
+      }
+    });
+    
+    if (portInfo) {
+      portInfo.textContent = `❌ Erro: ${error.message}`;
+      portInfo.style.color = '#e74c3c';
+    }
+    
+    // Atualizar status de conexão do backend
+    updateBackendConnectionStatus(false);
+    
+    serialMonitorState.availablePorts = [];
   }
   
   updateRefreshButton();
 }
 
-function updateRefreshButton() {
-  const refreshBtn = document.getElementById('refresh-ports-btn');
-  if (refreshBtn) {
-    refreshBtn.disabled = false;
-    refreshBtn.innerHTML = '🔄';
+// Backend Connection Status
+function updateBackendConnectionStatus(isConnected) {
+  const indicator = document.getElementById('ws-status-indicator');
+  if (indicator) {
+    const dot = indicator.querySelector('.indicator-dot');
+    const text = indicator.querySelector('.indicator-text');
     
-    // Animate button
-    setTimeout(() => {
-      refreshBtn.innerHTML = '🔄 Atualizar';
-    }, 500);
+    if (dot && text) {
+      if (isConnected) {
+        dot.className = 'indicator-dot online';
+        text.textContent = 'WebSocket Conectado';
+      } else {
+        dot.className = 'indicator-dot offline';
+        text.textContent = 'WebSocket Offline';
+      }
+    }
   }
+}
+
+// ============================================================================
+// BACKEND CONTROL FUNCTIONS
+// ============================================================================
+
+async function startBackend() {
+  console.log('🚀 Iniciando backend Arduino CLI...');
+  
+  backendState.isStarting = true;
+  updateBackendUI();
+  
+  try {
+    const { ipcRenderer } = require('electron');
+    const result = await ipcRenderer.invoke('start-arduino-backend');
+    
+    if (result.success) {
+      console.log('✅ Backend iniciado com sucesso');
+      backendState.isRunning = true;
+      backendState.status = result.status;
+      backendState.lastError = null;
+      
+      // Aguardar um pouco e tentar conectar
+      setTimeout(async () => {
+        await refreshPorts();
+      }, 2000);
+      
+    } else {
+      console.error('❌ Erro ao iniciar backend:', result.error);
+      backendState.lastError = result.error;
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro IPC ao iniciar backend:', error.message);
+    backendState.lastError = error.message;
+  }
+  
+  backendState.isStarting = false;
+  updateBackendUI();
+}
+
+async function stopBackend() {
+  console.log('🛑 Parando backend Arduino CLI...');
+  
+  backendState.isStopping = true;
+  updateBackendUI();
+  
+  try {
+    const { ipcRenderer } = require('electron');
+    const result = await ipcRenderer.invoke('stop-arduino-backend');
+    
+    if (result.success) {
+      console.log('✅ Backend parado com sucesso');
+      backendState.isRunning = false;
+      backendState.status = null;
+      backendState.lastError = null;
+      
+      // Limpar portas
+      serialMonitorState.availablePorts = [];
+      const portSelectors = [
+        document.getElementById('port-select'),
+        document.getElementById('upload-port-select')
+      ];
+      
+      portSelectors.forEach(selector => {
+        if (selector) {
+          selector.innerHTML = '<option value="">Backend offline</option>';
+          selector.disabled = true;
+        }
+      });
+      
+    } else {
+      console.error('❌ Erro ao parar backend:', result.error);
+      backendState.lastError = result.error;
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro IPC ao parar backend:', error.message);
+    backendState.lastError = error.message;
+  }
+  
+  backendState.isStopping = false;
+  updateBackendUI();
+}
+
+async function checkBackendStatus() {
+  try {
+    const { ipcRenderer } = require('electron');
+    const result = await ipcRenderer.invoke('get-arduino-backend-status');
+    
+    if (result.success) {
+      backendState.isRunning = result.isRunning;
+      backendState.status = result.status;
+      
+      if (result.status.lastError) {
+        backendState.lastError = result.status.lastError;
+      }
+    }
+    
+    updateBackendUI();
+    return result;
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar status do backend:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+function updateBackendUI() {
+  // Atualizar indicador de status
+  const backendIndicator = document.getElementById('backend-status-indicator');
+  if (backendIndicator) {
+    const dot = backendIndicator.querySelector('.indicator-dot');
+    const text = backendIndicator.querySelector('.indicator-text');
+    
+    if (dot && text) {
+      if (backendState.isRunning) {
+        dot.className = 'indicator-dot online';
+        text.textContent = 'Backend Online';
+      } else if (backendState.isStarting) {
+        dot.className = 'indicator-dot warning';
+        text.textContent = 'Backend Iniciando...';
+      } else if (backendState.isStopping) {
+        dot.className = 'indicator-dot warning';
+        text.textContent = 'Backend Parando...';
+      } else {
+        dot.className = 'indicator-dot offline';
+        text.textContent = 'Backend Offline';
+      }
+    }
+  }
+  
+  // Atualizar botões
+  const startBtn = document.getElementById('start-backend-btn');
+  const stopBtn = document.getElementById('stop-backend-btn');
+  
+  if (startBtn) {
+    startBtn.disabled = backendState.isRunning || backendState.isStarting || backendState.isStopping;
+    
+    if (backendState.isStarting) {
+      startBtn.classList.add('loading');
+      startBtn.querySelector('.btn-text').textContent = 'Iniciando...';
+      startBtn.querySelector('.btn-icon').textContent = '⏳';
+    } else {
+      startBtn.classList.remove('loading');
+      startBtn.querySelector('.btn-text').textContent = 'Iniciar Backend';
+      startBtn.querySelector('.btn-icon').textContent = '🚀';
+    }
+  }
+  
+  if (stopBtn) {
+    stopBtn.disabled = !backendState.isRunning || backendState.isStarting || backendState.isStopping;
+    
+    if (backendState.isStopping) {
+      stopBtn.classList.add('loading');
+      stopBtn.querySelector('.btn-text').textContent = 'Parando...';
+      stopBtn.querySelector('.btn-icon').textContent = '⏳';
+    } else {
+      stopBtn.classList.remove('loading');
+      stopBtn.querySelector('.btn-text').textContent = 'Parar Backend';
+      stopBtn.querySelector('.btn-icon').textContent = '🛑';
+    }
+  }
+  
+  // Atualizar informação
+  const backendInfo = document.getElementById('backend-info');
+  if (backendInfo) {
+    if (backendState.isRunning && backendState.status) {
+      backendInfo.textContent = `✅ Backend rodando (PID: ${backendState.status.pid})`;
+      backendInfo.style.color = '#28a745';
+    } else if (backendState.lastError) {
+      backendInfo.textContent = `❌ Erro: ${backendState.lastError}`;
+      backendInfo.style.color = '#dc3545';
+    } else if (backendState.isStarting) {
+      backendInfo.textContent = '⏳ Iniciando backend...';
+      backendInfo.style.color = '#ffc107';
+    } else if (backendState.isStopping) {
+      backendInfo.textContent = '⏳ Parando backend...';
+      backendInfo.style.color = '#ffc107';
+    } else {
+      backendInfo.textContent = 'Backend Arduino CLI não iniciado';
+      backendInfo.style.color = '#6c757d';
+    }
+  }
+}
+
+function updateRefreshButton() {
+  const refreshButtons = [
+    document.getElementById('refresh-ports'),
+    document.getElementById('refresh-upload-ports')
+  ];
+  
+  refreshButtons.forEach(refreshBtn => {
+    if (refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = '🔄';
+      
+      // Animate button
+      setTimeout(() => {
+        refreshBtn.innerHTML = '🔄 Atualizar';
+      }, 500);
+    }
+  });
 }
 
 // Connection Management
@@ -1748,9 +2087,34 @@ document.addEventListener('DOMContentLoaded', function() {
     disconnectBtn.addEventListener('click', disconnectSerial);
   }
   
-  const refreshPortsBtn = document.getElementById('refresh-ports-btn');
+  // Backend control buttons
+  const startBackendBtn = document.getElementById('start-backend-btn');
+  if (startBackendBtn) {
+    startBackendBtn.addEventListener('click', async () => {
+      await startBackend();
+    });
+  }
+  
+  const stopBackendBtn = document.getElementById('stop-backend-btn');
+  if (stopBackendBtn) {
+    stopBackendBtn.addEventListener('click', async () => {
+      await stopBackend();
+    });
+  }
+  
+  const refreshPortsBtn = document.getElementById('refresh-ports');
   if (refreshPortsBtn) {
-    refreshPortsBtn.addEventListener('click', refreshPorts);
+    refreshPortsBtn.addEventListener('click', async () => {
+      await refreshPorts();
+    });
+  }
+  
+  // Refresh button para upload tab
+  const refreshUploadPortsBtn = document.getElementById('refresh-upload-ports');
+  if (refreshUploadPortsBtn) {
+    refreshUploadPortsBtn.addEventListener('click', async () => {
+      await refreshPorts();
+    });
   }
   
   // Upload buttons

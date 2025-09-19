@@ -84,19 +84,23 @@ class ArduinoCLIService {
     }
 
     try {
-      const data = JSON.parse(result.output || '[]');
-      const ports = data.map(port => ({
-        address: port.port?.address || '',
-        protocol: port.port?.protocol || 'serial',
-        protocolLabel: port.port?.protocol_label || 'Serial Port',
-        boards: port.matching_boards || [],
-        serialNumber: port.port?.properties?.serialNumber || '',
-        vid: port.port?.properties?.vid || '',
-        pid: port.port?.properties?.pid || ''
+      const data = JSON.parse(result.output || '{"detected_ports": []}');
+      const detectedPorts = data.detected_ports || [];
+      
+      const ports = detectedPorts.map(portData => ({
+        address: portData.port?.address || '',
+        protocol: portData.port?.protocol || 'serial',
+        protocolLabel: portData.port?.protocol_label || 'Serial Port',
+        boards: portData.matching_boards || [],
+        serialNumber: portData.port?.properties?.serialNumber || '',
+        vid: portData.port?.properties?.vid || '',
+        pid: portData.port?.properties?.pid || ''
       }));
 
       return { ports, error: null };
     } catch (parseError) {
+      console.error('Erro ao analisar JSON das portas:', parseError.message);
+      console.error('Saída recebida:', result.output);
       return { ports: [], error: 'Erro ao analisar lista de portas' };
     }
   }
