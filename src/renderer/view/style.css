@@ -1743,6 +1743,20 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
   animation: fadeIn 0.3s ease;
 }
 
+/* Garantir que todos os elementos dentro do modal tenham z-index apropriado */
+.arduino-modal-overlay *,
+.arduino-modal-overlay *::before,
+.arduino-modal-overlay *::after {
+  position: relative;
+  z-index: 1;
+}
+
+/* Exceções para elementos que precisam de position específico */
+.arduino-modal-overlay .arduino-modal-container {
+  position: relative;
+  z-index: 10001;
+}
+
 .arduino-modal-overlay.show {
   display: flex;
 }
@@ -1754,11 +1768,14 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
 
 /* Container do Modal - Fundo cinza claro */
 .arduino-modal-container {
+  position: relative;
   width: 95%;
   height: 90%;
   max-width: 1400px;
   max-height: 900px;
   background: #f8f9fa;
+  z-index: 10001;
+  overflow: hidden;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -2315,18 +2332,31 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
 
 .chart-container {
   height: 400px;
+  min-height: 300px;
   background: #f8f9fa;
-  border: 2px dashed #dee2e6;
+  border: 2px solid #dee2e6;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.dark-mode .chart-container {
+  background: #2d2d2d;
+  border: 2px solid #404040;
 }
 
 .sensor-chart {
   width: 100%;
-  height: 100%;
+  height: 400px;
+  min-height: 300px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.dark-mode .sensor-chart {
+  background: #2d2d2d;
+  border: 1px solid #404040;
 }
 
 .console-container {
@@ -2678,7 +2708,307 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
   filter: grayscale(100%);
 }
 
-/* Serial Plotter styles */
+/* ============================================================================
+   SERIAL PLOTTER BUTTON (Console Tab)
+   ============================================================================ */
+
+.serial-btn-plotter {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.serial-btn-plotter:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.serial-btn-plotter:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* ============================================================================
+   PLOTTER HEADER (Independent)
+   ============================================================================ */
+
+.plotter-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 2px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 20000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.plotter-header-content {
+  max-width: 100%;
+  padding: 0;
+}
+
+.plotter-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.plotter-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.plotter-icon {
+  font-size: 18px;
+}
+
+.plotter-header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.plotter-btn-minimize,
+.plotter-btn-close {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.plotter-btn-minimize:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.plotter-btn-close:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #dc2626;
+}
+
+.plotter-content {
+  padding: 16px 20px;
+}
+
+.plotter-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.plotter-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plotter-btn {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plotter-btn:hover {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plotter-btn:active {
+  transform: translateY(0);
+}
+
+.plotter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plotter-sensor-checkboxes {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.plotter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  user-select: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.plotter-checkbox-label:hover {
+  background-color: #f9fafb;
+}
+
+.plotter-checkbox-label input[type="checkbox"] {
+  margin: 0;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.plotter-checkbox-color {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.plotter-chart-container {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.plotter-chart {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  background: #fafafa;
+}
+
+.plotter-chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  text-align: center;
+}
+
+.plotter-chart-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.plotter-chart-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.plotter-chart-message {
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: #6b7280;
+}
+
+.plotter-chart-legend {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+.plotter-current-values {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.plotter-values-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1e293b;
+  text-align: center;
+}
+
+.plotter-values-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.plotter-values-section {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.plotter-values-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #475569;
+}
+
+.plotter-values-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plotter-value-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.plotter-value-item span:first-child {
+  font-weight: 600;
+}
+
+.plotter-value-item span:last-child {
+  font-family: 'Courier New', monospace;
+  color: #374151;
+}
+
+/* Serial Plotter styles (Legacy) */
 .plotter-container {
   display: flex;
   flex-direction: column;
@@ -3209,6 +3539,80 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
   50% { opacity: 0.5; }
 }
 
+/* Estilos para mensagens do Console Serial */
+.console-line {
+  padding: 4px 8px;
+  margin: 1px 0;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.console-line.sent {
+  background-color: rgba(0, 207, 229, 0.1);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.console-line.received {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-left: 3px solid #28a745;
+}
+
+.console-line.system {
+  background-color: rgba(232, 0, 116, 0.1);
+  border-left: 3px solid var(--accent-pink);
+}
+
+.timestamp {
+  color: #6c757d;
+  font-size: 10px;
+  margin-right: 8px;
+  opacity: 0.8;
+}
+
+.command {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.response {
+  color: #28a745;
+}
+
+.message {
+  color: var(--accent-pink);
+  font-weight: 500;
+}
+
+/* Animação para badge de contador */
+.tab-badge {
+  animation: none;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Estilo para input de comando ativo */
+.serial-command-input.active {
+  display: flex !important;
+}
+
+/* Melhorar aparência dos dados de sensor */
+.sensor-data-line {
+  padding: 6px 10px;
+  margin: 2px 0;
+  background-color: rgba(255, 140, 0, 0.1);
+  border-left: 3px solid #FF8C00;
+  border-radius: 4px;
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+}
+
 /* Responsive design */
 @media (max-width: 1200px) {
   .serial-monitor-modal-content {
@@ -3261,4 +3665,245 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
   .modal-logo {
     height: 28px;
   }
+}
+
+/* Estilos para botões do Serial Plotter */
+.serial-btn-test,
+.serial-btn-pause,
+.serial-btn-clear,
+.serial-btn-export {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 4px;
+}
+
+.serial-btn-test {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.serial-btn-test:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-1px);
+}
+
+.serial-btn-pause:hover,
+.serial-btn-clear:hover,
+.serial-btn-export:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  transform: translateY(-1px);
+}
+
+/* Estilo específico para o elemento do gráfico do Serial Plotter */
+#serial-plotter-chart {
+  width: 100%;
+  height: 400px;
+  min-height: 300px;
+  background: #ffffff;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.dark-mode #serial-plotter-chart {
+  background: #2d2d2d;
+  border: 2px solid #404040;
+}
+
+/* Estilos completos do Serial Plotter */
+.serial-plotter-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dark-mode .serial-plotter-container {
+  background: #1e1e1e;
+}
+
+.serial-plotter-controls {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 16px;
+}
+
+.dark-mode .serial-plotter-controls {
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.serial-plotter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.serial-plotter-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.serial-plotter-icon {
+  font-size: 24px;
+}
+
+.serial-plotter-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.dark-mode .serial-plotter-title {
+  color: #e2e8f0;
+}
+
+.serial-plotter-status {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.dark-mode .serial-plotter-status {
+  color: #94a3b8;
+}
+
+.serial-plotter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.serial-sensor-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.dark-mode .serial-sensor-checkboxes {
+  background: #374151;
+}
+
+.serial-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.dark-mode .serial-checkbox-label {
+  color: #e5e7eb;
+}
+
+.serial-checkbox-label:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.serial-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: currentColor;
+}
+
+.serial-checkbox-color {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.serial-chart-area {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.serial-chart-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 40px 20px;
+}
+
+.dark-mode .serial-chart-empty {
+  color: #9ca3af;
+}
+
+.serial-chart-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.serial-chart-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.serial-chart-message {
+  font-size: 14px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.serial-chart-legend {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+/* Forçar Serial Plotter a permanecer dentro do modal */
+.arduino-modal-container .serial-plotter-container,
+.arduino-modal-container .serial-tab-content,
+.arduino-modal-container #serial-plotter-chart,
+.arduino-modal-container .serial-chart {
+  position: relative !important;
+  z-index: auto !important;
+  contain: layout style paint;
+}
+
+/* Garantir que SVGs não escapem do container */
+.arduino-modal-container svg {
+  position: relative !important;
+  z-index: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Forçar todos os elementos filhos do modal a não usarem position fixed/absolute descontrolado */
+.arduino-modal-container * {
+  position: relative !important;
+}
+
+/* Exceções necessárias */
+.arduino-modal-container .modal-header-clean,
+.arduino-modal-container .modal-body-clean,
+.arduino-modal-container .tab-btn-clean,
+.arduino-modal-container .tab-content,
+.arduino-modal-container .serial-tab-content {
+  position: relative !important;
 }

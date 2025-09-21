@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Ideia Space Mission</title>
+  <title>Ideia Space</title>
   <link rel="stylesheet" href="./style.css">
   <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
   <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
@@ -93,10 +93,6 @@
         <button class="tab-btn-clean active" data-tab="upload">
           <span class="tab-icon">📤</span>
           <span class="tab-label">Upload</span>
-        </button>
-        <button class="tab-btn-clean" data-tab="sensors">
-          <span class="tab-icon">📈</span>
-          <span class="tab-label">Serial Plotter</span>
         </button>
         <button class="tab-btn-clean" data-tab="console">
           <span class="tab-icon">🖥️</span>
@@ -228,19 +224,6 @@
             </div>
           </div>
 
-          <div class="tab-content" data-tab="sensors">
-            <div class="content-header">
-              <h3>📈 Serial Plotter</h3>
-              <div class="status-badge">Monitoramento</div>
-            </div>
-            
-            <div class="content-body">
-              <div class="chart-container">
-                <canvas id="sensor-chart" class="sensor-chart"></canvas>
-              </div>
-            </div>
-          </div>
-
           <div class="tab-content" data-tab="console">
             <div class="content-header">
               <h3>🖥️ Console Serial</h3>
@@ -362,119 +345,12 @@
             </div>
           </div>
 
-          <div class="serial-tab-content" data-tab="sensors">
-            <div class="serial-plotter-container">
-              <div class="serial-plotter-controls">
-                <div class="serial-plotter-header">
-                  <div class="serial-plotter-info">
-                    <div class="serial-plotter-icon">📈</div>
-                    <div>
-                      <h3 class="serial-plotter-title">Serial Plotter - MPU6050</h3>
-                      <p class="serial-plotter-status" id="plotter-status">Conecte ao ESP32 para visualizar dados</p>
-                    </div>
-                  </div>
-                  <div class="serial-plotter-actions">
-                    <button id="plotter-pause" class="serial-btn-pause">⏸️ Pausar</button>
-                    <button id="plotter-clear" class="serial-btn-clear">🗑️ Limpar</button>
-                    <button id="plotter-export" class="serial-btn-export" disabled>📊 Export CSV</button>
-                  </div>
-                </div>
-
-                <div class="serial-sensor-checkboxes">
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="accel-x" checked>
-                    <span class="serial-checkbox-color" style="color: #ef4444;">●</span>
-                    <span>Accel X</span>
-                  </label>
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="accel-y" checked>
-                    <span class="serial-checkbox-color" style="color: #10b981;">●</span>
-                    <span>Accel Y</span>
-                  </label>
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="accel-z" checked>
-                    <span class="serial-checkbox-color" style="color: #3b82f6;">●</span>
-                    <span>Accel Z</span>
-                  </label>
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="gyro-x" checked>
-                    <span class="serial-checkbox-color" style="color: #f59e0b;">●</span>
-                    <span>Gyro X</span>
-                  </label>
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="gyro-y" checked>
-                    <span class="serial-checkbox-color" style="color: #8b5cf6;">●</span>
-                    <span>Gyro Y</span>
-                  </label>
-                  <label class="serial-checkbox-label">
-                    <input type="checkbox" id="gyro-z" checked>
-                    <span class="serial-checkbox-color" style="color: #06b6d4;">●</span>
-                    <span>Gyro Z</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="serial-chart-area">
-                <div id="sensor-chart" class="serial-chart">
-                  <div class="serial-chart-empty">
-                    <div class="serial-chart-icon">📊</div>
-                    <div class="serial-chart-title">Serial Plotter</div>
-                    <div class="serial-chart-message">Conecte ao ESP32 com MPU6050 para ver os gráficos</div>
-                    <div class="serial-chart-legend">
-                      <div>• Acelerômetro: linhas contínuas (X=vermelho, Y=verde, Z=azul)</div>
-                      <div>• Giroscópio: linhas tracejadas (X=amarelo, Y=roxo, Z=ciano)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="serial-current-values" id="current-values" style="display: none;">
-                <h4 class="serial-values-title">📊 Valores Atuais do MPU6050</h4>
-                <div class="serial-values-grid">
-                  <div class="serial-values-section">
-                    <h5 class="serial-values-section-title">🏃 Acelerômetro (m/s²)</h5>
-                    <div class="serial-values-list">
-                      <div class="serial-value-item">
-                        <span style="color: #ef4444;">X:</span>
-                        <span id="accel-x-value">0.000</span>
-                      </div>
-                      <div class="serial-value-item">
-                        <span style="color: #10b981;">Y:</span>
-                        <span id="accel-y-value">0.000</span>
-                      </div>
-                      <div class="serial-value-item">
-                        <span style="color: #3b82f6;">Z:</span>
-                        <span id="accel-z-value">0.000</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="serial-values-section">
-                    <h5 class="serial-values-section-title">🔄 Giroscópio (°/s)</h5>
-                    <div class="serial-values-list">
-                      <div class="serial-value-item">
-                        <span style="color: #f59e0b;">X:</span>
-                        <span id="gyro-x-value">0.000</span>
-                      </div>
-                      <div class="serial-value-item">
-                        <span style="color: #8b5cf6;">Y:</span>
-                        <span id="gyro-y-value">0.000</span>
-                      </div>
-                      <div class="serial-value-item">
-                        <span style="color: #06b6d4;">Z:</span>
-                        <span id="gyro-z-value">0.000</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div class="serial-tab-content" data-tab="console">
             <div class="serial-console-panel">
               <div class="serial-console-header">
                 <h3 class="serial-console-title">🖥️ Console Serial</h3>
                 <div class="serial-console-actions">
+                  <button id="open-plotter" class="serial-btn-plotter">📊</button>
                   <button id="clear-console" class="serial-btn-clear">🗑️ Limpar</button>
                   <button id="copy-console" class="serial-btn-copy">📋 Copiar</button>
                 </div>
@@ -971,5 +847,120 @@
       console.log('✅ Todos os event listeners configurados com sucesso');
     }); // Fim do DOMContentLoaded
   </script>
+
+  <!-- Serial Plotter Header (Independent) -->
+  <div id="plotter-header" class="plotter-header" style="display: none;">
+    <div class="plotter-header-content">
+      <div class="plotter-header-top">
+        <div class="plotter-header-title">
+          <span class="plotter-icon">📊</span>
+          <span>Serial Plotter - MPU6050</span>
+        </div>
+        <div class="plotter-header-controls">
+          <button id="plotter-minimize" class="plotter-btn-minimize">−</button>
+          <button id="plotter-close" class="plotter-btn-close">×</button>
+        </div>
+      </div>
+      
+      <div class="plotter-content">
+        <div class="plotter-controls-bar">
+          <div class="plotter-actions">
+            <button id="plotter-test-header" class="plotter-btn">🧪 Teste</button>
+            <button id="plotter-pause-header" class="plotter-btn">⏸️ Pausar</button>
+            <button id="plotter-clear-header" class="plotter-btn">🗑️ Limpar</button>
+            <button id="plotter-export-header" class="plotter-btn" disabled>📊 Export CSV</button>
+          </div>
+          
+          <div class="plotter-sensor-checkboxes">
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-x-header" checked>
+              <span class="plotter-checkbox-color" style="color: #ef4444;">●</span>
+              <span>Accel X</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-y-header" checked>
+              <span class="plotter-checkbox-color" style="color: #10b981;">●</span>
+              <span>Accel Y</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-z-header" checked>
+              <span class="plotter-checkbox-color" style="color: #3b82f6;">●</span>
+              <span>Accel Z</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-x-header" checked>
+              <span class="plotter-checkbox-color" style="color: #f59e0b;">●</span>
+              <span>Gyro X</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-y-header" checked>
+              <span class="plotter-checkbox-color" style="color: #8b5cf6;">●</span>
+              <span>Gyro Y</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-z-header" checked>
+              <span class="plotter-checkbox-color" style="color: #06b6d4;">●</span>
+              <span>Gyro Z</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="plotter-chart-container">
+          <div id="plotter-chart-header" class="plotter-chart">
+            <div class="plotter-chart-empty">
+              <div class="plotter-chart-icon">📊</div>
+              <div class="plotter-chart-title">Serial Plotter</div>
+              <div class="plotter-chart-message">Conecte ao ESP32 com MPU6050 para ver os gráficos</div>
+              <div class="plotter-chart-legend">
+                <div>• Acelerômetro: linhas contínuas (X=vermelho, Y=verde, Z=azul)</div>
+                <div>• Giroscópio: linhas tracejadas (X=laranja, Y=roxo, Z=ciano)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plotter-current-values" id="current-values-header" style="display: none;">
+          <h4 class="plotter-values-title">📊 Valores Atuais do MPU6050</h4>
+          <div class="plotter-values-grid">
+            <div class="plotter-values-section">
+              <h5 class="plotter-values-section-title">🏃 Acelerômetro (m/s²)</h5>
+              <div class="plotter-values-list">
+                <div class="plotter-value-item">
+                  <span style="color: #ef4444;">X:</span>
+                  <span id="accel-x-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #10b981;">Y:</span>
+                  <span id="accel-y-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #3b82f6;">Z:</span>
+                  <span id="accel-z-value-header">0.000</span>
+                </div>
+              </div>
+            </div>
+            <div class="plotter-values-section">
+              <h5 class="plotter-values-section-title">🔄 Giroscópio (°/s)</h5>
+              <div class="plotter-values-list">
+                <div class="plotter-value-item">
+                  <span style="color: #f59e0b;">X:</span>
+                  <span id="gyro-x-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #8b5cf6;">Y:</span>
+                  <span id="gyro-y-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #06b6d4;">Z:</span>
+                  <span id="gyro-z-value-header">0.000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
