@@ -314,6 +314,45 @@ let serialMonitorState = {
     gyroX: true,
     gyroY: true,
     gyroZ: true
+  },
+  autoScrollEnabled: true // Controle para auto-scroll do console
+};
+
+// Global variables for serial plotter
+let plotterState = {
+  isRunning: false,
+  isPaused: false,
+  canvas: null,
+  context: null,
+  animationId: null,
+  dataBuffer: {
+    timestamps: [],
+    accelX: [],
+    accelY: [],
+    accelZ: [],
+    gyroX: [],
+    gyroY: [],
+    gyroZ: []
+  },
+  maxDataPoints: 500,
+  sampleCount: 0,
+  lastSampleTime: 0,
+  sampleRate: 0,
+  colors: {
+    accelX: '#ef4444',
+    accelY: '#10b981', 
+    accelZ: '#3b82f6',
+    gyroX: '#f59e0b',
+    gyroY: '#8b5cf6',
+    gyroZ: '#06b6d4'
+  },
+  visibility: {
+    accelX: true,
+    accelY: true,
+    accelZ: true,
+    gyroX: true,
+    gyroY: true,
+    gyroZ: true
   }
 };
 
@@ -336,11 +375,27 @@ let chartData = {
   timestamps: []
 };
 
+// ============================================================================
+// CORREÇÃO DO PROBLEMA DE ROLAGEM DO MODAL
+// ============================================================================
+// Problema: O modal estava forçando 'overflow: auto' ao fechar, mas o CSS original
+// do body é 'overflow: hidden'. Isso causava aumento indesejado da rolagem.
+// 
+// Solução: Preservar o valor original do overflow antes de modificá-lo e
+// restaurá-lo corretamente ao fechar o modal.
+// ============================================================================
+
 // Serial Monitor Modal Functions
 async function openSerialMonitorModal() {
   console.log('🖥️ Abrindo Serial Monitor Modal...');
   const modal = document.getElementById('arduino-cli-modal');
   if (modal) {
+    // Salvar o estado original do overflow do body antes de modificá-lo
+    if (!modal._originalBodyOverflow) {
+      modal._originalBodyOverflow = window.getComputedStyle(document.body).overflow;
+      console.log('💾 Estado original do overflow salvo:', modal._originalBodyOverflow);
+    }
+    
     // Add show class to make modal visible
     modal.classList.add('show');
     
@@ -423,8 +478,13 @@ async function openSerialMonitorModal() {
       }
     }, 3000); // Verificar a cada 3 segundos
     
-    // Prevent body scrolling
-    document.body.style.overflow = 'hidden';
+    // Prevent body scrolling - preservar overflow original se for 'hidden'
+    if (modal._originalBodyOverflow === 'hidden') {
+      // Não modificar se já for hidden
+      console.log('ℹ️ Body já tem overflow hidden, mantendo estado original');
+    } else {
+      document.body.style.overflow = 'hidden';
+    }
   }
 }
 
@@ -450,8 +510,19 @@ function closeSerialMonitorModal() {
     // Clear data
     clearSensorData();
     
-    // Restore body scrolling
-    document.body.style.overflow = 'auto';
+    // Clear plotter data and stop animation
+    stopPlotterAnimation();
+    clearPlotterData();
+    
+    // Restore body scrolling - usar valor original salvo ao invés de forçar 'auto'
+    if (modal._originalBodyOverflow) {
+      document.body.style.overflow = modal._originalBodyOverflow;
+      console.log('🔄 Overflow restaurado para valor original:', modal._originalBodyOverflow);
+    } else {
+      // Fallback: tentar restaurar para o valor CSS original
+      document.body.style.overflow = '';  // Remove inline style, deixa CSS tomar conta
+      console.log('🔄 Overflow inline removido, usando CSS padrão');
+    }
   }
 }
 
@@ -503,6 +574,9 @@ function switchTab(tabName) {
       break;
     case 'console':
       updateConsoleTab();
+      break;
+    case 'plotter':
+      initializePlotter();
       break;
     case 'code':
       updateCodeTab();
@@ -899,6 +973,20 @@ function connectSerial() {
       // Automaticamente mudar para aba console para ver os dados
       switchTab('console');
       
+      // Forçar scroll inicial do console para o final
+      setTimeout(() => {
+        const consoleElements = [
+          document.getElementById('console-output'),
+          document.getElementById('arduino-console')
+        ].filter(el => el);
+        
+        consoleElements.forEach(element => {
+          if (element) {
+            element.scrollTop = element.scrollHeight;
+          }
+        });
+      }, 100);
+      
       // Enviar comando para ler dados existentes na ESP32
       setTimeout(() => {
         requestESP32Data();
@@ -1024,10 +1112,8 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
         serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-500);
       }
       
-      // Atualizar console se estiver na aba console
-      if (serialMonitorState.currentTab === 'console') {
-        updateConsoleTab();
-      }
+      // Sempre atualizar console para garantir auto-scroll
+      updateConsoleTab();
       
       // Tentar parsear dados do sensor se seguir formato esperado
       console.log('🔄 Chamando parseAndUpdateSensorData com dados:', receivedData);
@@ -1199,6 +1285,16 @@ function updateSensorDataFromObject(sensorData) {
     sensorData.gyroZ || 0
   );
   
+  // Alimentar o Serial Plotter também
+  addPlotterData(
+    sensorData.accelX || 0,
+    sensorData.accelY || 0,
+    sensorData.accelZ || 0,
+    sensorData.gyroX || 0,
+    sensorData.gyroY || 0,
+    sensorData.gyroZ || 0
+  );
+  
   // Atualizar gráfico sempre que novos dados chegarem
   updateChart();
   
@@ -1242,6 +1338,16 @@ function updateSensorDataFromArray(values) {
   
   // Atualizar displays
   updateSensorDisplay(
+    values[0] || 0,
+    values[1] || 0,
+    values[2] || 0,
+    values[3] || 0,
+    values[4] || 0,
+    values[5] || 0
+  );
+  
+  // Alimentar o Serial Plotter também
+  addPlotterData(
     values[0] || 0,
     values[1] || 0,
     values[2] || 0,
@@ -1927,8 +2033,10 @@ function updateConsoleTab() {
         element.innerHTML = formattedText;
       }
       
-      // Auto-scroll para o final
-      element.scrollTop = element.scrollHeight;
+      // Auto-scroll para o final - sempre forçar quando há novos dados
+      requestAnimationFrame(() => {
+        element.scrollTop = element.scrollHeight;
+      });
     });
   } else if (consoleElements.length > 0) {
     // Console vazio - mostrar placeholder
@@ -1948,6 +2056,8 @@ function updateConsoleTab() {
     });
   }
 }
+
+
 
 function sendSerialCommand(command = null, showInConsole = true) {
   // Se não foi passado comando, pegar do input
@@ -2027,6 +2137,546 @@ function clearConsole() {
   }
   
   showSerialNotification('🗑️ Console limpo', 'info');
+}
+
+// ============================================================================
+// SERIAL PLOTTER FUNCTIONS
+// ============================================================================
+
+/**
+ * Inicializa o Serial Plotter
+ */
+function initializePlotter() {
+  console.log('📊 Inicializando Serial Plotter...');
+  
+  const canvas = document.getElementById('plotter-chart');
+  const overlay = document.getElementById('plotter-overlay');
+  const valuesPanel = document.getElementById('plotter-values');
+  
+  if (!canvas) {
+    console.error('❌ Canvas do plotter não encontrado');
+    return;
+  }
+  
+  // Configurar canvas
+  plotterState.canvas = canvas;
+  plotterState.context = canvas.getContext('2d');
+  
+  // Ajustar tamanho do canvas
+  resizePlotterCanvas();
+  
+  // Configurar event listeners dos controles
+  setupPlotterControls();
+  
+  // Configurar event listeners dos checkboxes de visibilidade
+  setupSensorVisibilityControls();
+  
+  // Verificar se há dados para mostrar
+  if (plotterState.dataBuffer.timestamps.length === 0) {
+    showPlotterOverlay(true);
+  } else {
+    showPlotterOverlay(false);
+    startPlotterAnimation();
+  }
+  
+  // Atualizar status
+  updatePlotterStatus();
+  
+  console.log('✅ Serial Plotter inicializado');
+}
+
+/**
+ * Redimensiona o canvas do plotter
+ */
+function resizePlotterCanvas() {
+  const canvas = plotterState.canvas;
+  if (!canvas) return;
+  
+  const container = canvas.parentElement;
+  const rect = container.getBoundingClientRect();
+  
+  // Definir tamanho baseado no container
+  canvas.width = rect.width - 20; // Padding
+  canvas.height = rect.height - 20;
+  
+  console.log(`📏 Canvas redimensionado: ${canvas.width}x${canvas.height}`);
+}
+
+/**
+ * Configura os controles do plotter
+ */
+function setupPlotterControls() {
+  // Botão Pausar/Continuar
+  const pauseBtn = document.getElementById('plotter-pause');
+  if (pauseBtn) {
+    pauseBtn.addEventListener('click', togglePlotterPause);
+  }
+  
+  // Botão Limpar
+  const clearBtn = document.getElementById('plotter-clear');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', clearPlotterData);
+  }
+  
+  // Botão Exportar CSV
+  const exportBtn = document.getElementById('plotter-export');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportPlotterDataCSV);
+  }
+  
+  console.log('🎛️ Controles do plotter configurados');
+}
+
+/**
+ * Configura controles de visibilidade dos sensores
+ */
+function setupSensorVisibilityControls() {
+  const sensors = ['accel-x', 'accel-y', 'accel-z', 'gyro-x', 'gyro-y', 'gyro-z'];
+  
+  sensors.forEach(sensorId => {
+    const checkbox = document.getElementById(sensorId);
+    if (checkbox) {
+      checkbox.addEventListener('change', function() {
+        const key = sensorId.replace('-', '');
+        plotterState.visibility[key] = this.checked;
+        console.log(`👁️ Visibilidade ${sensorId}: ${this.checked}`);
+      });
+    }
+  });
+  
+  console.log('👁️ Controles de visibilidade configurados');
+}
+
+/**
+ * Adiciona dados do sensor ao buffer do plotter
+ */
+function addPlotterData(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
+  const timestamp = Date.now();
+  
+  // Adicionar dados ao buffer
+  plotterState.dataBuffer.timestamps.push(timestamp);
+  plotterState.dataBuffer.accelX.push(accelX || 0);
+  plotterState.dataBuffer.accelY.push(accelY || 0);
+  plotterState.dataBuffer.accelZ.push(accelZ || 0);
+  plotterState.dataBuffer.gyroX.push(gyroX || 0);
+  plotterState.dataBuffer.gyroY.push(gyroY || 0);
+  plotterState.dataBuffer.gyroZ.push(gyroZ || 0);
+  
+  // Manter apenas últimos N pontos
+  const maxPoints = plotterState.maxDataPoints;
+  Object.keys(plotterState.dataBuffer).forEach(key => {
+    if (plotterState.dataBuffer[key].length > maxPoints) {
+      plotterState.dataBuffer[key] = plotterState.dataBuffer[key].slice(-maxPoints);
+    }
+  });
+  
+  // Atualizar contador de samples
+  plotterState.sampleCount++;
+  
+  // Calcular sample rate
+  const now = Date.now();
+  if (plotterState.lastSampleTime > 0) {
+    const deltaTime = (now - plotterState.lastSampleTime) / 1000; // segundos
+    plotterState.sampleRate = 1 / deltaTime;
+  }
+  plotterState.lastSampleTime = now;
+  
+  // Atualizar valores na interface
+  updatePlotterValues(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  
+  // Esconder overlay se esta é a primeira amostra
+  if (plotterState.dataBuffer.timestamps.length === 1) {
+    showPlotterOverlay(false);
+    startPlotterAnimation();
+  }
+  
+  // Atualizar badge de contagem
+  updatePlotterBadge();
+  
+  // Habilitar botão de export se há dados
+  const exportBtn = document.getElementById('plotter-export');
+  if (exportBtn && plotterState.dataBuffer.timestamps.length > 0) {
+    exportBtn.disabled = false;
+  }
+  
+  console.log(`📊 Dados adicionados ao plotter: AX=${accelX}, AY=${accelY}, AZ=${accelZ}, GX=${gyroX}, GY=${gyroY}, GZ=${gyroZ}`);
+}
+
+/**
+ * Atualiza valores numéricos na interface
+ */
+function updatePlotterValues(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
+  // Valores do acelerômetro
+  const accelXEl = document.getElementById('accel-x-value');
+  const accelYEl = document.getElementById('accel-y-value');
+  const accelZEl = document.getElementById('accel-z-value');
+  
+  if (accelXEl) accelXEl.textContent = (accelX || 0).toFixed(3);
+  if (accelYEl) accelYEl.textContent = (accelY || 0).toFixed(3);
+  if (accelZEl) accelZEl.textContent = (accelZ || 0).toFixed(3);
+  
+  // Valores do giroscópio
+  const gyroXEl = document.getElementById('gyro-x-value');
+  const gyroYEl = document.getElementById('gyro-y-value');
+  const gyroZEl = document.getElementById('gyro-z-value');
+  
+  if (gyroXEl) gyroXEl.textContent = (gyroX || 0).toFixed(3);
+  if (gyroYEl) gyroYEl.textContent = (gyroY || 0).toFixed(3);
+  if (gyroZEl) gyroZEl.textContent = (gyroZ || 0).toFixed(3);
+  
+  // Estatísticas
+  const samplesEl = document.getElementById('plotter-samples');
+  const rateEl = document.getElementById('plotter-rate');
+  
+  if (samplesEl) samplesEl.textContent = plotterState.sampleCount;
+  if (rateEl) rateEl.textContent = `${plotterState.sampleRate.toFixed(1)} Hz`;
+  
+  // Mostrar painel de valores
+  const valuesPanel = document.getElementById('plotter-values');
+  if (valuesPanel) {
+    valuesPanel.style.display = 'flex';
+  }
+}
+
+/**
+ * Atualiza badge com contagem de samples
+ */
+function updatePlotterBadge() {
+  const badge = document.getElementById('plotter-count');
+  if (badge) {
+    badge.textContent = plotterState.sampleCount.toString();
+  }
+}
+
+/**
+ * Controla exibição do overlay
+ */
+function showPlotterOverlay(show) {
+  const overlay = document.getElementById('plotter-overlay');
+  if (overlay) {
+    if (show) {
+      overlay.classList.remove('hidden');
+    } else {
+      overlay.classList.add('hidden');
+    }
+  }
+}
+
+/**
+ * Inicia animação do gráfico
+ */
+function startPlotterAnimation() {
+  if (plotterState.animationId) {
+    cancelAnimationFrame(plotterState.animationId);
+  }
+  
+  plotterState.isRunning = true;
+  animatePlotter();
+}
+
+/**
+ * Para animação do gráfico
+ */
+function stopPlotterAnimation() {
+  if (plotterState.animationId) {
+    cancelAnimationFrame(plotterState.animationId);
+    plotterState.animationId = null;
+  }
+  plotterState.isRunning = false;
+}
+
+/**
+ * Loop de animação do gráfico
+ */
+function animatePlotter() {
+  if (!plotterState.isPaused && plotterState.dataBuffer.timestamps.length > 0) {
+    drawPlotterChart();
+  }
+  
+  if (plotterState.isRunning) {
+    plotterState.animationId = requestAnimationFrame(animatePlotter);
+  }
+}
+
+/**
+ * Desenha o gráfico no canvas
+ */
+function drawPlotterChart() {
+  const ctx = plotterState.context;
+  const canvas = plotterState.canvas;
+  
+  if (!ctx || !canvas) return;
+  
+  // Limpar canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Configurações básicas
+  const padding = 40;
+  const chartWidth = canvas.width - (padding * 2);
+  const chartHeight = canvas.height - (padding * 2);
+  
+  // Desenhar grade de fundo
+  drawPlotterGrid(ctx, padding, chartWidth, chartHeight);
+  
+  // Desenhar eixos
+  drawPlotterAxes(ctx, padding, chartWidth, chartHeight);
+  
+  // Desenhar dados se disponíveis
+  if (plotterState.dataBuffer.timestamps.length > 1) {
+    drawPlotterData(ctx, padding, chartWidth, chartHeight);
+  }
+}
+
+/**
+ * Desenha grade de fundo
+ */
+function drawPlotterGrid(ctx, padding, width, height) {
+  ctx.strokeStyle = '#e9ecef';
+  ctx.lineWidth = 1;
+  
+  // Linhas verticais
+  const verticalLines = 10;
+  for (let i = 0; i <= verticalLines; i++) {
+    const x = padding + (width * i / verticalLines);
+    ctx.beginPath();
+    ctx.moveTo(x, padding);
+    ctx.lineTo(x, padding + height);
+    ctx.stroke();
+  }
+  
+  // Linhas horizontais
+  const horizontalLines = 8;
+  for (let i = 0; i <= horizontalLines; i++) {
+    const y = padding + (height * i / horizontalLines);
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(padding + width, y);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Desenha eixos X e Y
+ */
+function drawPlotterAxes(ctx, padding, width, height) {
+  ctx.strokeStyle = '#495057';
+  ctx.lineWidth = 2;
+  
+  // Eixo X (horizontal no meio)
+  const centerY = padding + (height / 2);
+  ctx.beginPath();
+  ctx.moveTo(padding, centerY);
+  ctx.lineTo(padding + width, centerY);
+  ctx.stroke();
+  
+  // Eixo Y (vertical à esquerda)
+  ctx.beginPath();
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, padding + height);
+  ctx.stroke();
+}
+
+/**
+ * Desenha os dados dos sensores
+ */
+function drawPlotterData(ctx, padding, width, height) {
+  const data = plotterState.dataBuffer;
+  const dataLength = data.timestamps.length;
+  
+  if (dataLength < 2) return;
+  
+  // Calcular escalas
+  const minMaxValues = calculateDataMinMax();
+  const scaleX = width / Math.max(1, dataLength - 1);
+  const scaleY = height / Math.max(1, minMaxValues.max - minMaxValues.min);
+  
+  // Desenhar cada série de dados
+  const sensors = ['accelX', 'accelY', 'accelZ', 'gyroX', 'gyroY', 'gyroZ'];
+  
+  sensors.forEach(sensor => {
+    if (plotterState.visibility[sensor] && data[sensor]) {
+      drawSensorLine(ctx, data[sensor], plotterState.colors[sensor], padding, scaleX, scaleY, height, minMaxValues.min);
+    }
+  });
+}
+
+/**
+ * Calcula valores mínimos e máximos dos dados
+ */
+function calculateDataMinMax() {
+  const data = plotterState.dataBuffer;
+  let min = Infinity;
+  let max = -Infinity;
+  
+  const sensors = ['accelX', 'accelY', 'accelZ', 'gyroX', 'gyroY', 'gyroZ'];
+  
+  sensors.forEach(sensor => {
+    if (plotterState.visibility[sensor] && data[sensor]) {
+      data[sensor].forEach(value => {
+        if (value < min) min = value;
+        if (value > max) max = value;
+      });
+    }
+  });
+  
+  // Adicionar margem
+  const range = max - min;
+  const margin = Math.max(0.1, range * 0.1); // 10% de margem ou mínimo 0.1
+  
+  return {
+    min: min - margin,
+    max: max + margin
+  };
+}
+
+/**
+ * Desenha linha para um sensor específico
+ */
+function drawSensorLine(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue) {
+  if (!sensorData || sensorData.length < 2) return;
+  
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  
+  for (let i = 0; i < sensorData.length; i++) {
+    const x = padding + (i * scaleX);
+    const y = padding + height - ((sensorData[i] - minValue) * scaleY);
+    
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  
+  ctx.stroke();
+}
+
+/**
+ * Pausa/despausa o plotter
+ */
+function togglePlotterPause() {
+  plotterState.isPaused = !plotterState.isPaused;
+  
+  const pauseBtn = document.getElementById('plotter-pause');
+  if (pauseBtn) {
+    const icon = pauseBtn.querySelector('.btn-icon');
+    const text = pauseBtn.querySelector('.btn-text');
+    
+    if (plotterState.isPaused) {
+      if (icon) icon.textContent = '▶️';
+      if (text) text.textContent = 'Continuar';
+    } else {
+      if (icon) icon.textContent = '⏸️';
+      if (text) text.textContent = 'Pausar';
+    }
+  }
+  
+  updatePlotterStatus();
+  console.log(`⏸️ Plotter ${plotterState.isPaused ? 'pausado' : 'continuando'}`);
+}
+
+/**
+ * Limpa dados do plotter
+ */
+function clearPlotterData() {
+  // Limpar buffer de dados
+  plotterState.dataBuffer = {
+    timestamps: [],
+    accelX: [],
+    accelY: [],
+    accelZ: [],
+    gyroX: [],
+    gyroY: [],
+    gyroZ: []
+  };
+  
+  // Resetar contadores
+  plotterState.sampleCount = 0;
+  plotterState.lastSampleTime = 0;
+  plotterState.sampleRate = 0;
+  
+  // Mostrar overlay
+  showPlotterOverlay(true);
+  
+  // Parar animação
+  stopPlotterAnimation();
+  
+  // Esconder painel de valores
+  const valuesPanel = document.getElementById('plotter-values');
+  if (valuesPanel) {
+    valuesPanel.style.display = 'none';
+  }
+  
+  // Atualizar badge
+  updatePlotterBadge();
+  
+  // Desabilitar botão export
+  const exportBtn = document.getElementById('plotter-export');
+  if (exportBtn) {
+    exportBtn.disabled = true;
+  }
+  
+  // Atualizar status
+  updatePlotterStatus();
+  
+  console.log('🗑️ Dados do plotter limpos');
+  showSerialNotification('🗑️ Dados do plotter limpos', 'info');
+}
+
+/**
+ * Exporta dados como CSV
+ */
+function exportPlotterDataCSV() {
+  const data = plotterState.dataBuffer;
+  
+  if (data.timestamps.length === 0) {
+    showSerialNotification('❌ Nenhum dado para exportar', 'error');
+    return;
+  }
+  
+  // Cabeçalho CSV
+  let csv = 'Timestamp,AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ\n';
+  
+  // Dados
+  for (let i = 0; i < data.timestamps.length; i++) {
+    const timestamp = new Date(data.timestamps[i]).toISOString();
+    csv += `${timestamp},${data.accelX[i]},${data.accelY[i]},${data.accelZ[i]},${data.gyroX[i]},${data.gyroY[i]},${data.gyroZ[i]}\n`;
+  }
+  
+  // Criar e baixar arquivo
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mpu6050_data_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+  
+  console.log(`💾 Dados exportados: ${data.timestamps.length} samples`);
+  showSerialNotification(`💾 CSV exportado com ${data.timestamps.length} amostras`, 'success');
+}
+
+/**
+ * Atualiza status do plotter
+ */
+function updatePlotterStatus() {
+  const statusEl = document.getElementById('plotter-status');
+  if (!statusEl) return;
+  
+  if (plotterState.dataBuffer.timestamps.length === 0) {
+    statusEl.textContent = 'Aguardando dados';
+    statusEl.className = 'status-badge empty';
+  } else if (plotterState.isPaused) {
+    statusEl.textContent = 'Pausado';
+    statusEl.className = 'status-badge paused';
+  } else {
+    statusEl.textContent = `Ativo (${plotterState.sampleCount} samples)`;
+    statusEl.className = 'status-badge running';
+  }
 }
 
 // Code Statistics Update Function - Atualiza modal e área principal
@@ -3561,6 +4211,20 @@ document.addEventListener('DOMContentLoaded', function() {
     resizeObserver.observe(chartContainer);
   }
   
+  // Initialize plotter resize observer
+  const plotterContainer = document.querySelector('.plotter-chart-container');
+  if (plotterContainer && window.ResizeObserver) {
+    const plotterResizeObserver = new ResizeObserver(entries => {
+      if (serialMonitorState.currentTab === 'plotter') {
+        setTimeout(() => {
+          resizePlotterCanvas();
+        }, 100);
+      }
+    });
+    
+    plotterResizeObserver.observe(plotterContainer);
+  }
+  
   console.log('✅ Todos os event listeners do Serial Monitor configurados');
 });
 
@@ -4448,17 +5112,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Botões de controle no header
-  const testHeaderBtn = document.getElementById('plotter-test-header');
-  if (testHeaderBtn) {
-    testHeaderBtn.addEventListener('click', () => {
-      console.log('🧪 Teste do Plotter Header');
-      // Reutilizar a mesma função de teste
-      if (typeof testSerialPlotter === 'function') {
-        testSerialPlotter();
-      }
-    });
-  }
-  
   const pauseHeaderBtn = document.getElementById('plotter-pause-header');
   if (pauseHeaderBtn) {
     pauseHeaderBtn.addEventListener('click', () => {

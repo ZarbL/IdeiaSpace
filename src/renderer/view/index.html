@@ -99,6 +99,11 @@
           <span class="tab-label">Console</span>
           <span class="tab-badge" id="console-count">0</span>
         </button>
+        <button class="tab-btn-clean" data-tab="plotter">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Serial Plotter</span>
+          <span class="tab-badge" id="plotter-count">0</span>
+        </button>
         <button class="tab-btn-clean" data-tab="code">
           <span class="tab-icon">📄</span>
           <span class="tab-label">Código</span>
@@ -236,6 +241,143 @@
                 <div class="console-input">
                   <input type="text" id="console-input" placeholder="Digite um comando..." class="form-input">
                   <button id="send-command" class="btn-primary">Enviar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" data-tab="plotter">
+            <div class="content-header">
+              <h3>📊 Serial Plotter - MPU6050</h3>
+              <div class="status-badge" id="plotter-status">Aguardando dados</div>
+            </div>
+            
+            <div class="content-body">
+              <!-- Controles do Plotter -->
+              <div class="plotter-controls">
+                <div class="plotter-actions">
+                  <button id="plotter-pause" class="btn-secondary" data-action="pause">
+                    <span class="btn-icon">⏸️</span>
+                    <span class="btn-text">Pausar</span>
+                  </button>
+                  <button id="plotter-clear" class="btn-secondary" data-action="clear">
+                    <span class="btn-icon">🗑️</span>
+                    <span class="btn-text">Limpar</span>
+                  </button>
+                  <button id="plotter-export" class="btn-secondary" data-action="export" disabled>
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">Exportar CSV</span>
+                  </button>
+                </div>
+                
+                <!-- Controles de Visibilidade dos Sensores -->
+                <div class="plotter-sensors">
+                  <div class="sensor-group">
+                    <span class="sensor-group-title">🏃 Acelerômetro (m/s²):</span>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-x" checked>
+                      <span class="sensor-color" style="background-color: #ef4444;"></span>
+                      <span>X</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-y" checked>
+                      <span class="sensor-color" style="background-color: #10b981;"></span>
+                      <span>Y</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-z" checked>
+                      <span class="sensor-color" style="background-color: #3b82f6;"></span>
+                      <span>Z</span>
+                    </label>
+                  </div>
+                  
+                  <div class="sensor-group">
+                    <span class="sensor-group-title">🔄 Giroscópio (°/s):</span>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-x" checked>
+                      <span class="sensor-color" style="background-color: #f59e0b;"></span>
+                      <span>X</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-y" checked>
+                      <span class="sensor-color" style="background-color: #8b5cf6;"></span>
+                      <span>Y</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-z" checked>
+                      <span class="sensor-color" style="background-color: #06b6d4;"></span>
+                      <span>Z</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Área do Gráfico -->
+              <div class="plotter-chart-container">
+                <canvas id="plotter-chart" class="plotter-canvas"></canvas>
+                <div class="plotter-chart-overlay" id="plotter-overlay">
+                  <div class="plotter-chart-empty" id="plotter-empty">
+                    <div class="plotter-chart-icon">📊</div>
+                    <div class="plotter-chart-title">Serial Plotter MPU6050</div>
+                    <div class="plotter-chart-message">Conecte ao ESP32 e envie dados do sensor para ver o gráfico</div>
+                    <div class="plotter-chart-legend">
+                      <div>• Formato esperado: AX,AY,AZ,GX,GY,GZ (valores separados por vírgula)</div>
+                      <div>• Exemplo: 1.23,2.34,3.45,0.56,0.67,0.78</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Valores Atuais -->
+              <div class="plotter-current-values" id="plotter-values" style="display: none;">
+                <div class="values-section">
+                  <h5 class="values-section-title">🏃 Acelerômetro (m/s²)</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label" style="color: #ef4444;">X:</span>
+                      <span class="value-number" id="accel-x-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #10b981;">Y:</span>
+                      <span class="value-number" id="accel-y-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #3b82f6;">Z:</span>
+                      <span class="value-number" id="accel-z-value">0.000</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="values-section">
+                  <h5 class="values-section-title">🔄 Giroscópio (°/s)</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label" style="color: #f59e0b;">X:</span>
+                      <span class="value-number" id="gyro-x-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #8b5cf6;">Y:</span>
+                      <span class="value-number" id="gyro-y-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #06b6d4;">Z:</span>
+                      <span class="value-number" id="gyro-z-value">0.000</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="values-section">
+                  <h5 class="values-section-title">📊 Estatísticas</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label">Samples:</span>
+                      <span class="value-number" id="plotter-samples">0</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label">Rate:</span>
+                      <span class="value-number" id="plotter-rate">0 Hz</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -865,7 +1007,6 @@
       <div class="plotter-content">
         <div class="plotter-controls-bar">
           <div class="plotter-actions">
-            <button id="plotter-test-header" class="plotter-btn">🧪 Teste</button>
             <button id="plotter-pause-header" class="plotter-btn">⏸️ Pausar</button>
             <button id="plotter-clear-header" class="plotter-btn">🗑️ Limpar</button>
             <button id="plotter-export-header" class="plotter-btn" disabled>📊 Export CSV</button>
