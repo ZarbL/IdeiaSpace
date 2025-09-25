@@ -115,6 +115,76 @@ class ArduinoCLIClient {
   }
 
   /**
+   * Apenas compila o código sem fazer upload
+   */
+  async compileOnly(code, board = 'esp32:esp32:esp32', options = {}) {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/arduino/compile-only`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code, board, options })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro na compilação');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erro na compilação:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Verifica status do ESP32 core
+   */
+  async checkEsp32Status() {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/arduino/esp32/status`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao verificar ESP32');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erro ao verificar ESP32:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Instala/verifica ESP32 core automaticamente
+   */
+  async ensureEsp32Core() {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/arduino/esp32/ensure`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao instalar ESP32 core');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Erro ao instalar ESP32 core:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
    * Atualiza índices do Arduino CLI
    */
   async updateIndexes() {

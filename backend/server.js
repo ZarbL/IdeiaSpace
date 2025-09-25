@@ -242,6 +242,91 @@ class BackendServer {
         });
       }
     });
+
+    // Apenas compilar sem fazer upload
+    this.app.post('/api/arduino/compile-only', async (req, res) => {
+      try {
+        const { code, board = 'esp32:esp32:esp32', options = {} } = req.body;
+        
+        if (!code || !code.trim()) {
+          return res.status(400).json({
+            success: false,
+            message: 'Código é obrigatório'
+          });
+        }
+
+        console.log(`🔨 Compilação apenas (sem upload) para ${board}`);
+        const result = await this.arduinoService.compileSketch(code, board, options);
+        
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro na compilação',
+          error: error.message
+        });
+      }
+    });
+
+    // Instalar core (ESP32, Arduino, etc.)
+    this.app.post('/api/arduino/core/install', async (req, res) => {
+      try {
+        const { core } = req.body;
+        
+        if (!core) {
+          return res.status(400).json({
+            success: false,
+            message: 'Nome do core é obrigatório'
+          });
+        }
+
+        console.log(`🔧 Instalando core: ${core}`);
+        const result = await this.arduinoService.installCore(core);
+        
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao instalar core',
+          error: error.message
+        });
+      }
+    });
+
+    // Verificar/instalar ESP32 core automaticamente
+    this.app.post('/api/arduino/esp32/ensure', async (req, res) => {
+      try {
+        console.log('🚀 Verificando/instalando ESP32 core automaticamente...');
+        const result = await this.arduinoService.ensureEsp32CoreInstalled();
+        
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao verificar/instalar ESP32 core',
+          error: error.message
+        });
+      }
+    });
+
+    // Verificar status do ESP32 core
+    this.app.get('/api/arduino/esp32/status', async (req, res) => {
+      try {
+        console.log('🔍 Verificando status do ESP32 core...');
+        const result = await this.arduinoService.checkEsp32CoreAvailable();
+        
+        res.json({
+          success: true,
+          esp32Status: result
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao verificar ESP32 core',
+          error: error.message
+        });
+      }
+    });
   }
 
   setupInfoRoutes() {
@@ -254,12 +339,16 @@ class BackendServer {
         endpoints: {
           health: 'GET /health',
           compile: 'POST /api/arduino/compile',
+          compile_only: 'POST /api/arduino/compile-only',
           upload: 'POST /api/arduino/upload',
           ports: 'GET /api/arduino/ports',
           boards: 'GET /api/arduino/boards',
           libraries: 'GET /api/arduino/libraries',
           install_library: 'POST /api/arduino/library/install',
-          update: 'POST /api/arduino/update'
+          install_core: 'POST /api/arduino/core/install',
+          update: 'POST /api/arduino/update',
+          esp32_status: 'GET /api/arduino/esp32/status',
+          esp32_ensure: 'POST /api/arduino/esp32/ensure'
         },
         websocket: {
           port: this.wsPort,

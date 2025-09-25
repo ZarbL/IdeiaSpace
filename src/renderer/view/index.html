@@ -48,6 +48,15 @@
             ⧉ Copiar
           </button>
         </div>
+        
+        <!-- Botão de Exemplos Arduino -->
+        <div class="examples-section">
+          <button id="examplesButton" class="examples-button tooltip" data-tooltip-key="examplesTooltip" data-translate-key="examplesButton">
+            <span class="examples-icon">📁</span>
+            <span class="examples-text" data-translate-key="examples">Exemplos</span>
+          </button>
+        </div>
+        
         <div class="copy-feedback" id="copyFeedback" data-translate-key="copyFeedback">Código copiado para a área de transferência!</div>
         <p id="message"></p>
       </div>
@@ -64,6 +73,57 @@
         <div class="modal-buttons">
           <button id="create-variable-btn" class="btn-primary variable-create" data-translate-key="createVariableBtn">✅ Criar Variável</button>
           <button id="cancel-variable-btn" class="btn-secondary" data-translate-key="cancelVariableBtn">❌ Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Exemplos Arduino -->
+  <div id="examples-modal" class="modal examples-modal-overlay">
+    <div class="examples-modal-content">
+      <div class="examples-modal-header">
+        <h2 class="examples-modal-title">
+          <span class="examples-title-icon">📁</span>
+          <span data-translate-key="examplesModalTitle">Exemplos Arduino</span>
+        </h2>
+        <button class="examples-modal-close" id="examples-modal-close">&times;</button>
+      </div>
+      
+      <div class="examples-modal-body">
+        <p class="examples-description" data-translate-key="examplesDescription">
+          Selecione um sensor para carregar o código de exemplo:
+        </p>
+        
+        <div class="examples-grid">
+          <div class="example-card" data-sensor="mpu6050">
+            <div class="example-icon">📐</div>
+            <h3 class="example-title">MPU6050</h3>
+            <p class="example-description" data-translate-key="mpu6050Description">Acelerômetro e Giroscópio</p>
+          </div>
+          
+          <div class="example-card" data-sensor="bmp180">
+            <div class="example-icon">🌡️</div>
+            <h3 class="example-title">BMP180</h3>
+            <p class="example-description" data-translate-key="bmp180Description">Pressão e Temperatura</p>
+          </div>
+          
+          <div class="example-card" data-sensor="bh1750">
+            <div class="example-icon">💡</div>
+            <h3 class="example-title">BH1750</h3>
+            <p class="example-description" data-translate-key="bh1750Description">Sensor de Luminosidade</p>
+          </div>
+          
+          <div class="example-card" data-sensor="hmc5883">
+            <div class="example-icon">🧭</div>
+            <h3 class="example-title">HMC5883</h3>
+            <p class="example-description" data-translate-key="hmc5883Description">Magnetômetro (Bússola)</p>
+          </div>
+          
+          <div class="example-card" data-sensor="dht11">
+            <div class="example-icon">💧</div>
+            <h3 class="example-title">DHT11</h3>
+            <p class="example-description" data-translate-key="dht11Description">Temperatura e Umidade</p>
+          </div>
         </div>
       </div>
     </div>
@@ -418,7 +478,7 @@
                 <div class="serial-form-group">
                   <label class="serial-form-label">🔌 Porta de Upload:</label>
                   <div class="serial-port-selection">
-                    <select id="upload-port-select" class="serial-form-control">
+                    <select id="modal-port-select" class="serial-form-control">
                       <option value="">Selecionar porta...</option>
                     </select>
                     <button id="refresh-upload-ports" class="serial-refresh-btn">🔄</button>
@@ -435,7 +495,8 @@
                 </div>
 
                 <div class="serial-action-buttons">
-                  <button id="upload-code" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
+                  <button id="upload-btn" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
+                  <button id="retry-upload-btn" class="serial-btn-retry" style="display: none;">🔄 Tentar Novamente</button>
                   
                   <div class="serial-sensor-selection">
                     <label class="serial-form-label">🔧 Sensor para Instalar Bibliotecas:</label>

@@ -249,6 +249,137 @@ ipcMain.handle('test-arduino-backend', async () => {
   }
 });
 
+// Handler para verificar conflitos de porta serial
+ipcMain.handle('check-serial-conflicts', async (event, targetPort) => {
+  console.log(`🔍 Verificando conflitos para porta: ${targetPort}`);
+  
+  try {
+    // Lista de processos que podem interferir
+    const conflictingProcessNames = [
+      'Arduino_Cloud_Agent',
+      'serial-discovery',
+      'arduino-cli',
+      'esptool',
+      'platformio'
+    ];
+    
+    const conflicts = [];
+    
+    // Usar PowerShell para verificar processos ativos
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    try {
+      const { stdout } = await execAsync('Get-Process | Select-Object ProcessName,Id | ConvertTo-Json');
+      const processes = JSON.parse(stdout);
+      
+      // Filtrar processos conflitantes
+      const activeConflicts = processes.filter(proc => 
+        conflictingProcessNames.some(name => 
+          proc.ProcessName && proc.ProcessName.toLowerCase().includes(name.toLowerCase())
+        )
+      );
+      
+      activeConflicts.forEach(proc => {
+        conflicts.push({
+          name: proc.ProcessName,
+          pid: proc.Id
+        });
+      });
+      
+    } catch (psError) {
+      console.warn('⚠️ Erro ao verificar processos:', psError.message);
+    }
+    
+    return {
+      success: true,
+      conflicts: conflicts,
+      targetPort: targetPort
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro ao verificar conflitos:', error.message);
+    return {
+      success: false,
+      error: error.message,
+      conflicts: []
+    };
+  }
+});
+
+// Handler para parar Arduino Cloud Agent
+ipcMain.handle('stop-arduino-cloud-agent', async () => {
+  console.log('⏹️ Tentando parar Arduino Cloud Agent...');
+  
+  try {
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    // Tentar parar o processo graciosamente
+    await execAsync('taskkill /F /IM Arduino_Cloud_Agent.exe 2>nul || echo "Processo não encontrado"');
+    
+    console.log('✅ Arduino Cloud Agent parado');
+    return { success: true };
+    
+  } catch (error) {
+    console.error('❌ Erro ao parar Arduino Cloud Agent:', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+// Handler para parar serial-discovery
+ipcMain.handle('stop-serial-discovery', async () => {
+  console.log('⏹️ Tentando parar serial-discovery...');
+  
+  try {
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    // Tentar parar o processo
+    await execAsync('taskkill /F /IM serial-discovery.exe 2>nul || echo "Processo não encontrado"');
+    
+    console.log('✅ Serial-discovery parado');
+    return { success: true };
+    
+  } catch (error) {
+    console.error('❌ Erro ao parar serial-discovery:', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+// Handler para verificar disponibilidade de porta
+ipcMain.handle('verify-port-availability', async (event, targetPort) => {
+  console.log(`🔍 Verificando disponibilidade da porta: ${targetPort}`);
+  
+  try {
+    // Verificar se a porta existe no sistema
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    // Listar portas COM disponíveis
+    const { stdout } = await execAsync('mode');
+    const available = stdout.includes(targetPort);
+    
+    return {
+      success: true,
+      available: available,
+      port: targetPort
+    };
+    
+  } catch (error) {
+    console.warn('⚠️ Erro ao verificar porta:', error.message);
+    return {
+      success: false,
+      available: true, // Assumir disponível em caso de erro
+      error: error.message
+    };
+  }
+});
+
 // Limpar processo ao fechar aplicação
 app.on('before-quit', () => {
   if (backendProcess && !backendProcess.killed) {

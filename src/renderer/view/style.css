@@ -120,6 +120,34 @@ button#generate-btn:hover {
   font-family: "Courier New", monospace;
   font-size: 14px;
   box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Estilo para código de exemplo */
+.code-box.example-code {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 20px rgba(108, 92, 231, 0.3);
+  animation: examplePulse 2s ease-in-out;
+}
+
+.code-box.example-code::before {
+  content: "📋 Exemplo " attr(data-sensor-type);
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: linear-gradient(135deg, #6c5ce7, #74b9ff);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  z-index: 10;
+}
+
+@keyframes examplePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
 }
 
 .code-section {
@@ -318,6 +346,257 @@ button#generate-btn:hover {
 .dark-mode .copy-button:hover {
   background: linear-gradient(135deg, #e80074, #e80074);
   box-shadow: 0 6px 20px rgba(226, 5, 171, 0.6);
+}
+
+/* Botão de Exemplos */
+.examples-section {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.examples-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #6c5ce7, #74b9ff);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(108, 92, 231, 0.3);
+  min-height: 36px;
+}
+
+.examples-button:hover {
+  background: linear-gradient(135deg, #5f3dc4, #339af0);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(108, 92, 231, 0.4);
+}
+
+.examples-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+}
+
+.examples-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.examples-text {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Dark mode para botão de exemplos */
+.dark-mode .examples-button {
+  background: linear-gradient(135deg, #74b9ff, #6c5ce7);
+  box-shadow: 0 3px 12px rgba(116, 185, 255, 0.3);
+}
+
+.dark-mode .examples-button:hover {
+  background: linear-gradient(135deg, #339af0, #5f3dc4);
+  box-shadow: 0 5px 20px rgba(116, 185, 255, 0.4);
+}
+
+/* Modal de Exemplos */
+.examples-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.examples-modal-overlay.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.examples-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInScale 0.3s ease;
+}
+
+.examples-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.examples-modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.examples-title-icon {
+  font-size: 28px;
+}
+
+.examples-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.examples-modal-close:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.examples-modal-body {
+  padding: 24px;
+}
+
+.examples-description {
+  margin: 0 0 24px 0;
+  color: #6c757d;
+  font-size: 16px;
+  text-align: center;
+}
+
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.example-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.example-card:hover {
+  border-color: #6c5ce7;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15);
+}
+
+.example-card:active {
+  transform: translateY(-2px);
+}
+
+.example-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.example-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+}
+
+.example-description {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Dark mode para modal de exemplos */
+.dark-mode .examples-modal-content {
+  background: #2c3e50;
+  color: #ecf0f1;
+}
+
+.dark-mode .examples-modal-header {
+  border-bottom-color: #34495e;
+}
+
+.dark-mode .examples-modal-title {
+  color: #ecf0f1;
+}
+
+.dark-mode .examples-modal-close {
+  color: #bdc3c7;
+}
+
+.dark-mode .examples-modal-close:hover {
+  background-color: #34495e;
+  color: #ecf0f1;
+}
+
+.dark-mode .examples-description {
+  color: #95a5a6;
+}
+
+.dark-mode .example-card {
+  background: #34495e;
+  border-color: #4a5568;
+  color: #ecf0f1;
+}
+
+.dark-mode .example-card:hover {
+  border-color: #74b9ff;
+  box-shadow: 0 8px 25px rgba(116, 185, 255, 0.2);
+}
+
+.dark-mode .example-title {
+  color: #ecf0f1;
+}
+
+.dark-mode .example-description {
+  color: #95a5a6;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInScale {
+  from { 
+    opacity: 0;
+    transform: scale(0.7) translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Tooltips */
@@ -3739,6 +4018,45 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
 .serial-btn-export:hover {
   background: linear-gradient(135deg, #5a6268, #495057);
   transform: translateY(-1px);
+}
+
+/* Serial Retry Button */
+.serial-btn-retry {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+  animation: pulse-warning 2s infinite;
+}
+
+.serial-btn-retry:hover {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+}
+
+.serial-btn-retry:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 15px rgba(243, 156, 18, 0.5);
+  }
 }
 
 /* Estilo específico para o elemento do gráfico do Serial Plotter */

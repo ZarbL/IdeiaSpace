@@ -365,7 +365,8 @@ let backendState = {
   isStarting: false,
   isStopping: false,
   lastError: null,
-  status: null
+  status: null,
+  baseUrl: 'http://localhost:3001'
 };
 
 // Chart data for real-time plotting
@@ -404,6 +405,9 @@ async function openSerialMonitorModal() {
     
     // Set default active tab
     switchTab('upload');
+    
+    // Atualizar aba de código para garantir sincronização
+    updateCodeTab();
     
     // Verificar status do backend primeiro
     console.log('🔍 Verificando status do backend...');
@@ -1596,6 +1600,9 @@ function updateConnectionStatus() {
   
   if (disconnectBtn) disconnectBtn.disabled = !serialMonitorState.isConnected;
   
+  // Update upload tab buttons based on connection status
+  updateUploadTab();
+  
   // Show/hide command input based on connection status
   const commandInput = document.getElementById('command-input');
   if (commandInput) {
@@ -1627,11 +1634,17 @@ function updateUploadTab() {
   console.log('📤 Atualizando aba Upload...');
   
   const compileBtn = document.getElementById('compile-btn');
-  const uploadBtn = document.getElementById('upload-btn');
+  const uploadBtnModal = document.getElementById('upload-btn');
+  const uploadBtnMain = document.getElementById('upload-code');
   
   // Enable buttons based on connection status
   if (compileBtn) compileBtn.disabled = false;
-  if (uploadBtn) uploadBtn.disabled = !serialMonitorState.isConnected;
+  if (uploadBtnModal) uploadBtnModal.disabled = !serialMonitorState.isConnected;
+  if (uploadBtnMain) uploadBtnMain.disabled = !serialMonitorState.isConnected;
+  
+  console.log('📤 Status da conexão:', serialMonitorState.isConnected);
+  console.log('📤 Botão modal habilitado:', uploadBtnModal ? !uploadBtnModal.disabled : 'não encontrado');
+  console.log('📤 Botão principal habilitado:', uploadBtnMain ? !uploadBtnMain.disabled : 'não encontrado');
 }
 
 function compileSketch() {
@@ -1657,59 +1670,1087 @@ function compileSketch() {
   }
 }
 
-function uploadSketch() {
-  console.log('📤 Fazendo upload do sketch...');
+// Função para pegar o código do modal
+function getModalCode() {
+  const codeBox = document.querySelector('.code-box.example-code');
+  
+  if (codeBox && isExampleMode) {
+    // Se estiver no modo exemplo, pegar o código do exemplo
+    return codeBox.textContent;
+  }
+  
+  // Caso contrário, usar o código gerado do workspace
+  return generateCode();
+}
+
+// Função para alternar para a aba do console
+function switchToConsoleTab() {
+  console.log('📋 Alternando para a aba console...');
+  switchTab('console');
+}
+
+// Função para limpar o console serial
+function clearSerialConsole() {
+  serialMonitorState.consoleHistory = [];
+  updateConsoleTab();
+}
+
+// Função para adicionar texto ao console serial
+function addToSerialConsole(text) {
+  const timestamp = new Date().toLocaleTimeString();
+  const formattedText = `[${timestamp}] ${text}`;
+  
+  console.log('🗨️ Adicionando ao console:', formattedText);
+  
+  serialMonitorState.consoleHistory.push(formattedText);
+  
+  console.log('🗨️ Total de mensagens no histórico:', serialMonitorState.consoleHistory.length);
+  
+  updateConsoleTab();
+}
+
+// Variáveis para monitoramento serial real
+let serialWebSocket = null;
+let serialMonitoringActive = false;
+
+// Função para iniciar monitoramento serial real
+function startRealSerialMonitoring(port) {
+  // Fechar conexão anterior se existir
+  if (serialWebSocket) {
+    serialWebSocket.close();
+    serialWebSocket = null;
+  }
+  
+  addToSerialConsole(`� Conectando ao monitoramento serial na porta ${port}...`);
+  
+  try {
+    // Conectar ao WebSocket do backend para monitoramento serial
+    const wsUrl = `ws://localhost:8080`;
+    serialWebSocket = new WebSocket(wsUrl);
+    
+    serialWebSocket.onopen = () => {
+      console.log('🔌 Conectado ao WebSocket serial');
+      addToSerialConsole('✅ Conectado ao monitor serial');
+      
+      // Enviar comando para conectar à porta
+      serialWebSocket.send(JSON.stringify({
+        type: 'connect',
+        port: port,
+        baudRate: 115200
+      }));
+      
+      serialMonitoringActive = true;
+    };
+    
+    serialWebSocket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        handleSerialWebSocketMessage(data);
+      } catch (error) {
+        console.error('❌ Erro ao processar mensagem WebSocket:', error);
+      }
+    };
+    
+    serialWebSocket.onclose = () => {
+      console.log('🔌 Conexão WebSocket fechada');
+      serialMonitoringActive = false;
+      if (serialWebSocket) {
+        addToSerialConsole('⚠️ Conexão serial perdida');
+      }
+    };
+    
+    serialWebSocket.onerror = (error) => {
+      console.error('❌ Erro WebSocket:', error);
+      addToSerialConsole('❌ Erro na conexão serial');
+      serialMonitoringActive = false;
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro ao conectar WebSocket:', error);
+    addToSerialConsole('❌ Erro ao conectar ao monitor serial');
+  }
+}
+
+// Função para processar mensagens do WebSocket serial
+function handleSerialWebSocketMessage(data) {
+  switch (data.type) {
+    case 'connected':
+      addToSerialConsole(`✅ Conectado à porta ${data.port}`);
+      addToSerialConsole('📡 Aguardando dados da ESP32...');
+      addToSerialConsole('');
+      break;
+      
+    case 'data':
+      // Dados recebidos da ESP32 - mostrar no console
+      if (data.message && data.message.trim()) {
+        addToSerialConsole(data.message.trim());
+      }
+      break;
+      
+    case 'disconnected':
+      addToSerialConsole('🔌 Porta serial desconectada');
+      serialMonitoringActive = false;
+      break;
+      
+    case 'error':
+      addToSerialConsole(`❌ Erro serial: ${data.message}`);
+      break;
+      
+    case 'ports':
+      // Lista de portas disponíveis (não precisamos mostrar no console)
+      console.log('📡 Portas disponíveis:', data.ports);
+      break;
+      
+    default:
+      console.log('📡 Mensagem WebSocket desconhecida:', data);
+      break;
+  }
+}
+
+// Função para parar o monitoramento serial
+function stopSerialMonitoring() {
+  if (serialWebSocket) {
+    serialWebSocket.close();
+    serialWebSocket = null;
+  }
+  serialMonitoringActive = false;
+  addToSerialConsole('🛑 Monitoramento serial parado');
+}
+
+async function uploadSketch() {
+  console.log('📤 FUNÇÃO UPLOADSKETCH CHAMADA - Fazendo upload do sketch...');
   
   if (!serialMonitorState.isConnected) {
     showSerialNotification('❌ Conecte-se a uma porta primeiro!', 'error');
     return;
   }
   
-  const code = generateCode();
-  if (!code) {
+  const code = getModalCode();
+  if (!code || code.trim() === '') {
     showSerialNotification('❌ Nenhum código para fazer upload!', 'error');
     return;
   }
   
-  // Simulate upload
-  const uploadBtn = document.getElementById('upload-btn');
-  if (uploadBtn) {
-    uploadBtn.disabled = true;
-    uploadBtn.textContent = '📤 Fazendo Upload...';
+  const selectedPort = serialMonitorState.selectedPort;
+  if (!selectedPort) {
+    showSerialNotification('❌ Nenhuma porta selecionada!', 'error');
+    return;
+  }
+  
+  // Garantir que o console serial esteja visível
+  openSerialMonitorModal();
+  switchToConsoleTab();
+  
+  // Limpar console antes de iniciar
+  clearSerialConsole();
+  
+  // Desabilitar botões
+  const uploadBtnModal = document.getElementById('upload-btn');
+  const uploadBtnMain = document.getElementById('upload-code');
+  
+  if (uploadBtnModal) {
+    uploadBtnModal.disabled = true;
+    uploadBtnModal.textContent = '📤 Fazendo Upload...';
+  }
+  
+  if (uploadBtnMain) {
+    uploadBtnMain.disabled = true;
+    uploadBtnMain.innerHTML = '<span class="btn-icon">⏳</span><span>Uploading...</span>';
+  }
+  
+  updateProgress(0);
+  
+  // Verificar se backend está rodando
+  addToSerialConsole(`🔧 Status do backend: ${backendState.isRunning ? 'Rodando' : 'Parado'}`);
+  
+  if (!backendState.isRunning) {
+    showSerialNotification('❌ Backend não está rodando! Inicie o backend primeiro.', 'error');
+    addToSerialConsole('❌ Backend não está rodando!');
+    addToSerialConsole('💡 SOLUÇÃO: Procure o botão "Iniciar Backend" e clique nele');
+    addToSerialConsole('   O botão geralmente fica na área de configurações ou tools');
+    reEnableUploadButtons(uploadBtnModal, uploadBtnMain);
+    return;
+  }
+  
+  try {
+    addToSerialConsole('=== PROCESSO DE UPLOAD INICIADO ===');
+    addToSerialConsole(`📝 Código: ${code.length} caracteres`);
+    addToSerialConsole(`📡 Porta: ${selectedPort}`);
+    addToSerialConsole(`🌐 Backend URL: ${backendState.baseUrl}`);
     
-    updateProgress(0);
+    // Validação prévia do código
+    addToSerialConsole('');
+    addToSerialConsole('🔍 Validando código Arduino...');
+    const validation = validateArduinoCode(code);
+    displayValidationResults(validation);
     
-    // Simulate progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += Math.random() * 20;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(progressInterval);
-        
-        setTimeout(() => {
-          uploadBtn.disabled = false;
-          uploadBtn.textContent = '📤 Upload';
-          updateProgress(0);
-          showSerialNotification('✅ Upload concluído!', 'success');
-        }, 500);
+    if (!validation.isValid) {
+      addToSerialConsole('');
+      addToSerialConsole('❌ UPLOAD CANCELADO - Corrija os erros de validação primeiro');
+      showSerialNotification('❌ Código inválido - verifique os erros', 'error');
+      reEnableUploadButtons(uploadBtnModal, uploadBtnMain);
+      return;
+    }
+    
+    if (validation.warnings.length > 0) {
+      addToSerialConsole('');
+      addToSerialConsole('⚠️ Continuando upload apesar dos avisos...');
+    } else {
+      addToSerialConsole('✅ Código validado com sucesso');
+    }
+    
+    addToSerialConsole('');
+    showSerialNotification('📤 Iniciando compilação e upload...', 'info');
+    
+    // Detectar e instalar bibliotecas necessárias
+    updateUploadStatus('🔍 Detectando bibliotecas necessárias...', 10);
+    const requiredLibraries = detectRequiredLibraries(code);
+    if (requiredLibraries.length > 0) {
+      addToSerialConsole('🔍 Bibliotecas detectadas no código:');
+      requiredLibraries.forEach(lib => {
+        addToSerialConsole(`   - ${lib.name} (${lib.include})`);
+      });
+      
+      updateUploadStatus('📚 Instalando bibliotecas necessárias...', 15);
+      showSerialNotification('📚 Instalando bibliotecas...', 'info');
+      
+      for (const library of requiredLibraries) {
+        try {
+          addToSerialConsole(`📦 Instalando ${library.name}...`);
+          
+          const libResponse = await fetch(`${backendState.baseUrl}/api/arduino/library/install`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: library.name
+            })
+          });
+          
+          if (libResponse.ok) {
+            const libResult = await libResponse.json();
+            if (libResult.success) {
+              addToSerialConsole(`   ✅ ${library.name} instalada com sucesso`);
+            } else {
+              addToSerialConsole(`   ⚠️ ${library.name}: ${libResult.message}`);
+            }
+          } else {
+            addToSerialConsole(`   ❌ Erro ao instalar ${library.name}`);
+          }
+        } catch (libError) {
+          addToSerialConsole(`   ❌ Erro ao instalar ${library.name}: ${libError.message}`);
+        }
       }
-      updateProgress(progress);
-    }, 300);
+    }
+    
+    // Verificar e instalar ESP32 core se necessário (versão melhorada)
+    updateUploadStatus('🔍 Verificando ESP32 core...', 25);
+    try {
+      // Usar nova API para verificação inteligente
+      const esp32StatusResponse = await fetch(`${backendState.baseUrl}/api/arduino/esp32/status`);
+      if (esp32StatusResponse.ok) {
+        const statusData = await esp32StatusResponse.json();
+        
+        if (statusData.success && statusData.esp32Status.installed) {
+          addToSerialConsole('✅ ESP32 core encontrado e configurado');
+          if (statusData.esp32Status.version) {
+            addToSerialConsole(`   📋 Versão: ${statusData.esp32Status.version}`);
+          }
+          if (statusData.esp32Status.boardCount) {
+            addToSerialConsole(`   🔧 ${statusData.esp32Status.boardCount} placas ESP32 disponíveis`);
+          }
+        } else {
+          addToSerialConsole('📦 ESP32 core não encontrado, instalando automaticamente...');
+          showSerialNotification('📦 Instalando ESP32 core... (pode demorar alguns minutos)', 'info');
+          
+          try {
+            // Usar nova API de instalação inteligente
+            const installResponse = await fetch(`${backendState.baseUrl}/api/arduino/esp32/ensure`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (installResponse.ok) {
+              const installData = await installResponse.json();
+              
+              if (installData.success) {
+                if (installData.alreadyInstalled) {
+                  addToSerialConsole('✅ ESP32 core já estava instalado');
+                } else if (installData.freshInstall) {
+                  addToSerialConsole('✅ ESP32 core instalado com sucesso!');
+                  addToSerialConsole('   📦 Instalação concluída');
+                  if (installData.verification && installData.verification.boardCount) {
+                    addToSerialConsole(`   🔧 ${installData.verification.boardCount} placas ESP32 agora disponíveis`);
+                  }
+                }
+              } else {
+                addToSerialConsole('❌ Falha na instalação automática do ESP32 core');
+                addToSerialConsole(`   📋 Erro: ${installData.message}`);
+                addToSerialConsole('💡 Tentativa de instalação manual necessária');
+                addToSerialConsole('   Comando: arduino-cli core install esp32:esp32');
+              }
+            } else {
+              throw new Error('Resposta inválida do servidor');
+            }
+          } catch (coreError) {
+            addToSerialConsole('❌ Erro ao instalar ESP32 core automaticamente');
+            addToSerialConsole(`   📋 Detalhes: ${coreError.message}`);
+            addToSerialConsole('💡 Continuando o upload - instale manualmente se necessário');
+            addToSerialConsole('   Comando: arduino-cli core install esp32:esp32');
+          }
+        }
+      } else {
+        addToSerialConsole('⚠️ Não foi possível verificar status do ESP32 core');
+      }
+    } catch (statusError) {
+      addToSerialConsole('⚠️ Erro na verificação do ESP32 core, continuando...');
+      addToSerialConsole(`   📋 Detalhes: ${statusError.message}`);
+    }
+    
+    // Parar monitoramento serial se estiver ativo (pode interferir no upload)
+    if (serialMonitoringActive) {
+      addToSerialConsole('⏹️ Parando monitoramento serial para liberar porta...');
+      stopSerialMonitoring();
+      // Aguardar um pouco para a porta ser liberada
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Verificar e resolver conflitos de porta antes do upload
+    updateUploadStatus('🔍 Verificando conflitos de porta...', 35);
+    await resolvePortConflicts(selectedPort);
+    
+    // Conectar ao Arduino CLI para upload
+    updateUploadStatus('🔄 Compilando código para ESP32...', 40);
+    showSerialNotification('📤 Fazendo upload para ESP32...', 'info');
+    
+    // Fazer upload real usando Arduino CLI
+    updateUploadStatus('📤 Enviando código para ESP32...', 60);
+    const uploadUrl = `${backendState.baseUrl}/api/arduino/upload`;
+    addToSerialConsole(`📤 Enviando para: ${uploadUrl}`);
+    
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: code,
+        port: selectedPort,
+        board: 'esp32:esp32:esp32'
+      }),
+      timeout: 120000 // 2 minutos de timeout para upload
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      addToSerialConsole('✅ Compilação bem-sucedida!');
+      addToSerialConsole('📤 Upload concluído!');
+      addToSerialConsole('🔄 Reiniciando ESP32...');
+      addToSerialConsole('=== UPLOAD FINALIZADO COM SUCESSO ===');
+      addToSerialConsole('');
+      addToSerialConsole('📡 Iniciando monitoramento serial...');
+      
+      updateProgress(100);
+      showSerialNotification('✅ Upload concluído com sucesso!', 'success');
+      
+      // Esconder botão de retry em caso de sucesso
+      const retryBtn = document.getElementById('retry-upload-btn');
+      if (retryBtn) {
+        retryBtn.style.display = 'none';
+      }
+      
+      // Limpar dados de erro anterior
+      window.lastUploadError = null;
+      
+      // Iniciar monitoramento de dados reais da serial
+      setTimeout(() => {
+        startRealSerialMonitoring(selectedPort);
+      }, 2000);
+      
+    } else {
+      addToSerialConsole('❌ Erro no upload:');
+      addToSerialConsole(`   📋 Mensagem: ${result.message || 'Erro desconhecido'}`);
+      
+      // Usar análise inteligente de erros se disponível
+      if (result.errorType && result.suggestions) {
+        addToSerialConsole('');
+        addToSerialConsole('🔍 DIAGNÓSTICO AUTOMÁTICO:');
+        
+        switch(result.errorType) {
+          case 'PORT_BUSY':
+            addToSerialConsole('   🚫 PROBLEMA: Porta serial em uso por outro processo');
+            break;
+          case 'ESP32_COMMUNICATION':
+            addToSerialConsole('   📡 PROBLEMA: Falha de comunicação com ESP32');
+            break;
+          case 'PORT_NOT_FOUND':
+            addToSerialConsole('   🔌 PROBLEMA: Porta serial não encontrada');
+            break;
+          case 'CORE_MISSING':
+            addToSerialConsole('   📦 PROBLEMA: ESP32 core não está instalado');
+            break;
+          default:
+            addToSerialConsole('   ❓ PROBLEMA: Erro não identificado');
+        }
+        
+        addToSerialConsole('');
+        addToSerialConsole('🔧 SOLUÇÕES RECOMENDADAS:');
+        result.suggestions.forEach((suggestion, index) => {
+          addToSerialConsole(`   ${index + 1}. ${suggestion}`);
+        });
+        
+        // Oferecer resolução automática para problemas de porta
+        if (result.errorType === 'PORT_BUSY' && result.conflictingProcesses && result.conflictingProcesses.length > 0) {
+          addToSerialConsole('');
+          addToSerialConsole('🤖 RESOLUÇÃO AUTOMÁTICA DISPONÍVEL:');
+          addToSerialConsole('   Encontrei processos conflitantes. Posso tentar resolve-los automaticamente.');
+          addToSerialConsole('   Clique em "Tentar Novamente" para resolver e fazer upload automaticamente.');
+          
+          // Armazenar dados para retry automático
+          window.lastUploadError = {
+            errorType: result.errorType,
+            conflictingProcesses: result.conflictingProcesses,
+            autoResolveAvailable: true
+          };
+          
+          // Mostrar botão de retry
+          const retryBtn = document.getElementById('retry-upload-btn');
+          if (retryBtn) {
+            retryBtn.style.display = 'inline-flex';
+          }
+        }
+        
+      } else {
+        // Fallback para análise manual de erro
+        
+        // Mostrar erro detalhado se disponível
+        if (result.error) {
+          addToSerialConsole('');
+          addToSerialConsole('🔍 Detalhes do erro:');
+          const errorLines = result.error.split('\n');
+          errorLines.forEach(line => {
+            if (line.trim()) {
+              addToSerialConsole(`   ${line.trim()}`);
+            }
+          });
+        }
+        
+        // Mostrar output se disponível
+        if (result.output) {
+          addToSerialConsole('');
+          addToSerialConsole('📝 Output do comando:');
+          const outputLines = result.output.split('\n');
+          outputLines.forEach(line => {
+            if (line.trim()) {
+              addToSerialConsole(`   ${line.trim()}`);
+            }
+          });
+        }
+        
+        addToSerialConsole('');
+        addToSerialConsole('🔧 Possíveis soluções:');
+      }
+      
+      if (result.error && result.error.includes('esp32:esp32')) {
+        addToSerialConsole('   1. Instalar ESP32 core: Vá em Tools > Board > Board Manager > ESP32');
+        addToSerialConsole('   2. Verificar se a placa ESP32 está configurada corretamente');
+      }
+      
+      if (result.error && (result.error.includes('port') || result.error.includes('COM') || result.error.includes('Packet content transfer stopped') || result.error.includes('exit status 2'))) {
+        addToSerialConsole('   🔌 PROBLEMA DE COMUNICAÇÃO SERIAL:');
+        addToSerialConsole('   1. Desconecte e reconecte o cabo USB da ESP32');
+        addToSerialConsole('   2. Pressione e mantenha o botão BOOT na ESP32');
+        addToSerialConsole('   3. Pressione o botão RESET enquanto mantém BOOT pressionado');
+        addToSerialConsole('   4. Solte o botão RESET primeiro, depois o BOOT');
+        addToSerialConsole('   5. Tente o upload novamente imediatamente');
+        addToSerialConsole('');
+        addToSerialConsole('   💡 ALTERNATIVAS:');
+        addToSerialConsole('   • Feche qualquer Monitor Serial que esteja aberto');
+        addToSerialConsole('   • Verifique se não há outro Arduino IDE rodando');
+        addToSerialConsole('   • Tente uma porta USB diferente');
+        addToSerialConsole('   • Reinicie a ESP32 (botão RESET)');
+      }
+      
+      if (result.error && result.error.includes('library') || result.error && result.error.includes('.h')) {
+        addToSerialConsole('   1. Verificar se todas as bibliotecas necessárias estão instaladas');
+        addToSerialConsole('   2. Atualizar as bibliotecas instaladas');
+      }
+      
+      // Sistema de retry inteligente para erros de ESP32
+      let shouldRetry = false;
+      
+      // Decidir se deve tentar retry baseado no tipo de erro
+      if (result.errorType) {
+        switch(result.errorType) {
+          case 'PORT_BUSY':
+            // Para porta ocupada, tentar resolver conflitos primeiro
+            if (result.conflictingProcesses && result.conflictingProcesses.length > 0) {
+              addToSerialConsole('🤖 Iniciando resolução automática de conflitos...');
+              await resolvePortConflicts(result.conflictingProcesses);
+              shouldRetry = true;
+            }
+            break;
+          case 'ESP32_COMMUNICATION':
+          case 'UPLOAD_TIMEOUT':
+            shouldRetry = true;
+            break;
+        }
+      } else if (result.error && (result.error.includes('Packet content transfer stopped') || 
+                          result.error.includes('exit status 2') ||
+                          result.error.includes('Failed uploading') ||
+                          result.error.includes('A fatal error occurred'))) {
+        shouldRetry = true;
+        
+        // Log específico para debug
+        addToSerialConsole('');
+        addToSerialConsole('🔍 ERRO DETECTADO PARA RETRY AUTOMÁTICO:');
+        addToSerialConsole('   ⚠️ Packet content transfer stopped - Problema comum de ESP32');
+        addToSerialConsole('   🔧 Sistema iniciará retry automático em 3 segundos...');
+        
+        // Aguardar um pouco antes do retry para que o usuário veja a mensagem
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+      
+      if (shouldRetry) {
+        addToSerialConsole('');
+        addToSerialConsole('🤖 INICIANDO SISTEMA DE RECUPERAÇÃO AUTOMÁTICA');
+        addToSerialConsole('   📋 Erro reconhecido: Falha de comunicação ESP32');
+        addToSerialConsole('   🔄 Tentando diferentes configurações de upload...');
+        addToSerialConsole('');
+        
+        const success = await handleEsp32UploadRetry(code, selectedPort, uploadUrl, result);
+        
+        if (success) {
+          addToSerialConsole('✅ Upload bem-sucedido após retry automático!');
+          addToSerialConsole('🔄 Reiniciando ESP32...');
+          addToSerialConsole('=== UPLOAD FINALIZADO COM SUCESSO ===');
+          
+          updateProgress(100);
+          showSerialNotification('✅ Upload concluído com sucesso!', 'success');
+          
+          // Esconder botão de retry em caso de sucesso
+          const retryBtn = document.getElementById('retry-upload-btn');
+          if (retryBtn) {
+            retryBtn.style.display = 'none';
+          }
+          
+          // Limpar dados de erro anterior
+          window.lastUploadError = null;
+          
+          // Iniciar monitoramento
+          setTimeout(() => {
+            startRealSerialMonitoring(selectedPort);
+          }, 2000);
+          
+          return; // Sair da função se bem-sucedido
+        }
+        
+        addToSerialConsole('');
+        addToSerialConsole('⚠️ AÇÃO MANUAL NECESSÁRIA:');
+        addToSerialConsole('   Siga as instruções acima para colocar a ESP32 em modo de programação');
+      }
+      
+      showSerialNotification('❌ Erro no upload!', 'error');
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    addToSerialConsole('❌ Erro na comunicação com o backend:');
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      addToSerialConsole('   🔌 Não foi possível conectar ao backend');
+      addToSerialConsole('   💡 Verifique se o backend está rodando');
+      addToSerialConsole(`   🌐 Tentando conectar em: ${backendState.baseUrl}`);
+      showSerialNotification('❌ Backend não acessível!', 'error');
+    } else if (error.name === 'AbortError') {
+      addToSerialConsole('   ⏱️ Timeout na requisição');
+      showSerialNotification('❌ Timeout na comunicação!', 'error');
+    } else {
+      addToSerialConsole(`   ${error.message}`);
+      showSerialNotification('❌ Erro na comunicação!', 'error');
+    }
+    
+    addToSerialConsole('');
+    addToSerialConsole('🔧 Soluções possíveis:');
+    addToSerialConsole('   1. Verificar se o backend está rodando');
+    addToSerialConsole('   2. Verificar se a ESP32 está conectada');
+    addToSerialConsole('   3. Tentar reiniciar o backend');
+  } finally {
+    // Reabilitar botões
+    reEnableUploadButtons(uploadBtnModal, uploadBtnMain);
+    updateProgress(0);
   }
 }
 
-function updateProgress(percent) {
+// Função auxiliar para reabilitar botões
+function reEnableUploadButtons(modalBtn, mainBtn) {
+  if (modalBtn) {
+    modalBtn.disabled = false;
+    modalBtn.textContent = '📤 Upload para ESP';
+  }
+  
+  if (mainBtn) {
+    mainBtn.disabled = false;
+    mainBtn.innerHTML = '<span class="btn-icon">📤</span><span>Upload Código</span>';
+  }
+}
+
+// Função para detectar bibliotecas necessárias no código
+function detectRequiredLibraries(code) {
+  const libraries = [];
+  
+  // Mapeamento de includes para nomes de bibliotecas
+  const libraryMap = {
+    'DHT.h': { name: 'DHT sensor library', include: 'DHT.h' },
+    'DHT22.h': { name: 'DHT sensor library', include: 'DHT22.h' },
+    'MPU6050.h': { name: 'MPU6050', include: 'MPU6050.h' },
+    'Wire.h': { name: 'Wire', include: 'Wire.h' }, // Biblioteca built-in
+    'BH1750.h': { name: 'BH1750', include: 'BH1750.h' },
+    'BMP180.h': { name: 'BMP180', include: 'BMP180.h' },
+    'HMC5883L.h': { name: 'HMC5883L', include: 'HMC5883L.h' },
+    'Adafruit_BMP085.h': { name: 'Adafruit BMP085 Library', include: 'Adafruit_BMP085.h' },
+    'Adafruit_Sensor.h': { name: 'Adafruit Unified Sensor', include: 'Adafruit_Sensor.h' },
+    'OneWire.h': { name: 'OneWire', include: 'OneWire.h' },
+    'DallasTemperature.h': { name: 'DallasTemperature', include: 'DallasTemperature.h' }
+  };
+  
+  // Procurar por includes no código
+  const includeRegex = /#include\s*[<"](.*?)[>"]/g;
+  let match;
+  
+  while ((match = includeRegex.exec(code)) !== null) {
+    const includeName = match[1];
+    
+    if (libraryMap[includeName]) {
+      // Verificar se já foi adicionada
+      const existing = libraries.find(lib => lib.name === libraryMap[includeName].name);
+      if (!existing) {
+        libraries.push(libraryMap[includeName]);
+      }
+    }
+  }
+  
+  // Filtrar bibliotecas built-in que não precisam ser instaladas
+  const builtInLibraries = ['Wire'];
+  return libraries.filter(lib => !builtInLibraries.includes(lib.name));
+}
+
+// Função para validar código Arduino antes do upload
+function validateArduinoCode(code) {
+  const validationResults = {
+    isValid: true,
+    warnings: [],
+    errors: [],
+    suggestions: []
+  };
+  
+  // Verificações básicas de estrutura
+  if (!code || code.trim() === '') {
+    validationResults.errors.push('❌ Código vazio - adicione pelo menos os blocos setup() e loop()');
+    validationResults.isValid = false;
+    return validationResults;
+  }
+  
+  // Verificar se tem setup()
+  if (!code.includes('void setup()')) {
+    validationResults.errors.push('❌ Função setup() não encontrada - adicione o bloco "void setup()"');
+    validationResults.isValid = false;
+  }
+  
+  // Verificar se tem loop()
+  if (!code.includes('void loop()')) {
+    validationResults.errors.push('❌ Função loop() não encontrada - adicione o bloco "void loop()"');
+    validationResults.isValid = false;
+  }
+  
+  // Verificar parênteses balanceados
+  const openBraces = (code.match(/\{/g) || []).length;
+  const closeBraces = (code.match(/\}/g) || []).length;
+  if (openBraces !== closeBraces) {
+    validationResults.errors.push(`❌ Chaves desbalanceadas: ${openBraces} aberturas '{' vs ${closeBraces} fechamentos '}'`);
+    validationResults.isValid = false;
+  }
+  
+  const openParens = (code.match(/\(/g) || []).length;
+  const closeParens = (code.match(/\)/g) || []).length;
+  if (openParens !== closeParens) {
+    validationResults.errors.push(`❌ Parênteses desbalanceados: ${openParens} aberturas '(' vs ${closeParens} fechamentos ')'`);
+    validationResults.isValid = false;
+  }
+  
+  // Avisos sobre possíveis problemas
+  if (code.includes('delay(') && !code.includes('Serial.begin')) {
+    validationResults.warnings.push('⚠️ Usando delay() mas Serial não foi inicializado - considere adicionar Serial.begin()');
+  }
+  
+  if (code.includes('digitalWrite') && !code.includes('pinMode')) {
+    validationResults.warnings.push('⚠️ Usando digitalWrite() mas pinMode() não foi detectado - configure os pinos antes de usar');
+  }
+  
+  // Verificar includes necessários vs bibliotecas detectadas
+  const hasWireUsage = code.includes('Wire.') || code.includes('I2C') || code.includes('SDA') || code.includes('SCL');
+  if (hasWireUsage && !code.includes('#include <Wire.h>')) {
+    validationResults.warnings.push('⚠️ Detectado uso de I2C/Wire mas biblioteca não incluída - adicione o bloco biblioteca Wire');
+  }
+  
+  const hasDHTUsage = code.includes('dht.') || code.includes('DHT ');
+  if (hasDHTUsage && !code.includes('#include <DHT.h>')) {
+    validationResults.warnings.push('⚠️ Detectado uso de DHT mas biblioteca não incluída - adicione o bloco biblioteca DHT');
+  }
+  
+  // Sugestões de melhoria
+  if (code.includes('void setup()') && !code.includes('Serial.begin')) {
+    validationResults.suggestions.push('💡 Considere adicionar Serial.begin(115200) no setup() para debug');
+  }
+  
+  if (code.includes('void loop()') && code.length < 200) {
+    validationResults.suggestions.push('💡 Código muito simples - adicione mais sensores ou funcionalidades');
+  }
+  
+  return validationResults;
+}
+
+// Função para mostrar resultados da validação no console
+function displayValidationResults(validation) {
+  if (validation.errors.length > 0) {
+    addToSerialConsole('🔍 ERROS DE VALIDAÇÃO ENCONTRADOS:');
+    validation.errors.forEach(error => {
+      addToSerialConsole(`   ${error}`);
+    });
+  }
+  
+  if (validation.warnings.length > 0) {
+    addToSerialConsole('⚠️ AVISOS:');
+    validation.warnings.forEach(warning => {
+      addToSerialConsole(`   ${warning}`);
+    });
+  }
+  
+  if (validation.suggestions.length > 0) {
+    addToSerialConsole('💡 SUGESTÕES:');
+    validation.suggestions.forEach(suggestion => {
+      addToSerialConsole(`   ${suggestion}`);
+    });
+  }
+  
+  if (validation.isValid && validation.warnings.length === 0 && validation.suggestions.length === 0) {
+    addToSerialConsole('✅ Código passou na validação sem problemas');
+  }
+}
+
+// Função para resolver conflitos de porta antes do upload
+async function resolvePortConflicts(targetPort) {
+  try {
+    addToSerialConsole(`🔍 Verificando uso da porta ${targetPort}...`);
+    
+    // Lista de processos que podem estar bloqueando a porta
+    const conflictingProcesses = [
+      'Arduino_Cloud_Agent',
+      'serial-discovery',
+      'arduino-cli',
+      'esptool'
+    ];
+    
+    // Verificar se há processos conflitantes
+    let foundConflicts = false;
+    
+    // Usar ipcRenderer para verificar processos no main process
+    const { ipcRenderer } = require('electron');
+    const processCheck = await ipcRenderer.invoke('check-serial-conflicts', targetPort);
+    
+    if (processCheck.conflicts && processCheck.conflicts.length > 0) {
+      foundConflicts = true;
+      addToSerialConsole('⚠️ Processos detectados que podem interferir no upload:');
+      
+      processCheck.conflicts.forEach(process => {
+        addToSerialConsole(`   • ${process.name} (PID: ${process.pid})`);
+      });
+      
+      addToSerialConsole('🔧 SOLUÇÕES AUTOMÁTICAS:');
+      
+      // Tentar parar Arduino Cloud Agent se estiver rodando
+      if (processCheck.conflicts.some(p => p.name.includes('Arduino_Cloud_Agent'))) {
+        addToSerialConsole('⏹️ Parando Arduino Cloud Agent temporariamente...');
+        try {
+          await ipcRenderer.invoke('stop-arduino-cloud-agent');
+          addToSerialConsole('   ✅ Arduino Cloud Agent parado');
+          // Aguardar porta ser liberada
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (error) {
+          addToSerialConsole(`   ⚠️ Não foi possível parar: ${error.message}`);
+        }
+      }
+      
+      // Tentar parar serial-discovery se necessário
+      if (processCheck.conflicts.some(p => p.name.includes('serial-discovery'))) {
+        addToSerialConsole('⏹️ Parando serial-discovery temporariamente...');
+        try {
+          await ipcRenderer.invoke('stop-serial-discovery');
+          addToSerialConsole('   ✅ Serial-discovery parado');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          addToSerialConsole(`   ⚠️ Não foi possível parar: ${error.message}`);
+        }
+      }
+    }
+    
+    if (!foundConflicts) {
+      addToSerialConsole('✅ Nenhum conflito de porta detectado');
+    } else {
+      addToSerialConsole('🔄 Aguardando porta ser completamente liberada...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    
+    // Verificar novamente se a porta está livre
+    const finalCheck = await ipcRenderer.invoke('verify-port-availability', targetPort);
+    if (finalCheck.available) {
+      addToSerialConsole(`✅ Porta ${targetPort} está livre para upload`);
+    } else {
+      addToSerialConsole(`⚠️ Porta ${targetPort} ainda pode estar em uso`);
+      addToSerialConsole('💡 SOLUÇÕES MANUAIS:');
+      addToSerialConsole('   1. Feche o Arduino IDE se estiver aberto');
+      addToSerialConsole('   2. Feche o PlatformIO se estiver aberto'); 
+      addToSerialConsole('   3. Desconecte e reconecte o cabo USB da ESP32');
+      addToSerialConsole('   4. Aguarde 5 segundos e tente novamente');
+    }
+    
+  } catch (error) {
+    addToSerialConsole(`⚠️ Erro na verificação de conflitos: ${error.message}`);
+    addToSerialConsole('💡 Continuando upload - possível problema de porta');
+  }
+}
+
+// Função para instalar ESP32 core automaticamente
+async function installEsp32Core() {
+  try {
+    addToSerialConsole('🔧 Iniciando instalação do ESP32 core...');
+    
+    const response = await fetch(`${backendState.baseUrl}/api/arduino/core/install`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        core: 'esp32:esp32'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro na instalação do core: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.success) {
+      addToSerialConsole('✅ ESP32 core instalado com sucesso!');
+      return true;
+    } else {
+      throw new Error(result.error || 'Falha na instalação do ESP32 core');
+    }
+  } catch (error) {
+    addToSerialConsole(`❌ Erro na instalação automática: ${error.message}`);
+    throw error;
+  }
+}
+
+// Função para tratar retry inteligente de upload ESP32
+async function handleEsp32UploadRetry(code, port, uploadUrl, errorAnalysis = null) {
+  const retryStrategies = [
+    {
+      name: 'Timeout estendido + reset automático',
+      options: { 
+        timeout: 180000,
+        verbose: true,
+        espResetMethod: 'hardware'
+      },
+      delay: 3000
+    },
+    {
+      name: 'Baud rate baixo (115200) + modo compatibilidade',
+      options: { 
+        baudRate: 115200, 
+        timeout: 240000,
+        flashMode: 'dio',
+        flashSize: '4MB'
+      },
+      delay: 4000
+    },
+    {
+      name: 'Baud rate ultra baixo (57600)',
+      options: { baudRate: 57600, timeout: 300000 },
+      delay: 6000
+    },
+    {
+      name: 'Modo básico puro',
+      options: { timeout: 360000 }, // 6 minutos - última tentativa
+      delay: 8000
+    }
+  ];
+
+  addToSerialConsole('🔄 Iniciando sistema de retry automático...');
+  
+  // Adaptar estratégias baseadas na análise de erro
+  if (errorAnalysis && errorAnalysis.errorType) {
+    addToSerialConsole(`💡 Problema identificado: ${errorAnalysis.errorType}`);
+    
+    // Modificar estratégias baseado no tipo de erro
+    if (errorAnalysis.errorType === 'PORT_BUSY') {
+      addToSerialConsole('   🔧 Aplicando estratégias para conflitos de porta...');
+      // Aguardar mais tempo entre tentativas para portas ocupadas
+      retryStrategies.forEach(strategy => strategy.delay += 2000);
+    } else if (errorAnalysis.errorType === 'ESP32_COMMUNICATION') {
+      addToSerialConsole('   � Aplicando estratégias para problemas de comunicação...');
+      // Usar baud rates mais baixos para problemas de comunicação
+      retryStrategies[0].options.baudRate = 115200;
+      retryStrategies[1].options.baudRate = 57600;
+    }
+  } else {
+    addToSerialConsole('�💡 Tentando diferentes configurações para resolver o erro ESP32');
+  }
+  
+  for (let i = 0; i < retryStrategies.length; i++) {
+    const strategy = retryStrategies[i];
+    
+    addToSerialConsole('');
+    addToSerialConsole(`🔄 Tentativa ${i + 2} de ${retryStrategies.length + 1} - ${strategy.name}`);
+    addToSerialConsole(`   ⚙️ Baud rate: ${strategy.options.baudRate || 'padrão (921600)'}`);
+    addToSerialConsole(`   ⏱️ Timeout: ${(strategy.options.timeout / 1000).toFixed(0)} segundos`);
+    addToSerialConsole(`   ⏳ Aguardando ${strategy.delay / 1000}s antes de tentar...`);
+    showSerialNotification(`🔄 Tentativa ${i + 2}: ${strategy.name}`, 'info');
+    
+    // Atualizar barra de progresso
+    const progressPercent = 60 + (i * 8); // 60%, 68%, 76%, 84%
+    updateProgress(progressPercent);
+    
+    // Aguardar um pouco entre tentativas
+    await new Promise(resolve => setTimeout(resolve, strategy.delay));
+    
+    try {
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: code,
+          port: port,
+          board: 'esp32:esp32:esp32',
+          options: strategy.options
+        }),
+        timeout: strategy.options.timeout
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          addToSerialConsole(`✅ Sucesso com ${strategy.name}!`);
+          addToSerialConsole('🎉 Upload completado com configurações alternativas!');
+          return true;
+        } else {
+          addToSerialConsole(`❌ ${strategy.name} falhou: ${result.message}`);
+          if (result.error) {
+            const errorSummary = result.error.split('\n').find(line => 
+              line.includes('error') || line.includes('failed') || line.includes('Error')
+            );
+            if (errorSummary) {
+              addToSerialConsole(`   💥 Erro principal: ${errorSummary.trim()}`);
+            }
+          }
+        }
+      } else {
+        addToSerialConsole(`❌ ${strategy.name} falhou: HTTP ${response.status}`);
+      }
+    } catch (error) {
+      addToSerialConsole(`❌ ${strategy.name} falhou: ${error.message}`);
+    }
+  }
+  
+  // Se chegou aqui, todas as tentativas falharam
+  addToSerialConsole('');
+  addToSerialConsole('❌ Todas as tentativas automáticas falharam');
+  addToSerialConsole('🔧 SOLUÇÕES RECOMENDADAS:');
+  addToSerialConsole('');
+  addToSerialConsole('1️⃣ MODO DE PROGRAMAÇÃO MANUAL:');
+  addToSerialConsole('   • Mantenha o botão BOOT pressionado na ESP32');
+  addToSerialConsole('   • Pressione e solte o botão RESET (mantendo BOOT)');
+  addToSerialConsole('   • Solte o botão BOOT após 2 segundos');
+  addToSerialConsole('   • Clique em Upload novamente IMEDIATAMENTE');
+  addToSerialConsole('');
+  addToSerialConsole('2️⃣ VERIFICAR CONEXÃO:');
+  addToSerialConsole('   • Cabo USB funcionando corretamente');
+  addToSerialConsole('   • Porta USB com energia suficiente');
+  addToSerialConsole('   • Driver CH340/CP2102 instalado');
+  addToSerialConsole('');
+  addToSerialConsole('3️⃣ REINICIAR SISTEMA:');
+  addToSerialConsole('   • Feche todos os monitores seriais');
+  addToSerialConsole('   • Desconecte e reconecte a ESP32');
+  addToSerialConsole('   • Tente uma porta USB diferente');
+  
+  return false;
+}
+
+function updateProgress(percent, status = '') {
   const progressFill = document.querySelector('.progress-fill');
   const progressText = document.querySelector('.progress-text');
+  const progressStatus = document.querySelector('.progress-status');
   
   if (progressFill) {
     progressFill.style.width = `${percent}%`;
+    
+    // Mudança de cor baseada no progresso
+    if (percent < 30) {
+      progressFill.style.background = '#3498db'; // Azul - início
+    } else if (percent < 70) {
+      progressFill.style.background = '#f39c12'; // Laranja - meio
+    } else if (percent < 100) {
+      progressFill.style.background = '#e74c3c'; // Vermelho - crítico
+    } else {
+      progressFill.style.background = '#27ae60'; // Verde - sucesso
+    }
   }
   
   if (progressText) {
     progressText.textContent = `${Math.round(percent)}%`;
   }
+  
+  if (progressStatus && status) {
+    progressStatus.textContent = status;
+  }
+}
+
+// Função para resetar interface de upload
+function resetUploadInterface() {
+  updateProgress(0, '');
+  
+  const uploadBtnModal = document.getElementById('upload-btn');
+  const uploadBtnMain = document.getElementById('upload-code');
+  
+  if (uploadBtnModal) {
+    uploadBtnModal.disabled = false;
+    uploadBtnModal.textContent = '📤 Upload';
+  }
+  
+  if (uploadBtnMain) {
+    uploadBtnMain.disabled = false;
+    uploadBtnMain.innerHTML = '<span class="btn-icon">📤</span><span>Upload</span>';
+  }
+}
+
+// Função para mostrar status do upload em tempo real
+function updateUploadStatus(status, percent = null) {
+  if (percent !== null) {
+    updateProgress(percent, status);
+  }
+  
+  // Adicionar timestamp ao status
+  const timestamp = new Date().toLocaleTimeString();
+  addToSerialConsole(`[${timestamp}] ${status}`);
 }
 
 // Serial Plotter Functions
@@ -1957,20 +2998,23 @@ function updateChartLegend() {
   const legend = document.querySelector('.chart-legend');
   if (!legend) return;
   
+  // Usar as mesmas cores definidas no plotterState.colors
   const sensors = [
-    { key: 'accel-x', label: 'Accel X', color: '#ff4444' },
-    { key: 'accel-y', label: 'Accel Y', color: '#44ff44' },
-    { key: 'accel-z', label: 'Accel Z', color: '#4444ff' },
-    { key: 'gyro-x', label: 'Gyro X', color: '#ffaa44' },
-    { key: 'gyro-y', label: 'Gyro Y', color: '#ff44aa' },
-    { key: 'gyro-z', label: 'Gyro Z', color: '#44aaff' }
+    { key: 'accelX', label: 'Accel X', color: plotterState.colors.accelX },
+    { key: 'accelY', label: 'Accel Y', color: plotterState.colors.accelY },
+    { key: 'accelZ', label: 'Accel Z', color: plotterState.colors.accelZ },
+    { key: 'gyroX', label: 'Gyro X', color: plotterState.colors.gyroX },
+    { key: 'gyroY', label: 'Gyro Y', color: plotterState.colors.gyroY },
+    { key: 'gyroZ', label: 'Gyro Z', color: plotterState.colors.gyroZ }
   ];
   
   legend.innerHTML = '';
   
   sensors.forEach(sensor => {
+    const isVisible = plotterState.visibility[sensor.key];
     const item = document.createElement('div');
-    item.className = 'legend-item';
+    item.className = `legend-item ${isVisible ? 'visible' : 'hidden'}`;
+    item.style.opacity = isVisible ? '1' : '0.3';
     item.innerHTML = `
       <div class="legend-color" style="background-color: ${sensor.color}"></div>
       <span>${sensor.label}</span>
@@ -2171,6 +3215,15 @@ function initializePlotter() {
   // Configurar event listeners dos checkboxes de visibilidade
   setupSensorVisibilityControls();
   
+  // Inicializar legenda do gráfico
+  updateChartLegend();
+  
+  // Debug do estado inicial (remover em produção)
+  setTimeout(() => {
+    checkPlotterElements();
+    debugPlotterVisibility();
+  }, 100);
+  
   // Verificar se há dados para mostrar
   if (plotterState.dataBuffer.timestamps.length === 0) {
     showPlotterOverlay(true);
@@ -2231,20 +3284,415 @@ function setupPlotterControls() {
  * Configura controles de visibilidade dos sensores
  */
 function setupSensorVisibilityControls() {
-  const sensors = ['accel-x', 'accel-y', 'accel-z', 'gyro-x', 'gyro-y', 'gyro-z'];
+  // Mapeamento correto dos IDs para as chaves do estado
+  const sensorMappings = {
+    'accel-x': 'accelX',
+    'accel-y': 'accelY', 
+    'accel-z': 'accelZ',
+    'gyro-x': 'gyroX',
+    'gyro-y': 'gyroY',
+    'gyro-z': 'gyroZ'
+  };
   
-  sensors.forEach(sensorId => {
+  // Configurar checkboxes do modal principal
+  Object.keys(sensorMappings).forEach(sensorId => {
     const checkbox = document.getElementById(sensorId);
+    const stateKey = sensorMappings[sensorId];
+    
     if (checkbox) {
       checkbox.addEventListener('change', function() {
-        const key = sensorId.replace('-', '');
-        plotterState.visibility[key] = this.checked;
-        console.log(`👁️ Visibilidade ${sensorId}: ${this.checked}`);
+        plotterState.visibility[stateKey] = this.checked;
+        console.log(`👁️ Visibilidade ${sensorId} (${stateKey}): ${this.checked}`);
+        
+        // Sincronizar com checkbox do header, se existir
+        const headerCheckbox = document.getElementById(`${sensorId}-header`);
+        if (headerCheckbox) {
+          headerCheckbox.checked = this.checked;
+        }
+        
+        // Atualizar legenda
+        updateChartLegend();
       });
+      
+      // Definir estado inicial baseado no checkbox
+      plotterState.visibility[stateKey] = checkbox.checked;
     }
   });
   
-  console.log('👁️ Controles de visibilidade configurados');
+  // Configurar checkboxes do header do plotter (se existirem)
+  Object.keys(sensorMappings).forEach(sensorId => {
+    const headerCheckbox = document.getElementById(`${sensorId}-header`);
+    const stateKey = sensorMappings[sensorId];
+    
+    if (headerCheckbox) {
+      headerCheckbox.addEventListener('change', function() {
+        plotterState.visibility[stateKey] = this.checked;
+        console.log(`👁️ Header visibilidade ${sensorId} (${stateKey}): ${this.checked}`);
+        
+        // Sincronizar com checkbox do modal principal
+        const mainCheckbox = document.getElementById(sensorId);
+        if (mainCheckbox) {
+          mainCheckbox.checked = this.checked;
+        }
+        
+        // Atualizar legenda
+        updateChartLegend();
+      });
+      
+      // Sincronizar estado inicial
+      headerCheckbox.checked = plotterState.visibility[stateKey];
+    }
+  });
+  
+  console.log('👁️ Controles de visibilidade configurados para modal e header');
+  console.log('👁️ Estado inicial de visibilidade:', plotterState.visibility);
+}
+
+/**
+ * Função de debug para verificar estado de visibilidade
+ */
+function debugPlotterVisibility() {
+  console.log('🔍 Debug do estado de visibilidade:');
+  console.log('plotterState.visibility:', plotterState.visibility);
+  
+  const sensorMappings = {
+    'accel-x': 'accelX',
+    'accel-y': 'accelY', 
+    'accel-z': 'accelZ',
+    'gyro-x': 'gyroX',
+    'gyro-y': 'gyroY',
+    'gyro-z': 'gyroZ'
+  };
+  
+  Object.keys(sensorMappings).forEach(sensorId => {
+    const stateKey = sensorMappings[sensorId];
+    const checkbox = document.getElementById(sensorId);
+    const headerCheckbox = document.getElementById(`${sensorId}-header`);
+    
+    console.log(`${sensorId}:`, {
+      stateKey: stateKey,
+      visibility: plotterState.visibility[stateKey],
+      checkboxChecked: checkbox ? checkbox.checked : 'não encontrado',
+      headerCheckboxChecked: headerCheckbox ? headerCheckbox.checked : 'não encontrado'
+    });
+  });
+}
+
+/**
+ * Verifica se todos os elementos DOM necessários existem
+ */
+function checkPlotterElements() {
+  console.log('🔍 Verificando elementos do plotter:');
+  
+  const elements = [
+    'accel-x', 'accel-y', 'accel-z',
+    'gyro-x', 'gyro-y', 'gyro-z',
+    'accel-x-header', 'accel-y-header', 'accel-z-header', 
+    'gyro-x-header', 'gyro-y-header', 'gyro-z-header',
+    'plotter-chart', 'plotter-overlay'
+  ];
+  
+  elements.forEach(id => {
+    const element = document.getElementById(id);
+    console.log(`${id}: ${element ? '✅ encontrado' : '❌ não encontrado'}`);
+  });
+}
+
+/**
+ * Função para debug do sistema de exemplos
+ */
+function debugExampleSystem() {
+  const codeDisplay = document.getElementById('code-display');
+  const codeDisplayFull = document.getElementById('code-display-full');
+  const generatedCode = document.getElementById('generated-code');
+  
+  console.log('🔍 Debug do sistema de exemplos:');
+  console.log('Main code display:', {
+    exists: !!codeDisplay,
+    exampleMode: codeDisplay?.getAttribute('data-example-mode'),
+    sensorType: codeDisplay?.getAttribute('data-sensor-type'),
+    codeLength: codeDisplay?.textContent?.length || 0,
+    preview: codeDisplay?.textContent?.substring(0, 100) + '...'
+  });
+  
+  console.log('Modal code displays:', {
+    codeDisplayFull: !!codeDisplayFull,
+    generatedCode: !!generatedCode,
+    fullContent: codeDisplayFull?.textContent?.substring(0, 50) + '...',
+    generatedContent: generatedCode?.textContent?.substring(0, 50) + '...'
+  });
+}
+
+/**
+ * Limpa o código de exemplo e volta para o modo Blockly normal
+ */
+function clearExampleCode() {
+  const codeDisplay = document.getElementById('code-display');
+  if (codeDisplay) {
+    codeDisplay.removeAttribute('data-example-mode');
+    codeDisplay.removeAttribute('data-sensor-type');
+    codeDisplay.classList.remove('example-code');
+    
+    console.log('🧹 Código de exemplo limpo, voltando ao modo Blockly');
+    
+    // Regenerar código a partir dos blocos
+    generateCode();
+    
+    showSerialNotification('🧹 Exemplo removido. Use os blocos para programar.', 'info');
+  }
+}
+
+// Tornar as funções disponíveis globalmente para debug
+window.debugPlotterVisibility = debugPlotterVisibility;
+window.checkPlotterElements = checkPlotterElements;
+window.openExamplesModal = openExamplesModal;
+window.closeExamplesModal = closeExamplesModal;
+window.debugExampleSystem = debugExampleSystem;
+window.clearExampleCode = clearExampleCode;
+
+// ============================================================================
+// EXAMPLES MODAL FUNCTIONS
+// ============================================================================
+
+// Códigos de exemplo para cada sensor
+const sensorExamples = {
+  mpu6050: `#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+Adafruit_MPU6050 mpu;
+
+void setup(void) {
+  Serial.begin(115200);
+  while (!Serial) {
+    delay(10);
+  }
+
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  Serial.println("");
+  delay(100);
+}
+
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  Serial.print("AccelX:");
+  Serial.print(a.acceleration.x);
+  Serial.print(",");
+  Serial.print("AccelY:");
+  Serial.print(a.acceleration.y);
+  Serial.print(",");
+  Serial.print("AccelZ:");
+  Serial.print(a.acceleration.z);
+  Serial.print(", ");
+  Serial.print("GyroX:");
+  Serial.print(g.gyro.x);
+  Serial.print(",");
+  Serial.print("GyroY:");
+  Serial.print(g.gyro.y);
+  Serial.print(",");
+  Serial.print("GyroZ:");
+  Serial.print(g.gyro.z);
+  Serial.println("");
+
+  delay(10);
+}`,
+
+  bh1750: `#include <BH1750.h>
+#include <Wire.h>
+
+BH1750 lightMeter;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  lightMeter.begin();
+  Serial.println("BH1750 Test begin");
+}
+
+void loop() {
+  Serial.print("Light: ");
+  Serial.print(lightMeter.readLightLevel());
+  Serial.println(" lx");
+  delay(1000);
+}`,
+
+  dht11: `#include <DHT.h>
+
+#define DHTTYPE DHT11
+#define DHTPIN 14
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+}
+
+void loop() {
+  Serial.print("Temperatura: ");
+  Serial.println(dht.readTemperature());
+  Serial.print("Umidade: ");
+  Serial.println(dht.readHumidity());
+  Serial.print("Indice de Calor: ");
+  Serial.println(dht.computeHeatIndex(dht.readTemperature(), dht.readHumidity(), false));
+  delay(2000);
+}`,
+
+  bmp180: `#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+void setup() {
+  Serial.begin(9600);
+  if (!bmp.begin()) {
+    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+    while (1) {}
+  }
+}
+
+void loop() {
+  Serial.print("Temperature = ");
+  Serial.print(bmp.readTemperature());
+  Serial.println(" *C");
+  
+  Serial.print("Pressure = ");
+  Serial.print(bmp.readPressure());
+  Serial.println(" Pa");
+  
+  Serial.print("Altitude = ");
+  Serial.print(bmp.readAltitude());
+  Serial.println(" meters");
+
+  delay(500);
+}`,
+
+  hmc5883: `#include <Wire.h>
+#include <HMC5883L.h>
+
+HMC5883L compass;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+
+  compass = HMC5883L(); // Construct a new HMC5883 compass.
+  int error = compass.SetScale(1.3); // Set the scale of the compass.
+  if(error != 0) // If there is an error, print it out.
+    Serial.println(compass.GetErrorText(error));
+  
+  error = compass.SetMeasurementMode(Measurement_Continuous); // Set the measurement mode to Continuous
+  if(error != 0) // If there is an error, print it out.
+    Serial.println(compass.GetErrorText(error));
+}
+
+void loop() {
+  MagnetometerRaw raw = compass.ReadRawAxis();
+  MagnetometerScaled scaled = compass.ReadScaledAxis();
+  
+  float heading = atan2(scaled.YAxis, scaled.XAxis);
+  if(heading < 0)
+    heading += 2*M_PI;
+  
+  Serial.print("Heading: ");
+  Serial.print(heading * RAD_TO_DEG);
+  Serial.println(" degrees");
+  
+  delay(66);
+}`
+};
+
+/**
+ * Abre o modal de exemplos Arduino
+ */
+function openExamplesModal() {
+  console.log('� Abrindo modal de exemplos Arduino...');
+  
+  const modal = document.getElementById('examples-modal');
+  if (modal) {
+    modal.classList.add('show');
+    
+    // Não alterar o overflow - o sistema já gerencia isso corretamente
+    console.log('✅ Modal de exemplos aberto');
+  }
+}
+
+/**
+ * Fecha o modal de exemplos Arduino
+ */
+function closeExamplesModal() {
+  console.log('📁 Fechando modal de exemplos...');
+  
+  const modal = document.getElementById('examples-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    
+    console.log('✅ Modal de exemplos fechado');
+  }
+}
+
+/**
+ * Carrega o código de exemplo do sensor selecionado
+ */
+function loadSensorExample(sensorType) {
+  console.log(`📋 Carregando exemplo do sensor: ${sensorType}`);
+  
+  const code = sensorExamples[sensorType];
+  if (code) {
+    // Atualizar o display de código diretamente com o exemplo
+    const codeDisplay = document.getElementById('code-display');
+    if (codeDisplay) {
+      // Salvar o estado atual dos blocos (se houver)
+      const hasBlocks = workspace && workspace.getTopBlocks(true).length > 0;
+      
+      // Definir o código do exemplo no display
+      codeDisplay.textContent = code;
+      
+      // Adicionar indicador visual de que este é um exemplo
+      codeDisplay.setAttribute('data-example-mode', 'true');
+      codeDisplay.setAttribute('data-sensor-type', sensorType.toUpperCase());
+      
+      console.log(`✅ Código do ${sensorType.toUpperCase()} carregado como exemplo`);
+      console.log('🔍 Verificando atributos:', {
+        exampleMode: codeDisplay.getAttribute('data-example-mode'),
+        sensorType: codeDisplay.getAttribute('data-sensor-type'),
+        codeLength: code.length
+      });
+      
+      // Mostrar notificação de sucesso
+      showSerialNotification(`📋 Exemplo ${sensorType.toUpperCase()} carregado! Use os blocos para programar.`, 'success');
+      
+      // Fechar o modal
+      closeExamplesModal();
+      
+      // Adicionar uma classe CSS para destacar que é um exemplo
+      codeDisplay.classList.add('example-code');
+      
+      // Remover a classe após alguns segundos
+      setTimeout(() => {
+        if (codeDisplay.classList.contains('example-code')) {
+          codeDisplay.classList.remove('example-code');
+        }
+      }, 3000);
+      
+    } else {
+      console.error('❌ Editor de código não encontrado');
+      showSerialNotification('❌ Erro ao carregar código', 'error');
+    }
+  } else {
+    console.error(`❌ Código para ${sensorType} não encontrado`);
+    showSerialNotification('❌ Exemplo não encontrado', 'error');
+  }
 }
 
 /**
@@ -2494,7 +3942,10 @@ function drawPlotterData(ctx, padding, width, height) {
   const sensors = ['accelX', 'accelY', 'accelZ', 'gyroX', 'gyroY', 'gyroZ'];
   
   sensors.forEach(sensor => {
-    if (plotterState.visibility[sensor] && data[sensor]) {
+    const isVisible = plotterState.visibility[sensor];
+    const hasData = data[sensor] && data[sensor].length > 0;
+    
+    if (isVisible && hasData) {
       drawSensorLine(ctx, data[sensor], plotterState.colors[sensor], padding, scaleX, scaleY, height, minMaxValues.min);
     }
   });
@@ -2753,17 +4204,35 @@ function updateCodeStats(code) {
 function updateCodeTab() {
   console.log('📝 Atualizando aba Code...');
   
-  // Obter código atual do elemento principal (evita regenerar)
+  // Obter código atual do elemento principal
   const mainCodeDisplay = document.getElementById('code-display');
   let currentCode = '';
   
   if (mainCodeDisplay) {
     currentCode = mainCodeDisplay.textContent || '';
-  }
-  
-  // Se não há código no elemento principal, gerar novo
-  if (!currentCode || currentCode.includes('// Nenhum bloco para gerar código')) {
-    currentCode = generateCode() || '';
+    
+    // Verificar se é um código de exemplo
+    const isExampleMode = mainCodeDisplay.getAttribute('data-example-mode') === 'true';
+    const sensorType = mainCodeDisplay.getAttribute('data-sensor-type');
+    
+    console.log('🔍 Debug updateCodeTab:', {
+      hasMainDisplay: !!mainCodeDisplay,
+      codeLength: currentCode.length,
+      isExampleMode: isExampleMode,
+      sensorType: sensorType,
+      codePreview: currentCode.substring(0, 50) + '...'
+    });
+    
+    if (isExampleMode) {
+      console.log(`📋 Detectado código de exemplo ${sensorType}, preservando...`);
+      // Usar o código de exemplo diretamente
+    } else {
+      // Se não há código válido do Blockly, gerar novo
+      if (!currentCode || currentCode.includes('// Código C++ aparecerá aqui automaticamente')) {
+        console.log('🔧 Gerando código do Blockly...');
+        currentCode = generateCode() || '';
+      }
+    }
   }
   
   const codeDisplayFull = document.getElementById('code-display-full');
@@ -3409,6 +4878,16 @@ if (Blockly.Variables) {
 workspace.addChangeListener(function(event) {
   if (event.type === Blockly.Events.VAR_CREATE) {
     console.log('🆕 Variável criada via evento:', event.varName);
+    
+    // Limpar modo de exemplo quando usuário criar variável
+    const codeDisplay = document.getElementById('code-display');
+    if (codeDisplay && codeDisplay.getAttribute('data-example-mode') === 'true') {
+      console.log('🧹 Limpando modo de exemplo devido à criação de variável');
+      codeDisplay.removeAttribute('data-example-mode');
+      codeDisplay.removeAttribute('data-sensor-type');
+      codeDisplay.classList.remove('example-code');
+    }
+    
     // Atualizar o código quando variável for criada
     generateCode();
     // NÃO atualizar toolbox aqui para evitar conflito com a atualização manual
@@ -3434,6 +4913,13 @@ workspace.addChangeListener(function(event) {
 // Função para gerar código C++
 function generateCode() {
   try {
+    // Verificar se há um código de exemplo ativo
+    const codeDisplay = document.getElementById('code-display');
+    if (codeDisplay && codeDisplay.getAttribute('data-example-mode') === 'true') {
+      console.log('📋 Código de exemplo ativo, não sobrescrevendo...');
+      return codeDisplay.textContent;
+    }
+    
     // Verificar se Blockly está disponível
     if (typeof Blockly === 'undefined') {
       throw new Error('Blockly não está carregado');
@@ -3772,6 +5258,16 @@ workspace.addChangeListener(function(event) {
       event.type === Blockly.Events.BLOCK_CREATE ||
       event.type === Blockly.Events.BLOCK_DELETE ||
       event.type === Blockly.Events.BLOCK_MOVE) {
+    
+    // Limpar modo de exemplo quando usuário interagir com blocos
+    const codeDisplay = document.getElementById('code-display');
+    if (codeDisplay && codeDisplay.getAttribute('data-example-mode') === 'true') {
+      console.log('🧹 Limpando modo de exemplo devido à interação com blocos');
+      codeDisplay.removeAttribute('data-example-mode');
+      codeDisplay.removeAttribute('data-sensor-type');
+      codeDisplay.classList.remove('example-code');
+    }
+    
     generateCode();
     
     // Verificar se blocos MPU6050, HMC5883, BMP180, DHT ou BH1750 foram criados e aplicar cores
@@ -3864,7 +5360,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     console.log('✅ Botão Executar conectado ao Serial Monitor');
   }
-  
+
+  // Examples button
+  const examplesBtn = document.getElementById('examplesButton');
+  if (examplesBtn) {
+    examplesBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      openExamplesModal();
+    });
+    console.log('✅ Botão de Exemplos configurado');
+  }
+
+  // Examples modal close button
+  const examplesCloseBtn = document.getElementById('examples-modal-close');
+  if (examplesCloseBtn) {
+    examplesCloseBtn.addEventListener('click', closeExamplesModal);
+    console.log('✅ Botão de fechar modal de exemplos configurado');
+  }
+
+  // Examples modal overlay click to close
+  const examplesModal = document.getElementById('examples-modal');
+  if (examplesModal) {
+    examplesModal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeExamplesModal();
+      }
+    });
+  }
+
+  // Example cards click events
+  document.querySelectorAll('.example-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const sensorType = this.getAttribute('data-sensor');
+      if (sensorType) {
+        loadSensorExample(sensorType);
+      }
+    });
+  });
+  console.log('✅ Cards de exemplos configurados');
+
+  // ESC key to close examples modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const examplesModal = document.getElementById('examples-modal');
+      if (examplesModal && examplesModal.classList.contains('show')) {
+        closeExamplesModal();
+      }
+    }
+  });
+
   // Close modal button - correção para o botão correto
   const closeModalBtn = document.getElementById('arduino-cli-close');
   if (closeModalBtn) {
@@ -4102,7 +5646,55 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const uploadBtn = document.getElementById('upload-btn');
   if (uploadBtn) {
-    uploadBtn.addEventListener('click', uploadSketch);
+    console.log('🔧 Adicionando event listener para upload-btn');
+    uploadBtn.addEventListener('click', function() {
+      console.log('🚀 Botão upload-btn clicado!');
+      uploadSketch();
+    });
+  } else {
+    console.log('❌ Botão upload-btn não encontrado');
+  }
+  
+  // Event listener para botão de retry
+  const retryUploadBtn = document.getElementById('retry-upload-btn');
+  if (retryUploadBtn) {
+    console.log('🔧 Adicionando event listener para retry-upload-btn');
+    retryUploadBtn.addEventListener('click', async function() {
+      console.log('🔄 Botão retry-upload-btn clicado!');
+      
+      // Esconder o botão de retry
+      retryUploadBtn.style.display = 'none';
+      
+      // Se há dados de erro armazenados, tentar resolução automática
+      if (window.lastUploadError && window.lastUploadError.autoResolveAvailable) {
+        addToSerialConsole('🤖 Iniciando resolução automática...');
+        
+        // Resolver conflitos se disponível
+        if (window.lastUploadError.conflictingProcesses) {
+          await resolvePortConflicts(window.lastUploadError.conflictingProcesses);
+        }
+        
+        // Aguardar um pouco e tentar upload novamente
+        addToSerialConsole('🔄 Tentando upload novamente...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      // Fazer upload novamente
+      uploadSketch();
+    });
+  } else {
+    console.log('❌ Botão retry-upload-btn não encontrado');
+  }
+  
+  const uploadBtnMain = document.getElementById('upload-code');
+  if (uploadBtnMain) {
+    console.log('🔧 Adicionando event listener para upload-code');
+    uploadBtnMain.addEventListener('click', function() {
+      console.log('🚀 Botão upload-code clicado!');
+      uploadSketch();
+    });
+  } else {
+    console.log('❌ Botão upload-code não encontrado');
   }
   
   // Console buttons
@@ -4146,12 +5738,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Port selector change event
-  const portSelector = document.getElementById('port-selector');
+  // Port selector change events - tanto para a área principal quanto para o modal
+  const portSelector = document.getElementById('port-select');
+  const uploadPortSelector = document.getElementById('upload-port-select');
+  const modalPortSelector = document.getElementById('modal-port-select');
+  
   if (portSelector) {
     portSelector.addEventListener('change', function() {
       serialMonitorState.selectedPort = this.value;
-      console.log(`🔌 Porta selecionada: ${this.value}`);
+      console.log(`🔌 Porta selecionada (principal): ${this.value}`);
+      
+      // Auto conectar quando uma porta é selecionada
+      if (this.value && this.value !== '') {
+        console.log('🔄 Auto-conectando à porta selecionada...');
+        serialMonitorState.isConnected = true;
+        updateConnectionStatus();
+        updateUploadTab();
+        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
+      } else {
+        serialMonitorState.isConnected = false;
+        updateConnectionStatus();
+        updateUploadTab();
+      }
+    });
+  }
+  
+  if (uploadPortSelector) {
+    uploadPortSelector.addEventListener('change', function() {
+      serialMonitorState.selectedPort = this.value;
+      console.log(`🔌 Porta selecionada (upload): ${this.value}`);
+      
+      // Auto conectar quando uma porta é selecionada
+      if (this.value && this.value !== '') {
+        console.log('🔄 Auto-conectando à porta selecionada...');
+        serialMonitorState.isConnected = true;
+        updateConnectionStatus();
+        updateUploadTab();
+        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
+      } else {
+        serialMonitorState.isConnected = false;
+        updateConnectionStatus();
+        updateUploadTab();
+      }
+    });
+  }
+  
+  if (modalPortSelector) {
+    modalPortSelector.addEventListener('change', function() {
+      serialMonitorState.selectedPort = this.value;
+      console.log(`🔌 Porta selecionada (modal): ${this.value}`);
+      
+      // Auto conectar quando uma porta é selecionada no modal
+      if (this.value && this.value !== '') {
+        console.log('🔄 Auto-conectando à porta selecionada no modal...');
+        serialMonitorState.isConnected = true;
+        updateConnectionStatus();
+        updateUploadTab();
+        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
+      } else {
+        serialMonitorState.isConnected = false;
+        updateConnectionStatus();
+        updateUploadTab();
+      }
     });
   }
   

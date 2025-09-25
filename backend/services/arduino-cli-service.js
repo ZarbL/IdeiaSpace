@@ -172,11 +172,48 @@ class ArduinoCLIService {
       // Escrever código no arquivo
       fs.writeFileSync(sketchFile, code, 'utf8');
 
-      // Comando de upload
-      const uploadCommand = `compile --upload --fqbn ${board} --port ${port} "${sketchDir}"`;
+      // Verificar se a porta existe antes de tentar usar
+      console.log(`🔍 Verificando disponibilidade da porta ${port}...`);
+      
+      // Listar portas disponíveis primeiro
+      const portsCheck = await this.listPorts();
+      const portAvailable = portsCheck.ports && portsCheck.ports.some(p => p.address === port);
+      
+      if (!portAvailable) {
+        console.warn(`⚠️ Porta ${port} não encontrada nas portas disponíveis`);
+        console.log('📋 Portas disponíveis:', portsCheck.ports?.map(p => p.address).join(', ') || 'nenhuma');
+      }
+
+      // Construir comando de upload com opções avançadas
+      let uploadCommand = `compile --upload --fqbn ${board} --port ${port}`;
+      
+      // Adicionar opções avançadas usando --build-property (sintaxe correta do Arduino CLI)
+      if (options.baudRate) {
+        uploadCommand += ` --build-property upload.speed=${options.baudRate}`;
+      }
+      
+      if (options.flashMode) {
+        uploadCommand += ` --build-property build.flash_mode=${options.flashMode}`;
+      }
+      
+      if (options.flashSize) {
+        uploadCommand += ` --build-property build.flash_size=${options.flashSize}`;
+      }
+      
+      // Opções verbosas para debug
+      if (options.verbose) {
+        uploadCommand += ' --verbose';
+      }
+      
+      uploadCommand += ` "${sketchDir}"`;
+      
+      console.log(`🚀 Executando comando de upload: ${uploadCommand}`);
+      
+      // Aguardar um pouco para garantir que a porta está livre
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const result = await this.executeCommand(uploadCommand, {
-        timeout: options.timeout || 120000 // 2 minutos para upload
+        timeout: options.timeout || 120000 // 2 minutos para upload por padrão
       });
 
       // Limpar diretório temporário
@@ -189,11 +226,16 @@ class ArduinoCLIService {
           output: result.output
         };
       } else {
+        // Analisar o tipo de erro para dar feedback específico
+        let errorAnalysis = this.analyzeUploadError(result.error, port);
+        
         return {
           success: false,
           message: 'Erro no upload',
           error: result.error,
-          output: result.output
+          output: result.output,
+          errorType: errorAnalysis.type,
+          suggestions: errorAnalysis.suggestions
         };
       }
 
@@ -205,6 +247,78 @@ class ArduinoCLIService {
         error: error.message
       };
     }
+  }
+
+  /**
+   * Analisa erros de upload para dar sugestões específicas
+   */
+  analyzeUploadError(errorMessage, port) {
+    const error = (errorMessage || '').toLowerCase();
+    
+    // Erro de porta em uso
+    if (error.includes('resource busy') || error.includes('permission denied') || 
+        error.includes('access denied') || error.includes('device busy')) {
+      return {
+        type: 'PORT_BUSY',
+        suggestions: [
+          'Feche qualquer Monitor Serial que esteja aberto',
+          'Feche o Arduino IDE se estiver usando a mesma porta',
+          'Desconecte e reconecte o cabo USB da ESP32',
+          'Aguarde 5 segundos e tente novamente'
+        ]
+      };
+    }
+    
+    // Erro de comunicação com ESP32
+    if (error.includes('packet content transfer stopped') || 
+        error.includes('failed uploading') || 
+        error.includes('timeout')) {
+      return {
+        type: 'ESP32_COMMUNICATION',
+        suggestions: [
+          'Pressione e mantenha o botão BOOT na ESP32',
+          'Pressione o botão RESET enquanto mantém BOOT pressionado',
+          'Solte RESET primeiro, depois BOOT',
+          'Tente o upload imediatamente após soltar os botões'
+        ]
+      };
+    }
+    
+    // Porta não encontrada
+    if (error.includes('no such file') || error.includes('port not found') || 
+        error.includes('device not found')) {
+      return {
+        type: 'PORT_NOT_FOUND',
+        suggestions: [
+          'Verifique se a ESP32 está conectada via USB',
+          'Instale os drivers CH340 ou CP2102',
+          'Tente uma porta USB diferente',
+          'Verifique se o cabo USB é de dados (não apenas carregamento)'
+        ]
+      };
+    }
+    
+    // Core ESP32 não encontrado
+    if (error.includes('platform not installed') || error.includes('esp32:esp32')) {
+      return {
+        type: 'CORE_MISSING',
+        suggestions: [
+          'Instale o ESP32 core: arduino-cli core install esp32:esp32',
+          'Atualize os índices: arduino-cli core update-index',
+          'Verifique se as URLs do ESP32 estão configuradas'
+        ]
+      };
+    }
+    
+    return {
+      type: 'UNKNOWN',
+      suggestions: [
+        'Verifique a conexão da ESP32',
+        'Reinicie a ESP32 pressionando o botão RESET',
+        'Tente usar uma taxa de transmissão menor (115200)',
+        'Verifique os logs completos para mais detalhes'
+      ]
+    };
   }
 
   /**
@@ -303,6 +417,88 @@ class ArduinoCLIService {
   }
 
   /**
+   * Instala core (ESP32, Arduino, etc.)
+   */
+  async installCore(coreName) {
+    console.log(`🔧 Instalando core: ${coreName}`);
+    
+    try {
+      // Verificar se o core já está instalado
+      console.log('🔍 Verificando se core já está instalado...');
+      const listCoresResult = await this.executeCommand('core list --format json', {
+        timeout: 30000
+      });
+      
+      if (listCoresResult.success && listCoresResult.output) {
+        try {
+          const installedCores = JSON.parse(listCoresResult.output);
+          const isInstalled = installedCores.some(core => 
+            core.id === coreName || core.id.includes(coreName.split(':')[0])
+          );
+          
+          if (isInstalled) {
+            console.log(`✅ Core ${coreName} já está instalado`);
+            return {
+              success: true,
+              message: `Core ${coreName} já está instalado`,
+              output: 'Core already installed'
+            };
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Erro ao analisar cores instalados, continuando com instalação...');
+        }
+      }
+
+      // Primeiro, atualizar índices para ter as informações mais recentes
+      console.log('🔄 Atualizando índices antes da instalação...');
+      const updateResult = await this.executeCommand('core update-index', {
+        timeout: 120000 // 2 minutos para update
+      });
+      
+      if (!updateResult.success) {
+        console.warn('⚠️ Falha ao atualizar índices, continuando...');
+      }
+
+      // Instalar o core
+      console.log(`📦 Iniciando instalação do core ${coreName}...`);
+      const result = await this.executeCommand(`core install ${coreName}`, {
+        timeout: 600000 // 10 minutos para instalação de core (ESP32 pode ser grande)
+      });
+
+      if (result.success) {
+        console.log(`✅ Core ${coreName} instalado com sucesso`);
+        
+        // Verificar se a instalação foi bem-sucedida listando novamente
+        const verifyResult = await this.executeCommand('core list --format json', {
+          timeout: 30000
+        });
+        
+        return {
+          success: true,
+          message: `Core ${coreName} instalado com sucesso`,
+          output: result.output,
+          verification: verifyResult.success ? 'Verified' : 'Install completed but verification failed'
+        };
+      } else {
+        console.error(`❌ Erro ao instalar core ${coreName}:`, result.error);
+        return {
+          success: false,
+          message: `Erro ao instalar core ${coreName}`,
+          error: result.error,
+          output: result.output
+        };
+      }
+    } catch (error) {
+      console.error(`❌ Exceção ao instalar core ${coreName}:`, error.message);
+      return {
+        success: false,
+        message: `Exceção ao instalar core ${coreName}`,
+        error: error.message
+      };
+    }
+  }
+
+  /**
    * Limpa diretório temporário
    */
   cleanupTempDir(tempDir) {
@@ -312,6 +508,123 @@ class ArduinoCLIService {
       }
     } catch (error) {
       console.error('Erro ao limpar diretório temporário:', error.message);
+    }
+  }
+
+  /**
+   * Verifica se o ESP32 core está instalado e disponível
+   */
+  async checkEsp32CoreAvailable() {
+    try {
+      console.log('🔍 Verificando disponibilidade do ESP32 core...');
+      
+      // Verificar cores instalados
+      const listResult = await this.executeCommand('core list --format json');
+      if (listResult.success && listResult.output) {
+        try {
+          const installedCores = JSON.parse(listResult.output);
+          const esp32Core = installedCores.find(core => 
+            core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
+          );
+          
+          if (esp32Core) {
+            console.log('✅ ESP32 core encontrado:', esp32Core.id);
+            return {
+              installed: true,
+              core: esp32Core,
+              version: esp32Core.installed || esp32Core.version || 'unknown'
+            };
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Erro ao analisar cores instalados');
+        }
+      }
+      
+      // Verificar se ESP32 boards estão disponíveis
+      const boardsResult = await this.executeCommand('board listall esp32 --format json');
+      if (boardsResult.success && boardsResult.output) {
+        try {
+          const esp32Boards = JSON.parse(boardsResult.output);
+          if (esp32Boards && esp32Boards.length > 0) {
+            console.log(`✅ ${esp32Boards.length} placas ESP32 detectadas`);
+            return {
+              installed: true,
+              boards: esp32Boards.slice(0, 3), // Mostrar apenas as primeiras 3
+              boardCount: esp32Boards.length
+            };
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Erro ao analisar placas ESP32');
+        }
+      }
+      
+      console.log('❌ ESP32 core não encontrado');
+      return {
+        installed: false,
+        message: 'ESP32 core não está instalado'
+      };
+      
+    } catch (error) {
+      console.error('❌ Erro ao verificar ESP32 core:', error.message);
+      return {
+        installed: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Instalação inteligente do ESP32 core com verificações
+   */
+  async ensureEsp32CoreInstalled() {
+    console.log('🚀 Verificando/instalando ESP32 core...');
+    
+    try {
+      // Verificar se já está instalado
+      const checkResult = await this.checkEsp32CoreAvailable();
+      
+      if (checkResult.installed) {
+        console.log('✅ ESP32 core já está disponível');
+        return {
+          success: true,
+          message: 'ESP32 core já instalado',
+          alreadyInstalled: true,
+          details: checkResult
+        };
+      }
+      
+      console.log('📦 ESP32 core não encontrado, iniciando instalação...');
+      
+      // Tentar instalar o ESP32 core
+      const installResult = await this.installCore('esp32:esp32');
+      
+      if (installResult.success) {
+        // Verificar novamente após instalação
+        const verifyResult = await this.checkEsp32CoreAvailable();
+        
+        return {
+          success: true,
+          message: 'ESP32 core instalado com sucesso',
+          freshInstall: true,
+          installOutput: installResult.output,
+          verification: verifyResult
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Falha ao instalar ESP32 core',
+          error: installResult.error,
+          installOutput: installResult.output
+        };
+      }
+      
+    } catch (error) {
+      console.error('❌ Erro no processo de instalação ESP32:', error.message);
+      return {
+        success: false,
+        message: 'Erro interno na instalação ESP32',
+        error: error.message
+      };
     }
   }
 
