@@ -2016,9 +2016,9 @@ async function uploadSketch() {
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    // Verificar e resolver conflitos de porta antes do upload
-    updateUploadStatus('🔍 Verificando conflitos de porta...', 35);
-    await resolvePortConflicts(selectedPort);
+    // Modo strict - sem resolução automática de conflitos
+    updateUploadStatus('🔍 Verificando porta (modo strict)...', 35);
+    // resolvePortConflicts REMOVIDA - sistema strict sem auto-recovery
     
     // Conectar ao Arduino CLI para upload
     updateUploadStatus('🔄 Compilando código para ESP32...', 40);
@@ -2059,11 +2059,7 @@ async function uploadSketch() {
       updateProgress(100);
       showSerialNotification('✅ Upload concluído com sucesso!', 'success');
       
-      // Esconder botão de retry em caso de sucesso
-      const retryBtn = document.getElementById('retry-upload-btn');
-      if (retryBtn) {
-        retryBtn.style.display = 'none';
-      }
+      // Botão de retry foi removido - modo strict ativo
       
       // Limpar dados de erro anterior
       window.lastUploadError = null;
@@ -2112,18 +2108,8 @@ async function uploadSketch() {
           addToSerialConsole('   Encontrei processos conflitantes. Posso tentar resolve-los automaticamente.');
           addToSerialConsole('   Clique em "Tentar Novamente" para resolver e fazer upload automaticamente.');
           
-          // Armazenar dados para retry automático
-          window.lastUploadError = {
-            errorType: result.errorType,
-            conflictingProcesses: result.conflictingProcesses,
-            autoResolveAvailable: true
-          };
-          
-          // Mostrar botão de retry
-          const retryBtn = document.getElementById('retry-upload-btn');
-          if (retryBtn) {
-            retryBtn.style.display = 'inline-flex';
-          }
+          // MODO STRICT - Não armazenar dados para retry automático
+          // (Botão de retry e sistema de recuperação foram removidos)
         }
         
       } else {
@@ -2182,79 +2168,19 @@ async function uploadSketch() {
         addToSerialConsole('   2. Atualizar as bibliotecas instaladas');
       }
       
-      // Sistema de retry inteligente para erros de ESP32
-      let shouldRetry = false;
+      // MODO STRICT - Falha imediata sem tentativas de recuperação
+      // (Sistema de auto-recovery foi removido por solicitação do usuário)
       
-      // Decidir se deve tentar retry baseado no tipo de erro
-      if (result.errorType) {
-        switch(result.errorType) {
-          case 'PORT_BUSY':
-            // Para porta ocupada, tentar resolver conflitos primeiro
-            if (result.conflictingProcesses && result.conflictingProcesses.length > 0) {
-              addToSerialConsole('🤖 Iniciando resolução automática de conflitos...');
-              await resolvePortConflicts(result.conflictingProcesses);
-              shouldRetry = true;
-            }
-            break;
-          case 'ESP32_COMMUNICATION':
-          case 'UPLOAD_TIMEOUT':
-            shouldRetry = true;
-            break;
-        }
-      } else if (result.error && (result.error.includes('Packet content transfer stopped') || 
-                          result.error.includes('exit status 2') ||
-                          result.error.includes('Failed uploading') ||
-                          result.error.includes('A fatal error occurred'))) {
-        shouldRetry = true;
-        
-        // Log específico para debug
-        addToSerialConsole('');
-        addToSerialConsole('🔍 ERRO DETECTADO PARA RETRY AUTOMÁTICO:');
-        addToSerialConsole('   ⚠️ Packet content transfer stopped - Problema comum de ESP32');
-        addToSerialConsole('   🔧 Sistema iniciará retry automático em 3 segundos...');
-        
-        // Aguardar um pouco antes do retry para que o usuário veja a mensagem
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-      
-      if (shouldRetry) {
-        addToSerialConsole('');
-        addToSerialConsole('🤖 INICIANDO SISTEMA DE RECUPERAÇÃO AUTOMÁTICA');
-        addToSerialConsole('   📋 Erro reconhecido: Falha de comunicação ESP32');
-        addToSerialConsole('   🔄 Tentando diferentes configurações de upload...');
-        addToSerialConsole('');
-        
-        const success = await handleEsp32UploadRetry(code, selectedPort, uploadUrl, result);
-        
-        if (success) {
-          addToSerialConsole('✅ Upload bem-sucedido após retry automático!');
-          addToSerialConsole('🔄 Reiniciando ESP32...');
-          addToSerialConsole('=== UPLOAD FINALIZADO COM SUCESSO ===');
-          
-          updateProgress(100);
-          showSerialNotification('✅ Upload concluído com sucesso!', 'success');
-          
-          // Esconder botão de retry em caso de sucesso
-          const retryBtn = document.getElementById('retry-upload-btn');
-          if (retryBtn) {
-            retryBtn.style.display = 'none';
-          }
-          
-          // Limpar dados de erro anterior
-          window.lastUploadError = null;
-          
-          // Iniciar monitoramento
-          setTimeout(() => {
-            startRealSerialMonitoring(selectedPort);
-          }, 2000);
-          
-          return; // Sair da função se bem-sucedido
-        }
-        
-        addToSerialConsole('');
-        addToSerialConsole('⚠️ AÇÃO MANUAL NECESSÁRIA:');
-        addToSerialConsole('   Siga as instruções acima para colocar a ESP32 em modo de programação');
-      }
+      addToSerialConsole('');
+      addToSerialConsole('❌ UPLOAD FALHOU - MODO STRICT ATIVO');
+      addToSerialConsole('   ⚠️ Não haverá tentativas automáticas de recuperação');
+      addToSerialConsole('   � Revise os erros acima e corrija manualmente');
+      addToSerialConsole('');
+      addToSerialConsole('🔧 AÇÕES MANUAIS RECOMENDADAS:');
+      addToSerialConsole('   1. Verifique se a ESP32 está corretamente conectada');
+      addToSerialConsole('   2. Coloque a ESP32 em modo de programação (BOOT + RESET)');  
+      addToSerialConsole('   3. Verifique se não há conflitos de porta');
+      addToSerialConsole('   4. Tente novamente após resolver o problema');
       
       showSerialNotification('❌ Erro no upload!', 'error');
     }
@@ -2445,86 +2371,8 @@ function displayValidationResults(validation) {
 }
 
 // Função para resolver conflitos de porta antes do upload
-async function resolvePortConflicts(targetPort) {
-  try {
-    addToSerialConsole(`🔍 Verificando uso da porta ${targetPort}...`);
-    
-    // Lista de processos que podem estar bloqueando a porta
-    const conflictingProcesses = [
-      'Arduino_Cloud_Agent',
-      'serial-discovery',
-      'arduino-cli',
-      'esptool'
-    ];
-    
-    // Verificar se há processos conflitantes
-    let foundConflicts = false;
-    
-    // Usar ipcRenderer para verificar processos no main process
-    const { ipcRenderer } = require('electron');
-    const processCheck = await ipcRenderer.invoke('check-serial-conflicts', targetPort);
-    
-    if (processCheck.conflicts && processCheck.conflicts.length > 0) {
-      foundConflicts = true;
-      addToSerialConsole('⚠️ Processos detectados que podem interferir no upload:');
-      
-      processCheck.conflicts.forEach(process => {
-        addToSerialConsole(`   • ${process.name} (PID: ${process.pid})`);
-      });
-      
-      addToSerialConsole('🔧 SOLUÇÕES AUTOMÁTICAS:');
-      
-      // Tentar parar Arduino Cloud Agent se estiver rodando
-      if (processCheck.conflicts.some(p => p.name.includes('Arduino_Cloud_Agent'))) {
-        addToSerialConsole('⏹️ Parando Arduino Cloud Agent temporariamente...');
-        try {
-          await ipcRenderer.invoke('stop-arduino-cloud-agent');
-          addToSerialConsole('   ✅ Arduino Cloud Agent parado');
-          // Aguardar porta ser liberada
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        } catch (error) {
-          addToSerialConsole(`   ⚠️ Não foi possível parar: ${error.message}`);
-        }
-      }
-      
-      // Tentar parar serial-discovery se necessário
-      if (processCheck.conflicts.some(p => p.name.includes('serial-discovery'))) {
-        addToSerialConsole('⏹️ Parando serial-discovery temporariamente...');
-        try {
-          await ipcRenderer.invoke('stop-serial-discovery');
-          addToSerialConsole('   ✅ Serial-discovery parado');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-          addToSerialConsole(`   ⚠️ Não foi possível parar: ${error.message}`);
-        }
-      }
-    }
-    
-    if (!foundConflicts) {
-      addToSerialConsole('✅ Nenhum conflito de porta detectado');
-    } else {
-      addToSerialConsole('🔄 Aguardando porta ser completamente liberada...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-    
-    // Verificar novamente se a porta está livre
-    const finalCheck = await ipcRenderer.invoke('verify-port-availability', targetPort);
-    if (finalCheck.available) {
-      addToSerialConsole(`✅ Porta ${targetPort} está livre para upload`);
-    } else {
-      addToSerialConsole(`⚠️ Porta ${targetPort} ainda pode estar em uso`);
-      addToSerialConsole('💡 SOLUÇÕES MANUAIS:');
-      addToSerialConsole('   1. Feche o Arduino IDE se estiver aberto');
-      addToSerialConsole('   2. Feche o PlatformIO se estiver aberto'); 
-      addToSerialConsole('   3. Desconecte e reconecte o cabo USB da ESP32');
-      addToSerialConsole('   4. Aguarde 5 segundos e tente novamente');
-    }
-    
-  } catch (error) {
-    addToSerialConsole(`⚠️ Erro na verificação de conflitos: ${error.message}`);
-    addToSerialConsole('💡 Continuando upload - possível problema de porta');
-  }
-}
+// Função resolvePortConflicts REMOVIDA - Modo strict sem resolução automática
+// Sistema agora falha imediatamente em conflitos para que sejam resolvidos manualmente
 
 // Função para instalar ESP32 core automaticamente
 async function installEsp32Core() {
@@ -2560,140 +2408,8 @@ async function installEsp32Core() {
 }
 
 // Função para tratar retry inteligente de upload ESP32
-async function handleEsp32UploadRetry(code, port, uploadUrl, errorAnalysis = null) {
-  const retryStrategies = [
-    {
-      name: 'Timeout estendido + reset automático',
-      options: { 
-        timeout: 180000,
-        verbose: true,
-        espResetMethod: 'hardware'
-      },
-      delay: 3000
-    },
-    {
-      name: 'Baud rate baixo (115200) + modo compatibilidade',
-      options: { 
-        baudRate: 115200, 
-        timeout: 240000,
-        flashMode: 'dio',
-        flashSize: '4MB'
-      },
-      delay: 4000
-    },
-    {
-      name: 'Baud rate ultra baixo (57600)',
-      options: { baudRate: 57600, timeout: 300000 },
-      delay: 6000
-    },
-    {
-      name: 'Modo básico puro',
-      options: { timeout: 360000 }, // 6 minutos - última tentativa
-      delay: 8000
-    }
-  ];
-
-  addToSerialConsole('🔄 Iniciando sistema de retry automático...');
-  
-  // Adaptar estratégias baseadas na análise de erro
-  if (errorAnalysis && errorAnalysis.errorType) {
-    addToSerialConsole(`💡 Problema identificado: ${errorAnalysis.errorType}`);
-    
-    // Modificar estratégias baseado no tipo de erro
-    if (errorAnalysis.errorType === 'PORT_BUSY') {
-      addToSerialConsole('   🔧 Aplicando estratégias para conflitos de porta...');
-      // Aguardar mais tempo entre tentativas para portas ocupadas
-      retryStrategies.forEach(strategy => strategy.delay += 2000);
-    } else if (errorAnalysis.errorType === 'ESP32_COMMUNICATION') {
-      addToSerialConsole('   � Aplicando estratégias para problemas de comunicação...');
-      // Usar baud rates mais baixos para problemas de comunicação
-      retryStrategies[0].options.baudRate = 115200;
-      retryStrategies[1].options.baudRate = 57600;
-    }
-  } else {
-    addToSerialConsole('�💡 Tentando diferentes configurações para resolver o erro ESP32');
-  }
-  
-  for (let i = 0; i < retryStrategies.length; i++) {
-    const strategy = retryStrategies[i];
-    
-    addToSerialConsole('');
-    addToSerialConsole(`🔄 Tentativa ${i + 2} de ${retryStrategies.length + 1} - ${strategy.name}`);
-    addToSerialConsole(`   ⚙️ Baud rate: ${strategy.options.baudRate || 'padrão (921600)'}`);
-    addToSerialConsole(`   ⏱️ Timeout: ${(strategy.options.timeout / 1000).toFixed(0)} segundos`);
-    addToSerialConsole(`   ⏳ Aguardando ${strategy.delay / 1000}s antes de tentar...`);
-    showSerialNotification(`🔄 Tentativa ${i + 2}: ${strategy.name}`, 'info');
-    
-    // Atualizar barra de progresso
-    const progressPercent = 60 + (i * 8); // 60%, 68%, 76%, 84%
-    updateProgress(progressPercent);
-    
-    // Aguardar um pouco entre tentativas
-    await new Promise(resolve => setTimeout(resolve, strategy.delay));
-    
-    try {
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          code: code,
-          port: port,
-          board: 'esp32:esp32:esp32',
-          options: strategy.options
-        }),
-        timeout: strategy.options.timeout
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          addToSerialConsole(`✅ Sucesso com ${strategy.name}!`);
-          addToSerialConsole('🎉 Upload completado com configurações alternativas!');
-          return true;
-        } else {
-          addToSerialConsole(`❌ ${strategy.name} falhou: ${result.message}`);
-          if (result.error) {
-            const errorSummary = result.error.split('\n').find(line => 
-              line.includes('error') || line.includes('failed') || line.includes('Error')
-            );
-            if (errorSummary) {
-              addToSerialConsole(`   💥 Erro principal: ${errorSummary.trim()}`);
-            }
-          }
-        }
-      } else {
-        addToSerialConsole(`❌ ${strategy.name} falhou: HTTP ${response.status}`);
-      }
-    } catch (error) {
-      addToSerialConsole(`❌ ${strategy.name} falhou: ${error.message}`);
-    }
-  }
-  
-  // Se chegou aqui, todas as tentativas falharam
-  addToSerialConsole('');
-  addToSerialConsole('❌ Todas as tentativas automáticas falharam');
-  addToSerialConsole('🔧 SOLUÇÕES RECOMENDADAS:');
-  addToSerialConsole('');
-  addToSerialConsole('1️⃣ MODO DE PROGRAMAÇÃO MANUAL:');
-  addToSerialConsole('   • Mantenha o botão BOOT pressionado na ESP32');
-  addToSerialConsole('   • Pressione e solte o botão RESET (mantendo BOOT)');
-  addToSerialConsole('   • Solte o botão BOOT após 2 segundos');
-  addToSerialConsole('   • Clique em Upload novamente IMEDIATAMENTE');
-  addToSerialConsole('');
-  addToSerialConsole('2️⃣ VERIFICAR CONEXÃO:');
-  addToSerialConsole('   • Cabo USB funcionando corretamente');
-  addToSerialConsole('   • Porta USB com energia suficiente');
-  addToSerialConsole('   • Driver CH340/CP2102 instalado');
-  addToSerialConsole('');
-  addToSerialConsole('3️⃣ REINICIAR SISTEMA:');
-  addToSerialConsole('   • Feche todos os monitores seriais');
-  addToSerialConsole('   • Desconecte e reconecte a ESP32');
-  addToSerialConsole('   • Tente uma porta USB diferente');
-  
-  return false;
-}
+// Função handleEsp32UploadRetry REMOVIDA - Sistema de auto-recovery desabilitado
+// Modo strict ativo: falhas devem ser tratadas manualmente pelo usuário
 
 function updateProgress(percent, status = '') {
   const progressFill = document.querySelector('.progress-fill');
@@ -5655,36 +5371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('❌ Botão upload-btn não encontrado');
   }
   
-  // Event listener para botão de retry
-  const retryUploadBtn = document.getElementById('retry-upload-btn');
-  if (retryUploadBtn) {
-    console.log('🔧 Adicionando event listener para retry-upload-btn');
-    retryUploadBtn.addEventListener('click', async function() {
-      console.log('🔄 Botão retry-upload-btn clicado!');
-      
-      // Esconder o botão de retry
-      retryUploadBtn.style.display = 'none';
-      
-      // Se há dados de erro armazenados, tentar resolução automática
-      if (window.lastUploadError && window.lastUploadError.autoResolveAvailable) {
-        addToSerialConsole('🤖 Iniciando resolução automática...');
-        
-        // Resolver conflitos se disponível
-        if (window.lastUploadError.conflictingProcesses) {
-          await resolvePortConflicts(window.lastUploadError.conflictingProcesses);
-        }
-        
-        // Aguardar um pouco e tentar upload novamente
-        addToSerialConsole('🔄 Tentando upload novamente...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-      
-      // Fazer upload novamente
-      uploadSketch();
-    });
-  } else {
-    console.log('❌ Botão retry-upload-btn não encontrado');
-  }
+  // Sistema de retry removido - modo strict sem auto-recovery ativo
   
   const uploadBtnMain = document.getElementById('upload-code');
   if (uploadBtnMain) {

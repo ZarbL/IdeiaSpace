@@ -132,34 +132,56 @@ class BackendServer {
       }
     });
 
-    // Upload
+    // Upload Inteligente com Auto-Bootloader
     this.app.post('/api/arduino/upload', async (req, res) => {
       try {
-        const { code, port, board = 'esp32:esp32:esp32', options = {} } = req.body;
+        const { code, port, board = 'esp32:esp32:esp32', mode = 'smart' } = req.body;
         
         if (!code || !code.trim()) {
           return res.status(400).json({
             success: false,
-            message: 'Código é obrigatório'
+            message: '❌ ERRO: Código é obrigatório'
           });
         }
         
         if (!port) {
           return res.status(400).json({
             success: false,
-            message: 'Porta é obrigatória'
+            message: '❌ ERRO: Porta é obrigatória'
           });
         }
 
-        console.log(`📤 Iniciando upload para ${port} (${board})`);
-        const result = await this.arduinoService.uploadSketch(code, port, board, options);
+        console.log(`🎯 Upload para ${port} (${board}) - Modo: ${mode}`);
+        
+        let result;
+        
+        if (mode === 'smart' && board.includes('esp32')) {
+          // Upload inteligente com auto-reset para ESP32
+          console.log('🚀 Usando upload inteligente com auto-bootloader...');
+          result = await this.arduinoService.uploadWithAutoBootloader(code, port, board);
+        } else {
+          // Upload tradicional para outras placas ou modo específico
+          console.log('🔨 Usando upload tradicional...');
+          result = await this.arduinoService.uploadSketch(code, port, board);
+        }
+        
+        if (result.success) {
+          console.log('✅ Upload concluído com sucesso');
+          if (result.strategy) {
+            console.log(`📋 Estratégia usada: ${result.strategy} (${result.attempts}/${result.totalStrategies})`);
+          }
+        } else {
+          console.error('❌ Upload falhou:', result.message);
+        }
         
         res.json(result);
       } catch (error) {
+        console.error('❌ Erro crítico no upload:', error.message);
         res.status(500).json({
           success: false,
-          message: 'Erro no upload',
-          error: error.message
+          message: error.message,
+          error: error.message,
+          criticalFailure: true
         });
       }
     });
@@ -293,17 +315,21 @@ class BackendServer {
       }
     });
 
-    // Verificar/instalar ESP32 core automaticamente
-    this.app.post('/api/arduino/esp32/ensure', async (req, res) => {
+    // Instalar ESP32 core MANUALMENTE (sem verificação automática)
+    this.app.post('/api/arduino/esp32/install', async (req, res) => {
       try {
-        console.log('🚀 Verificando/instalando ESP32 core automaticamente...');
-        const result = await this.arduinoService.ensureEsp32CoreInstalled();
+        console.log('� Instalação MANUAL do ESP32 core solicitada...');
+        const result = await this.arduinoService.installCore('esp32:esp32');
         
-        res.json(result);
+        res.json({
+          success: result.success,
+          message: result.success ? 'ESP32 core instalado manualmente' : 'Falha na instalação manual do ESP32 core',
+          ...result
+        });
       } catch (error) {
         res.status(500).json({
           success: false,
-          message: 'Erro ao verificar/instalar ESP32 core',
+          message: 'Erro na instalação manual do ESP32 core',
           error: error.message
         });
       }
@@ -323,6 +349,52 @@ class BackendServer {
         res.status(500).json({
           success: false,
           message: 'Erro ao verificar ESP32 core',
+          error: error.message
+        });
+      }
+    });
+
+    // Diagnóstico completo do ESP32
+    this.app.get('/api/arduino/esp32/diagnostic', async (req, res) => {
+      try {
+        console.log('🩺 Executando diagnóstico completo do ESP32...');
+        const result = await this.arduinoService.diagnosticEsp32();
+        
+        res.json({
+          success: true,
+          diagnostic: result
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro no diagnóstico ESP32',
+          error: error.message
+        });
+      }
+    });
+
+    // Teste das configurações das placas
+    this.app.get('/api/arduino/board-configs', async (req, res) => {
+      try {
+        console.log('📋 Obtendo configurações das placas...');
+        
+        const configs = {
+          'esp32:esp32:esp32': this.arduinoService.getEsp32BoardConfig('esp32:esp32:esp32'),
+          'esp32:esp32:esp32wrover': this.arduinoService.getEsp32BoardConfig('esp32:esp32:esp32wrover'),
+          'esp32:esp32:esp32doit-devkit-v1': this.arduinoService.getEsp32BoardConfig('esp32:esp32:esp32doit-devkit-v1'),
+          'arduino:avr:uno': this.arduinoService.getEsp32BoardConfig('arduino:avr:uno'),
+          'arduino:avr:mega': this.arduinoService.getEsp32BoardConfig('arduino:avr:mega')
+        };
+        
+        res.json({
+          success: true,
+          configs: configs,
+          message: 'Configurações das placas obtidas com sucesso'
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao obter configurações das placas',
           error: error.message
         });
       }
@@ -348,7 +420,7 @@ class BackendServer {
           install_core: 'POST /api/arduino/core/install',
           update: 'POST /api/arduino/update',
           esp32_status: 'GET /api/arduino/esp32/status',
-          esp32_ensure: 'POST /api/arduino/esp32/ensure'
+          esp32_install_manual: 'POST /api/arduino/esp32/install'
         },
         websocket: {
           port: this.wsPort,

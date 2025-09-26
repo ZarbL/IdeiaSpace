@@ -27,16 +27,7 @@ class ArduinoCLIService {
     console.log(`🔍 Procurando Arduino CLI em: ${this.cliPath}`);
     
     if (!fs.existsSync(this.cliPath)) {
-      // Tentar baixar automaticamente
-      console.log('⬬ Arduino CLI não encontrado, tentando instalar...');
-      const ArduinoCLIInstaller = require('../install-arduino-cli');
-      const installer = new ArduinoCLIInstaller();
-      await installer.install();
-      
-      // Verificar novamente
-      if (!fs.existsSync(this.cliPath)) {
-        throw new Error(`Arduino CLI não encontrado em ${this.cliPath}. Execute: npm run install-cli`);
-      }
+      throw new Error(`❌ Arduino CLI não encontrado em ${this.cliPath}.\n💡 Execute: npm run install-cli`);
     }
 
     this.isInitialized = true;
@@ -55,6 +46,7 @@ class ArduinoCLIService {
       console.log(`🔧 Executando: ${command}`);
       const { stdout, stderr } = await execAsync(fullCommand, {
         timeout: options.timeout || 30000,
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer para evitar overflow
         ...options
       });
       
@@ -106,6 +98,29 @@ class ArduinoCLIService {
   }
 
   /**
+   * Valida e limpa o código antes da compilação
+   */
+  validateAndCleanCode(code) {
+    if (!code || typeof code !== 'string') {
+      throw new Error('Código deve ser uma string válida');
+    }
+    
+    // Remove BOM se existir
+    const cleanCode = code.replace(/^\uFEFF/, '');
+    
+    // Verifica se tem pelo menos setup() e loop()
+    if (!cleanCode.includes('setup()') && !cleanCode.includes('void setup()')) {
+      throw new Error('Código deve conter uma função setup()');
+    }
+    
+    if (!cleanCode.includes('loop()') && !cleanCode.includes('void loop()')) {
+      throw new Error('Código deve conter uma função loop()');
+    }
+    
+    return cleanCode;
+  }
+
+  /**
    * Compila um sketch Arduino
    */
   async compileSketch(code, board = 'esp32:esp32:esp32', options = {}) {
@@ -115,11 +130,16 @@ class ArduinoCLIService {
     const sketchFile = path.join(sketchDir, 'sketch.ino');
 
     try {
+      // Validar e limpar código
+      const cleanCode = this.validateAndCleanCode(code);
+      
       // Criar diretórios
       fs.mkdirSync(sketchDir, { recursive: true });
       
-      // Escrever código no arquivo
-      fs.writeFileSync(sketchFile, code, 'utf8');
+      // Escrever código no arquivo garantindo UTF-8 sem BOM
+      // Usar Buffer para evitar BOM automaticamente inserido pelo Node.js
+      const buffer = Buffer.from(cleanCode, 'utf8');
+      fs.writeFileSync(sketchFile, buffer, { flag: 'w' });
 
       // Comando de compilação
       const compileCommand = `compile --fqbn ${board} "${sketchDir}"`;
@@ -158,7 +178,7 @@ class ArduinoCLIService {
   }
 
   /**
-   * Faz upload de um sketch para a placa
+   * Faz upload de um sketch para a placa com configuração automática do bootloader
    */
   async uploadSketch(code, port, board = 'esp32:esp32:esp32', options = {}) {
     const tempDir = path.join(__dirname, 'temp', `upload_${Date.now()}`);
@@ -166,54 +186,72 @@ class ArduinoCLIService {
     const sketchFile = path.join(sketchDir, 'sketch.ino');
 
     try {
+      // Validar e limpar código  
+      const cleanCode = this.validateAndCleanCode(code);
+      
       // Criar diretórios
       fs.mkdirSync(sketchDir, { recursive: true });
       
-      // Escrever código no arquivo
-      fs.writeFileSync(sketchFile, code, 'utf8');
+      // Escrever código no arquivo garantindo UTF-8 sem BOM
+      // Usar Buffer para evitar BOM automaticamente inserido pelo Node.js
+      const buffer = Buffer.from(cleanCode, 'utf8');
+      fs.writeFileSync(sketchFile, buffer, { flag: 'w' });
 
-      // Verificar se a porta existe antes de tentar usar
+      // Verificar se a porta existe - OBRIGATÓRIO
       console.log(`🔍 Verificando disponibilidade da porta ${port}...`);
       
-      // Listar portas disponíveis primeiro
       const portsCheck = await this.listPorts();
       const portAvailable = portsCheck.ports && portsCheck.ports.some(p => p.address === port);
       
       if (!portAvailable) {
-        console.warn(`⚠️ Porta ${port} não encontrada nas portas disponíveis`);
-        console.log('📋 Portas disponíveis:', portsCheck.ports?.map(p => p.address).join(', ') || 'nenhuma');
+        const availablePorts = portsCheck.ports?.map(p => p.address).join(', ') || 'nenhuma';
+        throw new Error(`❌ Porta ${port} não encontrada.\n📋 Portas disponíveis: ${availablePorts}\n💡 Conecte a ESP32 e verifique os drivers.`);
       }
 
-      // Construir comando de upload com opções avançadas
+      // Detectar configuração específica do board
+      const boardConfig = this.getEsp32BoardConfig(board);
+      console.log(`🎯 Configuração detectada: ${boardConfig.name}`);
+      
+      // Construir comando de upload com configurações automáticas do bootloader
       let uploadCommand = `compile --upload --fqbn ${board} --port ${port}`;
       
-      // Adicionar opções avançadas usando --build-property (sintaxe correta do Arduino CLI)
-      if (options.baudRate) {
-        uploadCommand += ` --build-property upload.speed=${options.baudRate}`;
+      // Configurações específicas baseadas no tipo de ESP32
+      uploadCommand += ` --build-property upload.speed=${boardConfig.uploadSpeed}`;
+      uploadCommand += ` --build-property build.flash_freq=${boardConfig.flashFreq}`;
+      uploadCommand += ` --build-property build.flash_mode=${boardConfig.flashMode}`;
+      uploadCommand += ` --build-property build.flash_size=${boardConfig.flashSize}`;
+      
+      // CONFIGURAÇÃO AUTOMÁTICA DO BOOTLOADER - ESP32 específico
+      if (board.includes('esp32')) {
+        // Configurações para entrada automática no modo bootloader
+        uploadCommand += ` --build-property upload.before_reset=default_reset`;
+        uploadCommand += ` --build-property upload.after_reset=hard_reset`;
+        uploadCommand += ` --build-property upload.use_1200bps_touch=false`;
+        uploadCommand += ` --build-property upload.wait_for_upload_port=false`;
+        
+        // Configurações específicas do esptool para auto-reset
+        uploadCommand += ` --build-property tools.esptool_py.upload.protocol=esp32`;
+        uploadCommand += ` --build-property tools.esptool_py.upload.params.verbose=-v`;
+        uploadCommand += ` --build-property upload.maximum_size=${boardConfig.maxSize}`;
+        uploadCommand += ` --build-property upload.maximum_data_size=${boardConfig.maxDataSize}`;
+        
+        // Habilitar auto-reset no esptool (força entrada no bootloader)
+        uploadCommand += ` --build-property upload.extra_flags=--before=default_reset --after=hard_reset`;
       }
       
-      if (options.flashMode) {
-        uploadCommand += ` --build-property build.flash_mode=${options.flashMode}`;
-      }
-      
-      if (options.flashSize) {
-        uploadCommand += ` --build-property build.flash_size=${options.flashSize}`;
-      }
-      
-      // Opções verbosas para debug
+      // Opções verbosas para debug se solicitado
       if (options.verbose) {
         uploadCommand += ' --verbose';
       }
       
       uploadCommand += ` "${sketchDir}"`;
       
-      console.log(`🚀 Executando comando de upload: ${uploadCommand}`);
+      console.log(`🚀 Upload ${boardConfig.name} - Auto-reset habilitado`);
+      console.log(`📡 Velocidade: ${boardConfig.uploadSpeed}, Modo: ${boardConfig.flashMode}`);
       
-      // Aguardar um pouco para garantir que a porta está livre
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Tentar upload com timeout baseado no tipo de placa
       const result = await this.executeCommand(uploadCommand, {
-        timeout: options.timeout || 120000 // 2 minutos para upload por padrão
+        timeout: boardConfig.timeout
       });
 
       // Limpar diretório temporário
@@ -222,20 +260,28 @@ class ArduinoCLIService {
       if (result.success) {
         return {
           success: true,
-          message: 'Upload realizado com sucesso!',
-          output: result.output
+          message: `Upload realizado com sucesso! (${boardConfig.name})`,
+          output: result.output,
+          boardUsed: boardConfig.name
         };
       } else {
         // Analisar o tipo de erro para dar feedback específico
         let errorAnalysis = this.analyzeUploadError(result.error, port);
         
+        const errorMessage = `❌ UPLOAD FALHOU - ${errorAnalysis.type}\n` + 
+                           `🎯 Placa: ${boardConfig.name}\n` +
+                           `📝 Detalhes: ${result.error}\n` +
+                           `💡 Sugestões:\n` +
+                           errorAnalysis.suggestions.map(s => `   • ${s}`).join('\n');
+        
         return {
           success: false,
-          message: 'Erro no upload',
+          message: errorMessage,
           error: result.error,
           output: result.output,
           errorType: errorAnalysis.type,
-          suggestions: errorAnalysis.suggestions
+          suggestions: errorAnalysis.suggestions,
+          boardUsed: boardConfig.name
         };
       }
 
@@ -250,10 +296,89 @@ class ArduinoCLIService {
   }
 
   /**
+   * Obtém configurações específicas para cada tipo de ESP32
+   */
+  getEsp32BoardConfig(board) {
+    const configs = {
+      'esp32:esp32:esp32': {
+        name: 'ESP32 Dev Module',
+        uploadSpeed: '921600',
+        flashFreq: '80m',
+        flashMode: 'dio',
+        flashSize: '4MB',
+        maxSize: '1310720',
+        maxDataSize: '327680',
+        timeout: 120000,
+        description: 'ESP32 genérico com configurações padrão'
+      },
+      'esp32:esp32:esp32wrover': {
+        name: 'ESP32 WROVER Module',
+        uploadSpeed: '460800', // Mais conservativo para WROVER
+        flashFreq: '80m',
+        flashMode: 'dio',
+        flashSize: '4MB',
+        maxSize: '1310720',
+        maxDataSize: '327680', 
+        timeout: 150000, // Timeout maior para WROVER
+        description: 'ESP32 WROVER com PSRAM e configurações otimizadas'
+      },
+      'esp32:esp32:esp32doit-devkit-v1': {
+        name: 'DOIT ESP32 DevKit V1',
+        uploadSpeed: '921600',
+        flashFreq: '80m',
+        flashMode: 'dio',
+        flashSize: '4MB',
+        maxSize: '1310720',
+        maxDataSize: '327680',
+        timeout: 120000,
+        description: 'DOIT DevKit V1 com auto-reset aprimorado'
+      },
+      'arduino:avr:uno': {
+        name: 'Arduino Uno',
+        uploadSpeed: '115200',
+        flashFreq: '16m', 
+        flashMode: 'dio',
+        flashSize: '32KB',
+        maxSize: '32256',
+        maxDataSize: '2048',
+        timeout: 60000,
+        description: 'Arduino Uno R3 com ATmega328P'
+      },
+      'arduino:avr:mega': {
+        name: 'Arduino Mega',
+        uploadSpeed: '115200',
+        flashFreq: '16m',
+        flashMode: 'dio', 
+        flashSize: '256KB',
+        maxSize: '253952',
+        maxDataSize: '8192',
+        timeout: 90000,
+        description: 'Arduino Mega 2560 com ATmega2560'
+      }
+    };
+    
+    // Retorna configuração específica ou padrão ESP32 Dev Module
+    return configs[board] || configs['esp32:esp32:esp32'];
+  }
+
+  /**
    * Analisa erros de upload para dar sugestões específicas
    */
   analyzeUploadError(errorMessage, port) {
     const error = (errorMessage || '').toLowerCase();
+    
+    // Erro de codificação de arquivo (BOM/UTF-16)
+    if (error.includes('stray') && (error.includes('377') || error.includes('376'))) {
+      return {
+        type: 'FILE_ENCODING',
+        suggestions: [
+          'Erro de codificação de arquivo detectado',
+          'O arquivo .ino foi criado com codificação UTF-16 (BOM)',
+          'Recriar o arquivo com codificação UTF-8 sem BOM',
+          'Verificar se o sistema está salvando arquivos corretamente'
+        ]
+      };
+    }
     
     // Erro de porta em uso
     if (error.includes('resource busy') || error.includes('permission denied') || 
@@ -261,25 +386,41 @@ class ArduinoCLIService {
       return {
         type: 'PORT_BUSY',
         suggestions: [
+          'ERRO: Porta está em uso por outro processo',
           'Feche qualquer Monitor Serial que esteja aberto',
           'Feche o Arduino IDE se estiver usando a mesma porta',
-          'Desconecte e reconecte o cabo USB da ESP32',
-          'Aguarde 5 segundos e tente novamente'
+          'Desconecte e reconecte o cabo USB da ESP32'
         ]
       };
     }
     
-    // Erro de comunicação com ESP32
+    // Erro de comunicação com ESP32 - "Packet content transfer stopped"
     if (error.includes('packet content transfer stopped') || 
         error.includes('failed uploading') || 
-        error.includes('timeout')) {
+        error.includes('timeout') ||
+        error.includes('exit status 2')) {
       return {
         type: 'ESP32_COMMUNICATION',
         suggestions: [
-          'Pressione e mantenha o botão BOOT na ESP32',
-          'Pressione o botão RESET enquanto mantém BOOT pressionado',
-          'Solte RESET primeiro, depois BOOT',
-          'Tente o upload imediatamente após soltar os botões'
+          '❌ FALHA NA COMUNICAÇÃO - Auto-reset não funcionou',
+          '',
+          '🔄 TENTATIVA AUTOMÁTICA REALIZADA:',
+          '• Sistema tentou forçar ESP32 no modo bootloader automaticamente',
+          '• Configuração de auto-reset --before=default_reset aplicada',
+          '• Falha na entrada automática no modo download',
+          '',
+          '🔧 PROCEDIMENTO MANUAL NECESSÁRIO:',
+          '1. Pressione e MANTENHA o botão BOOT da ESP32',
+          '2. Ainda segurando BOOT, pressione e solte RESET', 
+          '3. Solte o botão BOOT (ESP32 deve entrar no modo download)',
+          '4. Tente o upload novamente EM POUCOS SEGUNDOS',
+          '',
+          '⚠️  IMPORTANTE:',
+          '• A ESP32 sai do modo bootloader em ~10 segundos',
+          '• Use cabo USB de melhor qualidade (dados, não só energia)',
+          '• Teste outra porta USB (USB 2.0 pode ser mais estável)',
+          '• Verifique drivers CH340/CP2102 instalados corretamente',
+          '• Alguns ESP32 clones não suportam auto-reset'
         ]
       };
     }
@@ -290,10 +431,11 @@ class ArduinoCLIService {
       return {
         type: 'PORT_NOT_FOUND',
         suggestions: [
-          'Verifique se a ESP32 está conectada via USB',
+          'ERRO: Dispositivo não encontrado',
+          'ESP32 não está conectada ou não é reconhecida',
           'Instale os drivers CH340 ou CP2102',
-          'Tente uma porta USB diferente',
-          'Verifique se o cabo USB é de dados (não apenas carregamento)'
+          'Verifique se o cabo USB é de dados (não apenas carregamento)',
+          'Teste uma porta USB diferente'
         ]
       };
     }
@@ -303,8 +445,9 @@ class ArduinoCLIService {
       return {
         type: 'CORE_MISSING',
         suggestions: [
-          'Instale o ESP32 core: arduino-cli core install esp32:esp32',
-          'Atualize os índices: arduino-cli core update-index',
+          'ERRO: ESP32 core não instalado',
+          'Execute: npm run install-cli',
+          'Execute: arduino-cli core install esp32:esp32',
           'Verifique se as URLs do ESP32 estão configuradas'
         ]
       };
@@ -313,9 +456,9 @@ class ArduinoCLIService {
     return {
       type: 'UNKNOWN',
       suggestions: [
+        'ERRO: Falha no upload - motivo desconhecido',
         'Verifique a conexão da ESP32',
         'Reinicie a ESP32 pressionando o botão RESET',
-        'Tente usar uma taxa de transmissão menor (115200)',
         'Verifique os logs completos para mais detalhes'
       ]
     };
@@ -518,50 +661,77 @@ class ArduinoCLIService {
     try {
       console.log('🔍 Verificando disponibilidade do ESP32 core...');
       
-      // Verificar cores instalados
+      // Método 1: Verificar cores instalados (mais confiável)
       const listResult = await this.executeCommand('core list --format json');
       if (listResult.success && listResult.output) {
         try {
           const installedCores = JSON.parse(listResult.output);
-          const esp32Core = installedCores.find(core => 
-            core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
-          );
+          // Verificar se é array
+          if (Array.isArray(installedCores)) {
+            const esp32Core = installedCores.find(core => 
+              core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
+            );
           
-          if (esp32Core) {
-            console.log('✅ ESP32 core encontrado:', esp32Core.id);
-            return {
-              installed: true,
-              core: esp32Core,
-              version: esp32Core.installed || esp32Core.version || 'unknown'
-            };
+            if (esp32Core) {
+              console.log('✅ ESP32 core encontrado via core list:', esp32Core.id);
+              return {
+                installed: true,
+                core: esp32Core,
+                version: esp32Core.installed || esp32Core.version || 'unknown',
+                method: 'core_list'
+              };
+            }
           }
         } catch (parseError) {
-          console.warn('⚠️ Erro ao analisar cores instalados');
+          console.warn('⚠️ Erro ao analisar JSON dos cores instalados:', parseError.message);
         }
       }
       
-      // Verificar se ESP32 boards estão disponíveis
-      const boardsResult = await this.executeCommand('board listall esp32 --format json');
-      if (boardsResult.success && boardsResult.output) {
+      // Método 2: Teste direto de compilação (mais definitivo)
+      console.log('🧪 Testando compilação ESP32 como verificação...');
+      const testCode = 'void setup(){} void loop(){}';
+      const tempDir = path.join(__dirname, 'temp', `esp32_test_${Date.now()}`);
+      const sketchDir = path.join(tempDir, 'sketch');
+      const sketchFile = path.join(sketchDir, 'sketch.ino');
+      
+      try {
+        fs.mkdirSync(sketchDir, { recursive: true });
+        fs.writeFileSync(sketchFile, testCode, { encoding: 'utf8', flag: 'w' });
+        
+        const compileTest = await this.executeCommand(`compile --fqbn esp32:esp32:esp32 "${sketchDir}"`, {
+          timeout: 30000
+        });
+        
+        // Limpar teste
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        
+        if (compileTest.success) {
+          console.log('✅ ESP32 core encontrado via teste de compilação');
+          return {
+            installed: true,
+            method: 'compile_test',
+            version: 'detected'
+          };
+        } else if (compileTest.error && compileTest.error.includes('platform not installed')) {
+          console.log('❌ ESP32 core definitivamente não instalado');
+          return {
+            installed: false,
+            message: 'ESP32 platform not installed',
+            method: 'compile_test_failed'
+          };
+        }
+      } catch (testError) {
+        console.warn('⚠️ Erro no teste de compilação:', testError.message);
+        // Limpar em caso de erro
         try {
-          const esp32Boards = JSON.parse(boardsResult.output);
-          if (esp32Boards && esp32Boards.length > 0) {
-            console.log(`✅ ${esp32Boards.length} placas ESP32 detectadas`);
-            return {
-              installed: true,
-              boards: esp32Boards.slice(0, 3), // Mostrar apenas as primeiras 3
-              boardCount: esp32Boards.length
-            };
-          }
-        } catch (parseError) {
-          console.warn('⚠️ Erro ao analisar placas ESP32');
-        }
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch {}
       }
       
-      console.log('❌ ESP32 core não encontrado');
+      console.log('❌ ESP32 core não encontrado por nenhum método');
       return {
         installed: false,
-        message: 'ESP32 core não está instalado'
+        message: 'ESP32 core não detectado'
       };
       
     } catch (error) {
@@ -625,6 +795,290 @@ class ArduinoCLIService {
         message: 'Erro interno na instalação ESP32',
         error: error.message
       };
+    }
+  }
+
+  /**
+   * Upload funcional e simples para ESP32 
+   */
+  async strictUploadTest(code, port, board = 'esp32:esp32:esp32') {
+    console.log('� Upload ESP32 - Método Direto');
+    
+    // 1. Validar código
+    try {
+      this.validateAndCleanCode(code);
+      console.log('✅ Código validado');
+    } catch (error) {
+      throw new Error(`❌ CÓDIGO INVÁLIDO: ${error.message}`);
+    }
+    
+    // 2. Verificar porta
+    const portsResult = await this.listPorts();
+    const portExists = portsResult.ports?.some(p => p.address === port);
+    if (!portExists) {
+      const available = portsResult.ports?.map(p => p.address).join(', ') || 'nenhuma';
+      throw new Error(`❌ PORTA ${port} NÃO ENCONTRADA. Disponíveis: ${available}`);
+    }
+    console.log('✅ Porta disponível');
+    
+    // 3. Verificar ESP32 core
+    const esp32Check = await this.checkEsp32CoreAvailable();
+    if (!esp32Check.installed) {
+      throw new Error(`❌ ESP32 CORE NÃO INSTALADO`);
+    }
+    console.log('✅ ESP32 core OK');
+    
+    // 4. Upload direto
+    console.log('� Executando upload...');
+    return await this.uploadSketch(code, port, board, { 
+      timeout: 120000
+    });
+  }
+
+  /**
+   * Upload inteligente com auto-reset e fallback para ESP32
+   */
+  async uploadWithAutoBootloader(code, port, board = 'esp32:esp32:esp32') {
+    console.log('🎯 Upload Inteligente ESP32 - Auto-reset + Fallback');
+    
+    const boardConfig = this.getEsp32BoardConfig(board);
+    console.log(`📋 Placa: ${boardConfig.name} - ${boardConfig.description}`);
+    
+    // Estratégias de upload em ordem de tentativa
+    const uploadStrategies = [
+      {
+        name: 'Auto-Reset Padrão',
+        description: 'Tentativa automática com esptool auto-reset',
+        options: {
+          baudRate: boardConfig.uploadSpeed,
+          flashMode: boardConfig.flashMode,
+          timeout: boardConfig.timeout,
+          autoReset: true,
+          verbose: false
+        }
+      },
+      {
+        name: 'Auto-Reset Conservativo', 
+        description: 'Velocidade reduzida + timeout estendido',
+        options: {
+          baudRate: '460800', // Velocidade mais conservativa
+          flashMode: 'dio',
+          timeout: boardConfig.timeout + 60000, // +1 minuto
+          autoReset: true,
+          verbose: false
+        }
+      },
+      {
+        name: 'Manual Reset Required',
+        description: 'Última tentativa - requer reset manual',
+        options: {
+          baudRate: '115200', // Velocidade mais lenta e confiável
+          flashMode: 'dio',
+          timeout: boardConfig.timeout + 120000, // +2 minutos
+          autoReset: false, // Sem auto-reset, usuário deve fazer manualmente
+          verbose: true // Verbose para debug
+        }
+      }
+    ];
+
+    let lastError = null;
+    
+    for (let i = 0; i < uploadStrategies.length; i++) {
+      const strategy = uploadStrategies[i];
+      console.log(`📡 Estratégia ${i + 1}/${uploadStrategies.length}: ${strategy.name}`);
+      console.log(`   ${strategy.description}`);
+      
+      try {
+        const result = await this.uploadSketch(code, port, board, strategy.options);
+
+        if (result.success) {
+          console.log(`✅ Upload bem-sucedido com estratégia: ${strategy.name}`);
+          return {
+            ...result,
+            strategy: strategy.name,
+            attempts: i + 1,
+            totalStrategies: uploadStrategies.length
+          };
+        } else {
+          console.log(`❌ Estratégia ${i + 1} falhou: ${result.message}`);
+          lastError = result;
+          
+          // Se é a última tentativa, retornar o erro
+          if (i === uploadStrategies.length - 1) {
+            return {
+              ...result,
+              message: `❌ TODAS AS ESTRATÉGIAS FALHARAM\n\n` +
+                      `🔍 Última tentativa (${strategy.name}):\n${result.message}\n\n` +
+                      `💡 PROCEDIMENTO MANUAL RECOMENDADO:\n` +
+                      `1. Mantenha BOOT pressionado na ESP32\n` +
+                      `2. Pressione e solte RESET (ainda segurando BOOT)\n` +
+                      `3. Solte BOOT e tente novamente IMEDIATAMENTE`,
+              strategy: 'ALL_FAILED',
+              attempts: uploadStrategies.length,
+              totalStrategies: uploadStrategies.length
+            };
+          }
+          
+          // Aguardar antes da próxima tentativa se for erro de comunicação
+          if (result.errorType === 'ESP32_COMMUNICATION') {
+            console.log('⏳ Aguardando 5 segundos antes da próxima estratégia...');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
+        }
+      } catch (error) {
+        console.log(`❌ Exceção na estratégia ${i + 1}: ${error.message}`);
+        
+        if (i === uploadStrategies.length - 1) {
+          return {
+            success: false,
+            message: `Todas as estratégias falharam. Último erro: ${error.message}`,
+            error: error.message,
+            strategy: 'EXCEPTION',
+            attempts: uploadStrategies.length,
+            totalStrategies: uploadStrategies.length
+          };
+        }
+      }
+    }
+    
+    // Fallback (não deve chegar aqui, mas por segurança)
+    return lastError || {
+      success: false,
+      message: 'Erro desconhecido no upload inteligente',
+      strategy: 'UNKNOWN_ERROR'
+    };
+  }
+
+  /**
+   * Upload com retry específico para ESP32 - resolve problema "Packet content transfer stopped"
+   */
+  async uploadWithEsp32Retry(code, port, board = 'esp32:esp32:esp32') {
+    console.log('� Upload ESP32 com configurações adaptativas...');
+    
+    // Configurações de upload para ESP32 em ordem de preferência
+    const uploadConfigs = [
+      // Configuração 1: Padrão ESP32 - mais rápida
+      {
+        name: 'Padrão ESP32 (921600 bps)',
+        baudRate: '921600',
+        flashMode: 'dio',
+        timeout: 120000
+      },
+      // Configuração 2: Mais compatível - velocidade reduzida
+      {
+        name: 'Compatibilidade (460800 bps)',
+        baudRate: '460800', 
+        flashMode: 'dio',
+        timeout: 150000
+      },
+      // Configuração 3: Máxima compatibilidade - mais lenta mas confiável
+      {
+        name: 'Máxima Compatibilidade (115200 bps)',
+        baudRate: '115200',
+        flashMode: 'dio',
+        timeout: 180000
+      }
+    ];
+
+    for (let i = 0; i < uploadConfigs.length; i++) {
+      const config = uploadConfigs[i];
+      console.log(`📡 Tentativa ${i + 1}/3: ${config.name}`);
+      
+      try {
+        const result = await this.uploadSketch(code, port, board, {
+          baudRate: config.baudRate,
+          flashMode: config.flashMode,
+          timeout: config.timeout,
+          verbose: i === (uploadConfigs.length - 1) // Verbose apenas na última tentativa
+        });
+
+        if (result.success) {
+          console.log(`✅ Upload bem-sucedido com configuração: ${config.name}`);
+          return result;
+        } else {
+          console.log(`❌ Tentativa ${i + 1} falhou: ${result.message}`);
+          
+          // Se é a última tentativa, retornar o erro
+          if (i === uploadConfigs.length - 1) {
+            return result;
+          }
+          
+          // Para ESP32_COMMUNICATION, aguardar um pouco antes da próxima tentativa
+          if (result.errorType === 'ESP32_COMMUNICATION') {
+            console.log('⏳ Aguardando 3 segundos antes da próxima tentativa...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+        }
+      } catch (error) {
+        console.log(`❌ Exceção na tentativa ${i + 1}: ${error.message}`);
+        
+        if (i === uploadConfigs.length - 1) {
+          return {
+            success: false,
+            message: `Todas as tentativas falharam. Último erro: ${error.message}`,
+            error: error.message
+          };
+        }
+      }
+    }
+  }
+
+  /**
+   * Diagnóstico completo do ESP32 para debug
+   */
+  async diagnosticEsp32() {
+    const diagnostics = {
+      timestamp: new Date().toISOString(),
+      tests: []
+    };
+    
+    try {
+      // Teste 1: Arduino CLI funcionando
+      console.log('🧪 Teste 1: Verificando Arduino CLI...');
+      const cliTest = await this.executeCommand('version');
+      diagnostics.tests.push({
+        name: 'Arduino CLI Version',
+        success: cliTest.success,
+        output: cliTest.output?.trim(),
+        error: cliTest.error
+      });
+      
+      // Teste 2: Listar cores instalados
+      console.log('🧪 Teste 2: Listando cores...');
+      const coreTest = await this.executeCommand('core list');
+      diagnostics.tests.push({
+        name: 'Core List (text)',
+        success: coreTest.success,
+        output: coreTest.output?.substring(0, 500), // Limitar output
+        containsEsp32: coreTest.output?.includes('esp32')
+      });
+      
+      // Teste 3: Compilação de teste
+      console.log('🧪 Teste 3: Teste de compilação ESP32...');
+      const testCode = 'void setup(){Serial.begin(115200);} void loop(){delay(1000);}';
+      const compileResult = await this.compileSketch(testCode, 'esp32:esp32:esp32');
+      diagnostics.tests.push({
+        name: 'ESP32 Compile Test',
+        success: compileResult.success,
+        message: compileResult.message,
+        error: compileResult.error
+      });
+      
+      // Teste 4: Verificar configuração
+      console.log('🧪 Teste 4: Verificando configuração...');
+      const configExists = fs.existsSync(this.configPath);
+      diagnostics.tests.push({
+        name: 'Config File',
+        success: configExists,
+        path: this.configPath,
+        exists: configExists
+      });
+      
+      return diagnostics;
+      
+    } catch (error) {
+      diagnostics.error = error.message;
+      return diagnostics;
     }
   }
 

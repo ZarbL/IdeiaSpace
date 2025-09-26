@@ -33,6 +33,7 @@ const i18n = {
       this.applyTranslations();
       this.updateBlocklyBlocks();
       this.updateToolboxCategories();
+      this.updateDynamicElements();
       
       // Disparar evento customizado para outros componentes
       window.dispatchEvent(new CustomEvent('languageChanged', { 
@@ -98,6 +99,45 @@ const i18n = {
       } else {
         darkModeToggle.setAttribute('data-tooltip', this.t('darkModeTooltip'));
       }
+    }
+    
+    // Atualizar elementos específicos dos botões principais
+    const executeButton = document.getElementById('startButton');
+    if (executeButton) {
+      executeButton.textContent = this.t('executeButton');
+    }
+    
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+      copyButton.innerHTML = `⧉ ${this.t('copyButton')}`;
+    }
+    
+    // Atualizar status de conexão dinâmico
+    const backendStatus = document.querySelector('#backend-status-indicator .indicator-text');
+    if (backendStatus) {
+      const isOffline = backendStatus.textContent.includes('Offline') || backendStatus.textContent.includes('não iniciado');
+      backendStatus.textContent = isOffline ? this.t('backendOffline') : this.t('backendOnline');
+    }
+    
+    // Atualizar contadores dinâmicos
+    const portInfo = document.getElementById('port-info');
+    if (portInfo) {
+      const portCount = portInfo.textContent.match(/\d+/);
+      if (portCount) {
+        portInfo.innerHTML = `${portCount[0]} ${this.t('portsAvailable')}`;
+      }
+    }
+    
+    // Atualizar mensagem do código se estiver vazia
+    const codeDisplayFull = document.getElementById('code-display-full');
+    if (codeDisplayFull && codeDisplayFull.textContent.includes('Nenhum código foi gerado ainda')) {
+      codeDisplayFull.textContent = `// ${this.t('noCode')}\n// ${this.t('useBlockEditor')}\n// ${this.t('autoConvert')}`;
+    }
+    
+    // Atualizar tooltips de botões
+    const refreshButton = document.getElementById('refresh-ports');
+    if (refreshButton) {
+      refreshButton.setAttribute('title', this.t('refresh'));
     }
   },
   
@@ -1353,6 +1393,50 @@ const i18n = {
     });
   },
   
+  // Função para atualizar elementos dinâmicos específicos
+  updateDynamicElements() {
+    const lang = this.current;
+    
+    // Atualizar status de conexão baseado no estado atual
+    const backendStatusText = document.querySelector('#backend-status-indicator .indicator-text');
+    if (backendStatusText) {
+      const isOffline = backendStatusText.classList && backendStatusText.classList.contains('offline') ||
+                       backendStatusText.textContent.includes('Offline') ||
+                       backendStatusText.textContent.includes('não iniciado');
+      backendStatusText.textContent = isOffline ? this.t('backendOffline') : this.t('backendOnline');
+    }
+    
+    // Atualizar botões de backend baseado no estado
+    const startBackendBtn = document.querySelector('#start-backend-btn .btn-text');
+    if (startBackendBtn) {
+      startBackendBtn.textContent = this.t('startBackend');
+    }
+    
+    const stopBackendBtn = document.querySelector('#stop-backend-btn .btn-text');
+    if (stopBackendBtn) {
+      stopBackendBtn.textContent = this.t('stopBackend');
+    }
+    
+    // Atualizar status de estatísticas
+    const statsStatus = document.getElementById('stats-status');
+    if (statsStatus && (statsStatus.textContent.includes('Desconectado') || statsStatus.textContent.includes('Disconnected'))) {
+      statsStatus.textContent = this.t('disconnected');
+    }
+    
+    // Atualizar contadores de porta
+    this.updatePortCounter();
+  },
+  
+  // Função para atualizar contador de portas
+  updatePortCounter(count = 0) {
+    const portInfo = document.getElementById('port-info');
+    if (portInfo) {
+      const currentCount = portInfo.textContent.match(/\d+/);
+      const actualCount = count || (currentCount ? currentCount[0] : 0);
+      portInfo.innerHTML = `${actualCount} ${this.t('portsAvailable')}`;
+    }
+  },
+
   // Função pública para forçar tradução dos blocos (útil para debug)
   forceTranslateBlocks() {
     console.log('🔄 Forçando tradução de todos os blocos...');
@@ -1449,6 +1533,36 @@ const i18n = {
     }
   },
   
+  // Funções públicas para atualizar elementos específicos quando mudados via JS
+  updateBackendStatus(isOnline) {
+    const backendStatusText = document.querySelector('#backend-status-indicator .indicator-text');
+    if (backendStatusText) {
+      backendStatusText.textContent = isOnline ? this.t('backendOnline') : this.t('backendOffline');
+    }
+  },
+  
+  updateConnectionStatus(isConnected) {
+    const statsStatus = document.getElementById('stats-status');
+    if (statsStatus) {
+      statsStatus.textContent = isConnected ? this.t('connected') : this.t('disconnected');
+    }
+  },
+  
+  updateUploadStatus(status) {
+    const uploadStatus = document.getElementById('upload-status');
+    if (uploadStatus) {
+      // Mapear status para traduções
+      const statusMap = {
+        'Pronto': 'ready',
+        'Ready': 'ready',
+        'Ativo': 'active', 
+        'Active': 'active'
+      };
+      const key = statusMap[status] || status;
+      uploadStatus.textContent = this.t(key) || status;
+    }
+  },
+
   translateToolbox(toolboxElement) {
     // Traduzir nomes das categorias
     const categories = toolboxElement.querySelectorAll('category[name]');

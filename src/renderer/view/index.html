@@ -41,10 +41,10 @@
       </div>
       <div class="monitor-section">
         <div class="button-group">
-          <button id="startButton" class="execute-button tooltip" data-tooltip-key="runCodeTooltip">
+          <button id="startButton" class="execute-button tooltip" data-tooltip-key="runCodeTooltip" data-translate-key="executeButton">
             Executar
           </button>
-          <button id="copyButton" class="copy-button tooltip" data-tooltip-key="copyCodeTooltip">
+          <button id="copyButton" class="copy-button tooltip" data-tooltip-key="copyCodeTooltip" data-translate-key="copyButton">
             ⧉ Copiar
           </button>
         </div>
@@ -136,8 +136,8 @@
         <div class="modal-header-left">
           <div class="modal-icon-modern">⚡</div>
           <div class="modal-title-modern">
-            <h2>Arduino Development Environment</h2>
-            <span class="modal-subtitle-modern">Compile, Upload & Monitor</span>
+            <h2 data-translate-key="arduinoModalTitle">Arduino Development Environment</h2>
+            <span class="modal-subtitle-modern" data-translate-key="arduinoModalSubtitle">Compile, Upload & Monitor</span>
           </div>
         </div>
         <div class="modal-header-right">
@@ -152,21 +152,21 @@
       <nav class="modal-tabs-clean">
         <button class="tab-btn-clean active" data-tab="upload">
           <span class="tab-icon">📤</span>
-          <span class="tab-label">Upload</span>
+          <span class="tab-label" data-translate-key="uploadTab">Upload</span>
         </button>
         <button class="tab-btn-clean" data-tab="console">
           <span class="tab-icon">🖥️</span>
-          <span class="tab-label">Console</span>
+          <span class="tab-label" data-translate-key="consoleTab">Console</span>
           <span class="tab-badge" id="console-count">0</span>
         </button>
         <button class="tab-btn-clean" data-tab="plotter">
           <span class="tab-icon">📊</span>
-          <span class="tab-label">Serial Plotter</span>
+          <span class="tab-label" data-translate-key="plotterTab">Serial Plotter</span>
           <span class="tab-badge" id="plotter-count">0</span>
         </button>
         <button class="tab-btn-clean" data-tab="code">
           <span class="tab-icon">📄</span>
-          <span class="tab-label">Código</span>
+          <span class="tab-label" data-translate-key="codeTab">Código</span>
         </button>
       </nav>
 
@@ -174,12 +174,12 @@
         
         <aside class="modal-sidebar">
           <div class="sidebar-section">
-            <h4 class="sidebar-title">🔌 Conexão</h4>
+            <h4 class="sidebar-title">🔌 <span data-translate-key="connectionStatus">Conexão</span></h4>
             
             <!-- Backend Status -->
             <div class="connection-indicator" id="backend-status-indicator">
               <span class="indicator-dot offline"></span>
-              <span class="indicator-text">Backend Offline</span>
+              <span class="indicator-text" data-translate-key="backendOffline">Backend Offline</span>
             </div>
             
             <!-- Backend Controls -->
@@ -187,14 +187,14 @@
               <div class="backend-controls">
                 <button id="start-backend-btn" class="backend-btn start">
                   <span class="btn-icon">🚀</span>
-                  <span class="btn-text">Iniciar Backend</span>
+                  <span class="btn-text" data-translate-key="startBackend">Iniciar Backend</span>
                 </button>
                 <button id="stop-backend-btn" class="backend-btn stop" disabled>
                   <span class="btn-icon">🛑</span>
-                  <span class="btn-text">Parar Backend</span>
+                  <span class="btn-text" data-translate-key="stopBackend">Parar Backend</span>
                 </button>
               </div>
-              <small class="form-help" id="backend-info">Backend Arduino CLI não iniciado</small>
+              <small class="form-help" id="backend-info" data-translate-key="backendOffline">Backend Arduino CLI não iniciado</small>
             </div>
 
             <!-- WebSocket Status -->
@@ -204,18 +204,18 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Porta Serial</label>
+              <label class="form-label" data-translate-key="serialPort">Porta Serial</label>
               <div class="input-with-button">
                 <select id="port-select" class="form-select" disabled>
-                  <option value="">Conectando...</option>
+                  <option value="" data-translate-key="connecting">Conectando...</option>
                 </select>
-                <button id="refresh-ports" class="refresh-btn" title="Atualizar">🔄</button>
+                <button id="refresh-ports" class="refresh-btn" data-tooltip-key="refresh" title="Atualizar">🔄</button>
               </div>
-              <small class="form-help" id="port-info">0 porta(s) disponível(eis)</small>
+              <small class="form-help" id="port-info"><span>0</span> <span data-translate-key="portsAvailable">porta(s) disponível(eis)</span></small>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Baud Rate</label>
+              <label class="form-label" data-translate-key="baudRate">Baud Rate</label>
               <select id="baud-rate-select" class="form-select">
                 <option value="9600">9600</option>
                 <option value="115200" selected>115200</option>
@@ -225,20 +225,20 @@
 
             <button id="connect-btn" class="connect-button" disabled>
               <span class="btn-icon">🚀</span>
-              <span class="btn-text">Conectar</span>
+              <span class="btn-text" data-translate-key="connectButton">Conectar</span>
             </button>
           </div>
 
           <div class="sidebar-section">
-            <h4 class="sidebar-title">📊 Estatísticas</h4>
+            <h4 class="sidebar-title">📊 <span data-translate-key="statistics">Estatísticas</span></h4>
             <div class="stats-grid">
               <div class="stat-item">
-                <span class="stat-label">Mensagens</span>
+                <span class="stat-label" data-translate-key="messages">Mensagens</span>
                 <span class="stat-value" id="stats-messages">0</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Status</span>
-                <span class="stat-value" id="stats-status">Desconectado</span>
+                <span class="stat-label" data-translate-key="status">Status</span>
+                <span class="stat-value" id="stats-status" data-translate-key="disconnected">Desconectado</span>
               </div>
             </div>
           </div>
@@ -248,41 +248,44 @@
           
           <div class="tab-content active" data-tab="upload">
             <div class="content-header">
-              <h3>📤 Upload & Compilação</h3>
-              <div class="status-badge" id="upload-status">Pronto</div>
+              <h3 data-translate-key="uploadCompilation">📤 Upload & Compilação</h3>
+              <div class="status-badge" id="upload-status" data-translate-key="ready">Pronto</div>
             </div>
             
             <div class="content-body">
               <div class="form-section">
-                <h4>Configuração da Placa</h4>
+                <h4 data-translate-key="boardConfiguration">Configuração da Placa</h4>
                 <div class="form-row">
                   <div class="form-group">
-                    <label class="form-label">Tipo de Placa</label>
+                    <label class="form-label" data-translate-key="boardType">Tipo de Placa</label>
                     <select id="board-select" class="form-select">
-                      <option value="esp32:esp32:esp32wrover">ESP32 WROVER</option>
-                      <option value="esp32:esp32:esp32">ESP32 Dev Module</option>
-                      <option value="arduino:avr:uno">Arduino Uno</option>
+                      <option value="esp32:esp32:esp32">🚀 ESP32 Dev Module (Padrão - 921600 bps)</option>
+                      <option value="esp32:esp32:esp32wrover">📡 ESP32 WROVER (PSRAM - 460800 bps)</option>
+                      <option value="esp32:esp32:esp32doit-devkit-v1">⚡ DOIT ESP32 DevKit V1</option>
+                      <option value="arduino:avr:uno">🔵 Arduino Uno (ATmega328P)</option>
+                      <option value="arduino:avr:mega">🟢 Arduino Mega (ATmega2560)</option>
                     </select>
+                    <small class="form-help" id="board-help">ESP32 Dev Module: Velocidade alta, ideal para a maioria dos projetos</small>
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Porta de Upload</label>
+                    <label class="form-label" data-translate-key="uploadPort">Porta de Upload</label>
                     <select id="upload-port-select" class="form-select">
-                      <option value="">Selecionar porta...</option>
+                      <option value="" data-translate-key="selectPort">Selecionar porta...</option>
                     </select>
                   </div>
                 </div>
               </div>
               
               <div class="form-section">
-                <h4>Ações</h4>
+                <h4 data-translate-key="actions">Ações</h4>
                 <div class="action-buttons">
                   <button id="upload-code" class="btn-primary" disabled>
                     <span class="btn-icon">📤</span>
-                    <span>Upload Código</span>
+                    <span data-translate-key="uploadCode">Upload Código</span>
                   </button>
                   <button id="compile-code" class="btn-secondary">
                     <span class="btn-icon">⚙️</span>
-                    <span>Compilar</span>
+                    <span data-translate-key="compileCode">Compilar</span>
                   </button>
                 </div>
               </div>
@@ -291,16 +294,16 @@
 
           <div class="tab-content" data-tab="console">
             <div class="content-header">
-              <h3>🖥️ Console Serial</h3>
-              <div class="status-badge">Ativo</div>
+              <h3 data-translate-key="serialConsole">🖥️ Console Serial</h3>
+              <div class="status-badge" data-translate-key="active">Ativo</div>
             </div>
             
             <div class="content-body">
               <div class="console-container">
                 <div class="console-output" id="console-output"></div>
                 <div class="console-input">
-                  <input type="text" id="console-input" placeholder="Digite um comando..." class="form-input">
-                  <button id="send-command" class="btn-primary">Enviar</button>
+                  <input type="text" id="console-input" data-translate-key-placeholder="commandPlaceholder" placeholder="Digite um comando..." class="form-input">
+                  <button id="send-command" class="btn-primary" data-translate-key="send">Enviar</button>
                 </div>
               </div>
             </div>
@@ -308,8 +311,8 @@
 
           <div class="tab-content" data-tab="plotter">
             <div class="content-header">
-              <h3>📊 Serial Plotter - MPU6050</h3>
-              <div class="status-badge" id="plotter-status">Aguardando dados</div>
+              <h3 data-translate-key="serialPlotter">📊 Serial Plotter - MPU6050</h3>
+              <div class="status-badge" id="plotter-status" data-translate-key="waitingData">Aguardando dados</div>
             </div>
             
             <div class="content-body">
@@ -318,15 +321,15 @@
                 <div class="plotter-actions">
                   <button id="plotter-pause" class="btn-secondary" data-action="pause">
                     <span class="btn-icon">⏸️</span>
-                    <span class="btn-text">Pausar</span>
+                    <span class="btn-text" data-translate-key="pause">Pausar</span>
                   </button>
                   <button id="plotter-clear" class="btn-secondary" data-action="clear">
                     <span class="btn-icon">🗑️</span>
-                    <span class="btn-text">Limpar</span>
+                    <span class="btn-text" data-translate-key="clear">Limpar</span>
                   </button>
                   <button id="plotter-export" class="btn-secondary" data-action="export" disabled>
                     <span class="btn-icon">💾</span>
-                    <span class="btn-text">Exportar CSV</span>
+                    <span class="btn-text" data-translate-key="exportCsv">Exportar CSV</span>
                   </button>
                 </div>
                 
@@ -379,10 +382,10 @@
                   <div class="plotter-chart-empty" id="plotter-empty">
                     <div class="plotter-chart-icon">📊</div>
                     <div class="plotter-chart-title">Serial Plotter MPU6050</div>
-                    <div class="plotter-chart-message">Conecte ao ESP32 e envie dados do sensor para ver o gráfico</div>
+                    <div class="plotter-chart-message" data-translate-key="plotterEmpty">Conecte ao ESP32 e envie dados do sensor para ver o gráfico</div>
                     <div class="plotter-chart-legend">
-                      <div>• Formato esperado: AX,AY,AZ,GX,GY,GZ (valores separados por vírgula)</div>
-                      <div>• Exemplo: 1.23,2.34,3.45,0.56,0.67,0.78</div>
+                      <div>• <span data-translate-key="formatExpected">Formato esperado: AX,AY,AZ,GX,GY,GZ (valores separados por vírgula)</span></div>
+                      <div>• <span data-translate-key="exampleFormat">Exemplo: 1.23,2.34,3.45,0.56,0.67,0.78</span></div>
                     </div>
                   </div>
                 </div>
@@ -466,13 +469,17 @@
                 
                 <div class="serial-form-group">
                   <label class="serial-form-label">🔧 Placa de Destino:</label>
-                  <select id="board-select" class="serial-form-control">
-                    <option value="esp32:esp32:esp32wrover">🔧 ESP32 WROVER</option>
-                    <option value="esp32:esp32:esp32">📱 ESP32 Dev Module</option>
-                    <option value="esp32:esp32:esp32doit-devkit-v1">🛠️ DOIT ESP32 DevKit V1</option>
-                    <option value="arduino:avr:uno">🔵 Arduino Uno</option>
-                    <option value="arduino:avr:mega">🟢 Arduino Mega</option>
+                  <select id="board-select-serial" class="serial-form-control">
+                    <option value="esp32:esp32:esp32">� ESP32 Dev Module (Padrão - Auto-reset)</option>
+                    <option value="esp32:esp32:esp32wrover">� ESP32 WROVER (PSRAM + Upload conservativo)</option>
+                    <option value="esp32:esp32:esp32doit-devkit-v1">⚡ DOIT ESP32 DevKit V1 (Auto-reset aprimorado)</option>
+                    <option value="arduino:avr:uno">🔵 Arduino Uno (ATmega328P - 115200 bps)</option>
+                    <option value="arduino:avr:mega">🟢 Arduino Mega (ATmega2560 - 115200 bps)</option>
                   </select>
+                  <small class="serial-form-help" id="board-help-serial">
+                    💡 <strong>ESP32 Dev Module</strong>: Melhor para a maioria dos casos, upload rápido<br>
+                    📡 <strong>ESP32 WROVER</strong>: Possui PSRAM, usa upload mais conservativo e estável
+                  </small>
                 </div>
 
                 <div class="serial-form-group">
@@ -496,7 +503,7 @@
 
                 <div class="serial-action-buttons">
                   <button id="upload-btn" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
-                  <button id="retry-upload-btn" class="serial-btn-retry" style="display: none;">🔄 Tentar Novamente</button>
+                  <!-- Botão de retry removido - modo strict sem auto-recovery -->
                   
                   <div class="serial-sensor-selection">
                     <label class="serial-form-label">🔧 Sensor para Instalar Bibliotecas:</label>
@@ -532,15 +539,15 @@
 
               <div class="serial-logs-panel">
                 <div class="serial-logs-header">
-                  <h4 class="serial-logs-title">🖥️ Logs de Compilação</h4>
-                  <button id="clear-logs" class="serial-btn-clear">🗑️ Limpar</button>
+                  <h4 class="serial-logs-title" data-translate-key="compilationLogs">🖥️ Logs de Compilação</h4>
+                  <button id="clear-logs" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
                 </div>
                 <div class="serial-logs-container">
                   <div id="compilation-logs" class="serial-logs-content">
                     <div class="serial-logs-empty">
                       <div class="serial-logs-icon">🔨</div>
-                      <div class="serial-logs-message">Logs de Compilação</div>
-                      <div class="serial-logs-hint">Clique em "Upload" para ver os logs</div>
+                      <div class="serial-logs-message" data-translate-key="compilationLogs">Logs de Compilação</div>
+                      <div class="serial-logs-hint" data-translate-key="clickUpload">Clique em "Upload" para ver os logs</div>
                     </div>
                   </div>
                 </div>
@@ -554,8 +561,8 @@
                 <h3 class="serial-console-title">🖥️ Console Serial</h3>
                 <div class="serial-console-actions">
                   <button id="open-plotter" class="serial-btn-plotter">📊</button>
-                  <button id="clear-console" class="serial-btn-clear">🗑️ Limpar</button>
-                  <button id="copy-console" class="serial-btn-copy">📋 Copiar</button>
+                  <button id="clear-console" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
+                  <button id="copy-console" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
                 </div>
               </div>
               
@@ -563,15 +570,15 @@
                 <div id="arduino-console" class="serial-console-content">
                   <div class="serial-console-empty">
                     <div class="serial-console-icon">📡</div>
-                    <div class="serial-console-message">Console Serial</div>
-                    <div class="serial-console-hint">Conecte a uma porta serial</div>
+                    <div class="serial-console-message" data-translate-key="serialConsole">Console Serial</div>
+                    <div class="serial-console-hint" data-translate-key="serialConsoleEmpty">Conecte a uma porta serial</div>
                   </div>
                 </div>
               </div>
 
               <div class="serial-command-input" id="command-input" style="display: none;">
-                <input type="text" id="command-text" class="serial-command-field" placeholder="Digite um comando para enviar ao ESP32...">
-                <button id="send-command" class="serial-btn-send">📤</button>
+                <input type="text" id="command-text" class="serial-command-field" data-translate-key-placeholder="commandPlaceholder" placeholder="Digite um comando para enviar ao ESP32...">
+                <button id="send-command" class="serial-btn-send" data-translate-key="send">📤</button>
               </div>
             </div>
           </div>
@@ -581,8 +588,8 @@
               <div class="serial-code-header">
                 <h3 class="serial-code-title">📄 Código C++ Gerado</h3>
                 <div class="serial-code-actions">
-                  <button id="copy-code" class="serial-btn-copy">📋 Copiar</button>
-                  <button id="download-code" class="serial-btn-download">💾 Download</button>
+                  <button id="copy-code" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
+                  <button id="download-code" class="serial-btn-download" data-translate-key="download">💾 Download</button>
                 </div>
               </div>
               
@@ -599,18 +606,18 @@
               
               <div class="serial-code-container">
                 <div class="serial-code-content">
-                  <pre id="code-display-full" class="serial-code-text">// Nenhum código foi gerado ainda
-// Use o editor de blocos para criar seu programa Arduino
+                  <pre id="code-display-full" class="serial-code-text" data-translate-key="noCode">// Nenhum código foi gerado ainda
+// Use o editor de blocos para criar seu programa Arduino  
 // Os blocos serão convertidos automaticamente em código C++</pre>
                 </div>
               </div>
               
               <div class="serial-code-footer">
                 <div class="serial-code-footer-text">
-                  💡 <strong>Dica:</strong> Use Ctrl+F para buscar no código, ou role horizontalmente se necessário
+                  💡 <strong>Dica:</strong> <span data-translate-key="searchTip">Use Ctrl+F para buscar no código, ou role horizontalmente se necessário</span>
                 </div>
                 <div class="serial-code-validation" id="code-validation">
-                  ⚠️ Adicione os blocos setup() e loop()
+                  ⚠️ <span data-translate-key="addSetupLoop">Adicione os blocos setup() e loop()</span>
                 </div>
               </div>
             </div>
@@ -1046,6 +1053,89 @@
       // ============================================================================
       
       console.log('🔄 Arduino CLI modal functionality moved to renderer.js');
+
+      // ============================================================================
+      // LÓGICA DAS OPÇÕES DE PLACAS ESP32
+      // ============================================================================
+      
+      // Configurações das placas para mostrar ao usuário
+      const boardConfigs = {
+        'esp32:esp32:esp32': {
+          name: 'ESP32 Dev Module',
+          description: 'ESP32 genérico com configurações padrão',
+          speed: '921600 bps',
+          features: ['Auto-reset habilitado', 'Upload rápido', 'Compatibilidade geral'],
+          ideal: 'Ideal para a maioria dos projetos ESP32',
+          color: '#4CAF50'
+        },
+        'esp32:esp32:esp32wrover': {
+          name: 'ESP32 WROVER Module', 
+          description: 'ESP32 WROVER com PSRAM e configurações otimizadas',
+          speed: '460800 bps (conservativo)',
+          features: ['PSRAM integrada', 'Upload mais estável', 'Timeout estendido'],
+          ideal: 'Ideal para projetos que precisam de mais memória RAM',
+          color: '#2196F3'
+        },
+        'esp32:esp32:esp32doit-devkit-v1': {
+          name: 'DOIT ESP32 DevKit V1',
+          description: 'DOIT DevKit V1 com auto-reset aprimorado',
+          speed: '921600 bps',
+          features: ['Auto-reset aprimorado', 'Circuito otimizado', 'Upload confiável'],
+          ideal: 'Ideal para placas DOIT específicas',
+          color: '#FF9800'
+        },
+        'arduino:avr:uno': {
+          name: 'Arduino Uno',
+          description: 'Arduino Uno R3 com ATmega328P',
+          speed: '115200 bps', 
+          features: ['Bootloader Arduino', 'Upload tradicional', 'Mais lento mas confiável'],
+          ideal: 'Ideal para projetos básicos Arduino',
+          color: '#795548'
+        },
+        'arduino:avr:mega': {
+          name: 'Arduino Mega',
+          description: 'Arduino Mega 2560 com ATmega2560',
+          speed: '115200 bps',
+          features: ['Mais pinos I/O', 'Mais memória', 'Upload tradicional'],
+          ideal: 'Ideal para projetos que precisam de muitos pinos',
+          color: '#607D8B'
+        }
+      };
+
+      // Atualizar informações da placa quando selecionada
+      function updateBoardInfo(selectElement, helpElement) {
+        if (!selectElement || !helpElement) return;
+        
+        const selectedBoard = selectElement.value;
+        const config = boardConfigs[selectedBoard];
+        
+        if (config) {
+          helpElement.innerHTML = `
+            <strong style="color: ${config.color};">${config.name}</strong><br>
+            📡 Velocidade: ${config.speed}<br>
+            💡 ${config.ideal}<br>
+            ✨ ${config.features.join(', ')}
+          `;
+        }
+      }
+
+      // Event listeners para seletores de placa
+      const boardSelect1 = document.getElementById('board-select');
+      const boardHelp1 = document.getElementById('board-help');
+      const boardSelectSerial = document.getElementById('board-select-serial');
+      const boardHelpSerial = document.getElementById('board-help-serial');
+
+      if (boardSelect1 && boardHelp1) {
+        boardSelect1.addEventListener('change', () => updateBoardInfo(boardSelect1, boardHelp1));
+        // Atualizar na inicialização
+        updateBoardInfo(boardSelect1, boardHelp1);
+      }
+
+      if (boardSelectSerial && boardHelpSerial) {
+        boardSelectSerial.addEventListener('change', () => updateBoardInfo(boardSelectSerial, boardHelpSerial));
+        // Atualizar na inicialização
+        updateBoardInfo(boardSelectSerial, boardHelpSerial);
+      }
 
       console.log('✅ Todos os event listeners configurados com sucesso');
     }); // Fim do DOMContentLoaded
