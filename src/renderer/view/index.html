@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Ideia Space</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
+  <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
+  <script src="../../../node_modules/blockly/javascript_compressed.js"></script>
+  <script src="../../../node_modules/blockly/msg/en.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-translate-key="pageTitle">Ferramenta de Programação de Missão</title>
+</head>
+<body>
+  <header class="header">
+    <img src="../../assets/logo-light.png" id="logoImg" class="logo" alt="Logo Ideia">
+    <h1 id="pageTitle" data-translate-key="pageTitle">Ferramenta de Programação de Missão </h1>
+    <div class="header-buttons">
+      <div class="language-selector">
+        <button id="languageToggle" class="language-button tooltip" data-tooltip-key="languageTooltip">
+          🇧🇷
+        </button>
+        <div class="language-dropdown" id="languageDropdown">
+          <button class="language-option" data-lang="pt-BR">🇧🇷 Português</button>
+          <button class="language-option" data-lang="en-US">🇺🇸 English</button>
+        </div>
+      </div>
+      <button id="darkModeToggle" class="dark-mode-toggle tooltip" data-tooltip-key="darkModeTooltip">
+        🌙
+      </button>
+    </div>
+  </header>
+  <div class="container">
+    <div id="blocklyDiv" class="blockly-area"></div>
+    <div class="side-panel">
+      <div class="code-section">
+        <div class="code-header">
+          <h3 id="codeHeader" data-translate-key="cppCodeTitle">🧠 Código C++</h3>
+        </div>
+        <pre id="code-display" class="code-box" data-translate-key-placeholder="cppCodePlaceholder">// Código C++ aparecerá aqui automaticamente</pre>
+      </div>
+      <div class="monitor-section">
+        <div class="button-group">
+          <button id="startButton" class="execute-button tooltip" data-tooltip-key="runCodeTooltip" data-translate-key="executeButton">
+            Executar
+          </button>
+          <button id="copyButton" class="copy-button tooltip" data-tooltip-key="copyCodeTooltip" data-translate-key="copyButton">
+            ⧉ Copiar
+          </button>
+        </div>
+        
+        <!-- Botão de Exemplos Arduino -->
+        <div class="examples-section">
+          <button id="examplesButton" class="examples-button tooltip" data-tooltip-key="examplesTooltip" data-translate-key="examplesButton">
+            <span class="examples-icon">📁</span>
+            <span class="examples-text" data-translate-key="examples">Exemplos</span>
+          </button>
+        </div>
+        
+        <div class="copy-feedback" id="copyFeedback" data-translate-key="copyFeedback">Código copiado para a área de transferência!</div>
+        <p id="message"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="variable-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 data-translate-key="variableModalTitle">📝 Criar Nova Variável</h2>
+      <div class="modal-body">
+        <label for="variable-name" data-translate-key="variableNameLabel">Nome da variável:</label>
+        <input type="text" id="variable-name" data-translate-key-placeholder="variableNamePlaceholder" placeholder="Digite o nome da variável..." maxlength="50">
+        <div class="modal-buttons">
+          <button id="create-variable-btn" class="btn-primary variable-create" data-translate-key="createVariableBtn">✅ Criar Variável</button>
+          <button id="cancel-variable-btn" class="btn-secondary" data-translate-key="cancelVariableBtn">❌ Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Exemplos Arduino -->
+  <div id="examples-modal" class="modal examples-modal-overlay">
+    <div class="examples-modal-content">
+      <div class="examples-modal-header">
+        <h2 class="examples-modal-title">
+          <span class="examples-title-icon">📁</span>
+          <span data-translate-key="examplesModalTitle">Exemplos Arduino</span>
+        </h2>
+        <button class="examples-modal-close" id="examples-modal-close">&times;</button>
+      </div>
+      
+      <div class="examples-modal-body">
+        <p class="examples-description" data-translate-key="examplesDescription">
+          Selecione um sensor para carregar o código de exemplo:
+        </p>
+        
+        <div class="examples-grid">
+          <div class="example-card" data-sensor="mpu6050">
+            <div class="example-icon">📐</div>
+            <h3 class="example-title">MPU6050</h3>
+            <p class="example-description" data-translate-key="mpu6050Description">Acelerômetro e Giroscópio</p>
+          </div>
+          
+          <div class="example-card" data-sensor="bmp180">
+            <div class="example-icon">🌡️</div>
+            <h3 class="example-title">BMP180</h3>
+            <p class="example-description" data-translate-key="bmp180Description">Pressão e Temperatura</p>
+          </div>
+          
+          <div class="example-card" data-sensor="bh1750">
+            <div class="example-icon">💡</div>
+            <h3 class="example-title">BH1750</h3>
+            <p class="example-description" data-translate-key="bh1750Description">Sensor de Luminosidade</p>
+          </div>
+          
+          <div class="example-card" data-sensor="hmc5883">
+            <div class="example-icon">🧭</div>
+            <h3 class="example-title">HMC5883</h3>
+            <p class="example-description" data-translate-key="hmc5883Description">Magnetômetro (Bússola)</p>
+          </div>
+          
+          <div class="example-card" data-sensor="dht11">
+            <div class="example-icon">💧</div>
+            <h3 class="example-title">DHT11</h3>
+            <p class="example-description" data-translate-key="dht11Description">Temperatura e Umidade</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="arduino-cli-modal" class="arduino-modal-overlay">
+    <div class="arduino-modal-container">
+      
+      <header class="modal-header-clean">
+        <div class="modal-header-left">
+          <div class="modal-icon-modern">⚡</div>
+          <div class="modal-title-modern">
+            <h2 data-translate-key="arduinoModalTitle">Arduino Development Environment</h2>
+            <span class="modal-subtitle-modern" data-translate-key="arduinoModalSubtitle">Compile, Upload & Monitor</span>
+          </div>
+        </div>
+        <div class="modal-header-right">
+          <div class="connection-status" id="arduino-connection-status">
+            <span class="status-dot"></span>
+            <span class="status-text">Disconnected</span>
+          </div>
+          <button id="arduino-cli-close" class="modal-close-modern">×</button>
+        </div>
+      </header>
+
+      <nav class="modal-tabs-clean">
+        <button class="tab-btn-clean active" data-tab="upload">
+          <span class="tab-icon">📤</span>
+          <span class="tab-label" data-translate-key="uploadTab">Upload</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="console">
+          <span class="tab-icon">🖥️</span>
+          <span class="tab-label" data-translate-key="consoleTab">Console</span>
+          <span class="tab-badge" id="console-count">0</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="plotter">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label" data-translate-key="plotterTab">Serial Plotter</span>
+          <span class="tab-badge" id="plotter-count">0</span>
+        </button>
+        <button class="tab-btn-clean" data-tab="code">
+          <span class="tab-icon">📄</span>
+          <span class="tab-label" data-translate-key="codeTab">Código</span>
+        </button>
+      </nav>
+
+      <main class="modal-main-content">
+        
+        <aside class="modal-sidebar">
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">🔌 <span data-translate-key="connectionStatus">Conexão</span></h4>
+            
+            <!-- Backend Status -->
+            <div class="connection-indicator" id="backend-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text" data-translate-key="backendOffline">Backend Offline</span>
+            </div>
+            
+            <!-- Backend Controls -->
+            <div class="form-group">
+              <div class="backend-controls">
+                <button id="start-backend-btn" class="backend-btn start">
+                  <span class="btn-icon">🚀</span>
+                  <span class="btn-text" data-translate-key="startBackend">Iniciar Backend</span>
+                </button>
+                <button id="stop-backend-btn" class="backend-btn stop" disabled>
+                  <span class="btn-icon">🛑</span>
+                  <span class="btn-text" data-translate-key="stopBackend">Parar Backend</span>
+                </button>
+              </div>
+              <small class="form-help" id="backend-info" data-translate-key="backendOffline">Backend Arduino CLI não iniciado</small>
+            </div>
+
+            <!-- WebSocket Status -->
+            <div class="connection-indicator" id="ws-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text">WebSocket Offline</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-translate-key="serialPort">Porta Serial</label>
+              <div class="input-with-button">
+                <select id="port-select" class="form-select" disabled>
+                  <option value="" data-translate-key="connecting">Conectando...</option>
+                </select>
+                <button id="refresh-ports" class="refresh-btn" data-tooltip-key="refresh" title="Atualizar">🔄</button>
+              </div>
+              <small class="form-help" id="port-info"><span>0</span> <span data-translate-key="portsAvailable">porta(s) disponível(eis)</span></small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-translate-key="baudRate">Baud Rate</label>
+              <div class="input-with-button">
+                <select id="baud-rate-select" class="form-select">
+                  <option value="300">300</option>
+                  <option value="600">600</option>
+                  <option value="1200">1200</option>
+                  <option value="2400">2400</option>
+                  <option value="4800">4800</option>
+                  <option value="9600" selected>9600</option>
+                  <option value="14400">14400</option>
+                  <option value="19200">19200</option>
+                  <option value="28800">28800</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="115200">115200</option>
+                  <option value="230400">230400</option>
+                  <option value="460800">460800</option>
+                  <option value="921600">921600</option>
+                </select>
+                <button id="reconnect-serial" class="refresh-btn" title="Reconectar com novo baud rate">🔄</button>
+              </div>
+              <small class="form-help">Velocidade de comunicação serial (9600 é padrão para DHT)</small>
+            </div>
+
+            <button id="connect-btn" class="connect-button" disabled>
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text" data-translate-key="connectButton">Conectar</span>
+            </button>
+          </div>
+
+          <div class="sidebar-section">
+            <h4 class="sidebar-title">📊 <span data-translate-key="statistics">Estatísticas</span></h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-label" data-translate-key="messages">Mensagens</span>
+                <span class="stat-value" id="stats-messages">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label" data-translate-key="status">Status</span>
+                <span class="stat-value" id="stats-status" data-translate-key="disconnected">Desconectado</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="content-area">
+          
+          <div class="tab-content active" data-tab="upload">
+            <div class="content-header">
+              <h3 data-translate-key="uploadCompilation">📤 Upload & Compilação</h3>
+              <div class="status-badge" id="upload-status" data-translate-key="ready">Pronto</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="form-section">
+                <h4 data-translate-key="boardConfiguration">Configuração da Placa</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" data-translate-key="boardType">Tipo de Placa</label>
+                    <select id="board-select" class="form-select">
+                      <option value="esp32:esp32:esp32">🚀 ESP32 Dev Module (Padrão - 921600 bps)</option>
+                      <option value="esp32:esp32:esp32wrover">📡 ESP32 WROVER (PSRAM - 460800 bps)</option>
+                    </select>
+                    <small class="form-help" id="board-help">ESP32 Dev Module: Velocidade alta, ideal para a maioria dos projetos</small>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" data-translate-key="uploadPort">Porta de Upload</label>
+                    <select id="upload-port-select" class="form-select">
+                      <option value="" data-translate-key="selectPort">Selecionar porta...</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-section">
+                <h4 data-translate-key="actions">Ações</h4>
+                <div class="action-buttons">
+                  <button id="upload-code" class="btn-primary" disabled>
+                    <span class="btn-icon">📤</span>
+                    <span data-translate-key="uploadCode">Upload Código</span>
+                  </button>
+                  <button id="compile-code" class="btn-secondary">
+                    <span class="btn-icon">⚙️</span>
+                    <span data-translate-key="compileCode">Compilar</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" data-tab="console">
+            <div class="content-header">
+              <h3 data-translate-key="serialConsole">🖥️ Console Serial</h3>
+              <div class="status-badge" data-translate-key="active">Ativo</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="console-container">
+                <div class="console-output" id="console-output"></div>
+                <div class="console-input">
+                  <input type="text" id="console-input" data-translate-key-placeholder="commandPlaceholder" placeholder="Digite um comando..." class="form-input">
+                  <button id="send-command" class="btn-primary" data-translate-key="send">Enviar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" data-tab="plotter">
+            <div class="content-header">
+              <h3 data-translate-key="serialPlotter">📊 Serial Plotter - MPU6050</h3>
+              <div class="status-badge" id="plotter-status" data-translate-key="waitingData">Aguardando dados</div>
+            </div>
+            
+            <div class="content-body">
+              <!-- Controles do Plotter -->
+              <div class="plotter-controls">
+                <div class="plotter-actions">
+                  <button id="plotter-pause" class="btn-secondary" data-action="pause">
+                    <span class="btn-icon">⏸️</span>
+                    <span class="btn-text" data-translate-key="pause">Pausar</span>
+                  </button>
+                  <button id="plotter-clear" class="btn-secondary" data-action="clear">
+                    <span class="btn-icon">🗑️</span>
+                    <span class="btn-text" data-translate-key="clear">Limpar</span>
+                  </button>
+                  <button id="plotter-export" class="btn-secondary" data-action="export" disabled>
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text" data-translate-key="exportCsv">Exportar CSV</span>
+                  </button>
+                </div>
+                
+                <!-- Controles de Visibilidade dos Sensores -->
+                <div class="plotter-sensors">
+                  <div class="sensor-group">
+                    <span class="sensor-group-title">🏃 Acelerômetro (m/s²):</span>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-x" checked>
+                      <span class="sensor-color" style="background-color: #ef4444;"></span>
+                      <span>X</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-y" checked>
+                      <span class="sensor-color" style="background-color: #10b981;"></span>
+                      <span>Y</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="accel-z" checked>
+                      <span class="sensor-color" style="background-color: #3b82f6;"></span>
+                      <span>Z</span>
+                    </label>
+                  </div>
+                  
+                  <div class="sensor-group">
+                    <span class="sensor-group-title">🔄 Giroscópio (°/s):</span>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-x" checked>
+                      <span class="sensor-color" style="background-color: #f59e0b;"></span>
+                      <span>X</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-y" checked>
+                      <span class="sensor-color" style="background-color: #8b5cf6;"></span>
+                      <span>Y</span>
+                    </label>
+                    <label class="sensor-checkbox">
+                      <input type="checkbox" id="gyro-z" checked>
+                      <span class="sensor-color" style="background-color: #06b6d4;"></span>
+                      <span>Z</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Área do Gráfico -->
+              <div class="plotter-chart-container">
+                <canvas id="plotter-chart" class="plotter-canvas"></canvas>
+                <div class="plotter-chart-overlay" id="plotter-overlay">
+                  <div class="plotter-chart-empty" id="plotter-empty">
+                    <div class="plotter-chart-icon">📊</div>
+                    <div class="plotter-chart-title">Serial Plotter MPU6050</div>
+                    <div class="plotter-chart-message" data-translate-key="plotterEmpty">Conecte ao ESP32 e envie dados do sensor para ver o gráfico</div>
+                    <div class="plotter-chart-legend">
+                      <div>• <span data-translate-key="formatExpected">Formato esperado: AX,AY,AZ,GX,GY,GZ (valores separados por vírgula)</span></div>
+                      <div>• <span data-translate-key="exampleFormat">Exemplo: 1.23,2.34,3.45,0.56,0.67,0.78</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Valores Atuais -->
+              <div class="plotter-current-values" id="plotter-values" style="display: none;">
+                <div class="values-section">
+                  <h5 class="values-section-title">🏃 Acelerômetro (m/s²)</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label" style="color: #ef4444;">X:</span>
+                      <span class="value-number" id="accel-x-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #10b981;">Y:</span>
+                      <span class="value-number" id="accel-y-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #3b82f6;">Z:</span>
+                      <span class="value-number" id="accel-z-value">0.000</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="values-section">
+                  <h5 class="values-section-title">🔄 Giroscópio (°/s)</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label" style="color: #f59e0b;">X:</span>
+                      <span class="value-number" id="gyro-x-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #8b5cf6;">Y:</span>
+                      <span class="value-number" id="gyro-y-value">0.000</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label" style="color: #06b6d4;">Z:</span>
+                      <span class="value-number" id="gyro-z-value">0.000</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="values-section">
+                  <h5 class="values-section-title">📊 Estatísticas</h5>
+                  <div class="values-list">
+                    <div class="value-item">
+                      <span class="value-label">Samples:</span>
+                      <span class="value-number" id="plotter-samples">0</span>
+                    </div>
+                    <div class="value-item">
+                      <span class="value-label">Rate:</span>
+                      <span class="value-number" id="plotter-rate">0 Hz</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" data-tab="code">
+            <div class="content-header">
+              <h3>📄 Código Gerado</h3>
+              <div class="status-badge">Visualização</div>
+            </div>
+            
+            <div class="content-body">
+              <div class="code-container">
+                <pre id="generated-code" class="code-display">// Código será gerado aqui...</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+            
+            <div class="serial-upload-layout">
+              <div class="serial-upload-controls">
+                <h4 class="serial-upload-controls-title">📤 Upload e Deploy</h4>
+                
+                <div class="serial-form-group">
+                  <label class="serial-form-label">🔧 Placa de Destino:</label>
+                  <select id="board-select-serial" class="serial-form-control">
+                    <option value="esp32:esp32:esp32">🚀 ESP32 Dev Module (Padrão - Auto-reset)</option>
+                    <option value="esp32:esp32:esp32wrover">📡 ESP32 WROVER (PSRAM + Upload conservativo)</option>
+                    <option value="esp32:esp32:esp32:PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200">🐌 ESP32 Modo Estável (Upload lento mas confiável)</option>
+                  </select>
+                  <small class="serial-form-help" id="board-help-serial">
+                    💡 <strong>ESP32 Dev Module</strong>: Melhor para a maioria dos casos, upload rápido<br>
+                    📡 <strong>ESP32 WROVER</strong>: Possui PSRAM, usa upload mais conservativo<br>
+                    🐌 <strong>Modo Estável</strong>: Use se tiver problemas de "Packet content transfer stopped"
+                  </small>
+                </div>
+
+                <div class="serial-form-group">
+                  <label class="serial-form-label">🔌 Porta de Upload:</label>
+                  <div class="serial-port-selection">
+                    <select id="modal-port-select" class="serial-form-control">
+                      <option value="">Selecionar porta...</option>
+                    </select>
+                    <button id="refresh-upload-ports" class="serial-refresh-btn">🔄</button>
+                  </div>
+                </div>
+
+                <div class="serial-code-info">
+                  <div class="serial-info-title">📄 Informações do Código:</div>
+                  <div class="serial-code-stats">
+                    <div>📏 Linhas: <span id="code-lines">0</span></div>
+                    <div>📝 Caracteres: <span id="code-chars">0</span></div>
+                    <div>🎯 Status: <span id="code-status">❌ Código vazio</span></div>
+                  </div>
+                </div>
+
+                <div class="serial-action-buttons">
+                  <button id="upload-btn" class="serial-btn-upload" disabled>📤 Upload para ESP</button>
+                  <!-- Upload simplificado com Arduino CLI v2.0 -->
+                  
+                  <div class="serial-sensor-selection">
+                    <label class="serial-form-label">🔧 Sensor para Instalar Bibliotecas:</label>
+                    <select id="sensor-select" class="serial-form-control">
+                      <option value="MPU6050">🏃 MPU6050 - Acelerômetro/Giroscópio</option>
+                      <option value="DHT">🌡️ DHT - Temperatura/Umidade</option>
+                      <option value="HMC5883">🧭 HMC5883 - Magnetômetro/Bússola</option>
+                      <option value="BMP180">📊 BMP180 - Pressão/Altitude</option>
+                      <option value="BH1750">💡 BH1750 - Luminosidade</option>
+                    </select>
+                  </div>
+                  
+                  <button id="install-libraries" class="serial-btn-libraries">📦 Instalar Bibliotecas</button>
+                </div>
+
+                <div class="serial-upload-progress" id="upload-progress" style="display: none;">
+                  <div class="serial-progress-bar">
+                    <div class="serial-progress-fill" id="upload-progress-fill"></div>
+                  </div>
+                  <div class="serial-progress-text" id="upload-progress-text">0%</div>
+                </div>
+
+                <div class="serial-tips">
+                  <div class="serial-info-title">💡 Dicas Gerais:</div>
+                  <div class="serial-tips-content">
+                    <div>• Arraste blocos no workspace primeiro</div>
+                    <div>• Conecte a ESP32 via USB</div>
+                    <div>• Selecione a porta correta</div>
+                    <div>• O monitor serial inicia automaticamente</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="serial-logs-panel">
+                <div class="serial-logs-header">
+                  <h4 class="serial-logs-title" data-translate-key="compilationLogs">🖥️ Logs de Compilação</h4>
+                  <button id="clear-logs" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
+                </div>
+                <div class="serial-logs-container">
+                  <div id="compilation-logs" class="serial-logs-content">
+                    <div class="serial-logs-empty">
+                      <div class="serial-logs-icon">🔨</div>
+                      <div class="serial-logs-message" data-translate-key="compilationLogs">Logs de Compilação</div>
+                      <div class="serial-logs-hint" data-translate-key="clickUpload">Clique em "Upload" para ver os logs</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="serial-tab-content" data-tab="console">
+            <div class="serial-console-panel">
+              <div class="serial-console-header">
+                <h3 class="serial-console-title">🖥️ Console Serial</h3>
+                <div class="serial-console-actions">
+                  <button id="open-plotter" class="serial-btn-plotter">📊</button>
+                  <button id="clear-console" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
+                  <button id="copy-console" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
+                </div>
+              </div>
+              
+              <div class="serial-console-container">
+                <div id="arduino-console" class="serial-console-content">
+                  <div class="serial-console-empty">
+                    <div class="serial-console-icon">📡</div>
+                    <div class="serial-console-message" data-translate-key="serialConsole">Console Serial</div>
+                    <div class="serial-console-hint" data-translate-key="serialConsoleEmpty">Conecte a uma porta serial</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="serial-command-input" id="command-input" style="display: none;">
+                <input type="text" id="command-text" class="serial-command-field" data-translate-key-placeholder="commandPlaceholder" placeholder="Digite um comando para enviar ao ESP32...">
+                <button id="send-command" class="serial-btn-send" data-translate-key="send">📤</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="serial-tab-content" data-tab="code">
+            <div class="serial-code-panel">
+              <div class="serial-code-header">
+                <h3 class="serial-code-title">📄 Código C++ Gerado</h3>
+                <div class="serial-code-actions">
+                  <button id="copy-code" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
+                  <button id="download-code" class="serial-btn-download" data-translate-key="download">💾 Download</button>
+                </div>
+              </div>
+              
+              <div class="serial-code-info">
+                <div class="serial-code-info-text">
+                  💡 Quebra de linha automática habilitada - código sempre ajustado à largura do modal
+                </div>
+                <div class="serial-code-stats">
+                  <span>📏 Linhas: <span id="code-lines-display">0</span></span>
+                  <span>📝 Caracteres: <span id="code-chars-display">0</span></span>
+                  <span>🔍 Tamanho: <span id="code-size-display">0</span> KB</span>
+                </div>
+              </div>
+              
+              <div class="serial-code-container">
+                <div class="serial-code-content">
+                  <pre id="code-display-full" class="serial-code-text" data-translate-key="noCode">// Nenhum código foi gerado ainda
+// Use o editor de blocos para criar seu programa Arduino  
+// Os blocos serão convertidos automaticamente em código C++</pre>
+                </div>
+              </div>
+              
+              <div class="serial-code-footer">
+                <div class="serial-code-footer-text">
+                  💡 <strong>Dica:</strong> <span data-translate-key="searchTip">Use Ctrl+F para buscar no código, ou role horizontalmente se necessário</span>
+                </div>
+                <div class="serial-code-validation" id="code-validation">
+                  ⚠️ <span data-translate-key="addSetupLoop">Adicione os blocos setup() e loop()</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <xml id="toolbox" class="toolbox">
+    <category name="Lógica" colour="#1d1856" data-translate-name="CAT_LOGIC">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_boolean"></block>
+    </category>
+    <category name="Controle" colour="#00cfe5" data-translate-name="CAT_CONTROL">
+      <block type="arduino_setup"></block>
+      <block type="arduino_loop"></block>
+      <block type="void_display"></block>
+      <sep></sep>
+      <block type="arduino_serial_begin"></block>
+      <block type="serial_not"></block>
+      <sep></sep>
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <shadow type="math_number"><field name="NUM">10</field></shadow>
+        </value>
+      </block>
+      <block type="controls_whileUntil"></block>
+    </category>
+    <category name="Matemática" colour="#e80074" data-translate-name="CAT_MATH">
+      <block type="math_number"><field name="NUM">0</field></block>
+      <block type="math_arithmetic"></block>
+      <block type="math_boolean"></block>
+      <block type="math_pi"></block>
+    </category>
+    <category name="Texto" colour="#5C7CFA" data-translate-name="CAT_TEXT">
+      <block type="text"></block>
+      <block type="text_join"></block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">Olá, mundo!</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <category name="Variáveis" colour="#00cfe5" data-translate-name="CAT_VARIABLES">
+      <button text="➕ Criar Nova Variável" callbackKey="CREATE_VARIABLE" data-translate-text="createVariableButton"></button>
+      <block type="int_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="float_declaration">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0.0</field></shadow>
+        </value>
+      </block>
+      <block type="bool_declaration">
+        <value name="VALUE">
+          <shadow type="logic_boolean"><field name="BOOL">TRUE</field></shadow>
+        </value>
+      </block>
+      <block type="string_declaration">
+        <value name="VALUE">
+          <shadow type="text"><field name="TEXT">texto</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
+      <block type="int_variable_get"></block>
+      <block type="int_variable_set">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+    </category>
+    </category>
+    <category name="Funções" colour="#e80074" custom="PROCEDURE" data-translate-name="CAT_FUNCTIONS">
+    </category>
+    <category name="Tempo" colour="#e80074" data-translate-name="CAT_TIME">
+      <block type="delay_function">
+        <value name="DELAY_TIME">
+          <shadow type="math_number">
+            <field name="NUM">1000</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+    <category name="Bibliotecas" colour="#3c3c3c" data-translate-name="CAT_LIBRARIES">
+      <block type="library_arduino_basic"></block>
+      <sep></sep>
+      <block type="library_wire"></block>
+      <block type="library_math"></block>
+      <sep></sep>
+      <block type="library_sensor"></block>
+      <block type="library_bmp180"></block>
+      <block type="library_bh1750"></block>
+      <block type="library_hmc5883"></block>
+      <block type="library_mpu6050"></block>
+      <block type="library_dht"></block>
+    </category>
+    <category name="Sensores" colour="#0c0931" data-translate-name="CAT_SENSORS">
+      <category name="MPU6050" colour="#FF8C00" data-translate-name="CAT_MPU6050">
+        <block type="mpu6050_declare_object"></block>
+        <block type="mpu6050_init"></block>
+        <sep></sep>
+        <block type="mpu6050_set_accel_range"></block>
+        <block type="mpu6050_set_gyro_range"></block>
+        <block type="mpu6050_set_filter_bandwidth"></block>
+        <sep></sep>
+        <block type="mpu6050_sensors_event"></block>
+        <block type="mpu6050_get_event"></block>
+        <sep></sep>
+        <block type="mpu6050_accel_x"></block>
+        <block type="mpu6050_accel_y"></block>
+        <block type="mpu6050_accel_z"></block>
+        <sep></sep>
+        <block type="mpu6050_gyro_x"></block>
+        <block type="mpu6050_gyro_y"></block>
+        <block type="mpu6050_gyro_z"></block>
+      </category>
+      <category name="BMP180" colour="#8a2e2e" data-translate-name="CAT_BMP180">
+        <block type="bmp180_init"></block>
+        <sep></sep>
+        <block type="bmp180_temperature"></block>
+        <block type="bmp180_pressure"></block>
+        <block type="bmp180_altitude"></block>
+      </category>
+      <category name="BH1750" colour="#fccf03" data-translate-name="CAT_BH1750">
+        <block type="bh1750_declare_object"></block>
+        <block type="bh1750_begin"></block>
+        <sep></sep>
+        <block type="bh1750_set_mode"></block>
+        <sep></sep>
+        <block type="bh1750_light_level"></block>
+      </category>
+      <category name="HMC5883" colour="#9932CC" data-translate-name="CAT_HMC5883">
+        <block type="hmc5883_sensor_object"></block>
+        <block type="hmc5883_init"></block>
+        <block type="hmc5883_begin"></block>
+        <block type="hmc5883_set_gain"></block>
+        <sep></sep>
+        <block type="hmc5883_event_declare"></block>
+        <block type="hmc5883_get_event"></block>
+        <sep></sep>
+        <block type="hmc5883_mag_x"></block>
+        <block type="hmc5883_mag_y"></block>
+        <block type="hmc5883_mag_z"></block>
+        <sep></sep>
+        <block type="hmc5883_field_strength"></block>
+        <block type="hmc5883_atan2"></block>
+        <block type="heading_correction">
+          <value name="DECLINATION">
+            <shadow type="math_number"><field name="NUM">0.22</field></shadow>
+          </value>
+        </block>
+        <sep></sep>
+        <block type="hmc5883_sensor_info"></block>
+        <block type="hmc5883_display_sensor"></block>
+      </category>
+      <category name="DHT" colour="#FF2800" data-translate-name="CAT_DHT">
+        <block type="dht_init"></block>
+        <block type="dht_begin"></block>
+        <sep></sep>
+        <block type="dht_temperature"></block>
+        <block type="dht_humidity"></block>
+        <block type="dht_heat_index">
+        </block>
+      </category>
+    </category>
+  </xml>
+
+  <script src="../model/blocks.js"></script>
+  <script src="../model/cpp_generator.js"></script>
+  
+  <script src="../controller/i18n.js"></script>
+  <script src="../controller/arduino-cli-client.js"></script>
+  
+  <script src="../controller/renderer.js"></script>
+  <script src="../../../debug_delay_block.js"></script>
+  <script>
+    // ============================================================================
+    // AGUARDAR DOM CARREGAR COMPLETAMENTE
+    // ============================================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM carregado, inicializando event listeners...');
+      
+      // ============================================================================
+      // FUNCIONALIDADE DO BOTÃO COPIAR
+      // ============================================================================
+      const copyButton = document.getElementById('copyButton');
+      const codeDisplay = document.getElementById('code-display');
+      const copyFeedback = document.getElementById('copyFeedback');
+
+      if (copyButton && codeDisplay && copyFeedback) {
+        copyButton.addEventListener('click', function() {
+          console.log('📋 Botão copiar clicado');
+          // Pega o texto do código
+          const codeText = codeDisplay.textContent || codeDisplay.innerText;
+          
+          // Copia para a área de transferência
+          navigator.clipboard.writeText(codeText).then(function() {
+            // Mostra feedback de sucesso
+            const t = getCurrentTranslation();
+            copyFeedback.classList.add('show');
+            copyButton.setAttribute('data-tooltip', t.copiedTooltip);
+            
+            // Volta ao estado normal após 2 segundos
+            setTimeout(function() {
+              copyFeedback.classList.remove('show');
+              copyButton.setAttribute('data-tooltip', t.copyTooltip);
+            }, 2000);
+          }).catch(function(err) {
+            // Fallback para navegadores mais antigos
+            const textArea = document.createElement('textarea');
+            textArea.value = codeText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Mostra feedback
+            const t = getCurrentTranslation();
+            copyFeedback.classList.add('show');
+            copyButton.setAttribute('data-tooltip', t.copiedTooltip);
+            
+            setTimeout(function() {
+              copyFeedback.classList.remove('show');
+              copyButton.setAttribute('data-tooltip', t.copyTooltip);
+            }, 2000);
+          });
+        });
+      } else {
+        console.error('❌ Elementos do botão copiar não encontrados');
+      }
+
+      // ============================================================================
+      // FUNCIONALIDADE DO DARK MODE
+      // ============================================================================
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      const body = document.body;
+      const logoImg = document.getElementById('logoImg');
+
+      // Função para trocar logo baseado no tema
+      function updateLogo() {
+        if (body.classList.contains('dark-mode')) {
+          logoImg.src = '../../assets/logo-dark.png'; // Logo para modo escuro
+        } else {
+          logoImg.src = '../../assets/logo-light.png'; // Logo para modo claro
+        }
+      }
+
+      if (darkModeToggle && body && logoImg) {
+        // Verificar se há preferência salva
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          body.classList.add('dark-mode');
+          darkModeToggle.textContent = '☀️';
+        }
+        
+        // Atualizar logo baseado no tema inicial
+        updateLogo();
+
+        darkModeToggle.addEventListener('click', function() {
+          console.log('🌙 Dark mode toggle clicado');
+          body.classList.toggle('dark-mode');
+          
+          // Atualizar logo após mudança de tema
+          updateLogo();
+          
+          const t = getCurrentTranslation();
+          if (body.classList.contains('dark-mode')) {
+            darkModeToggle.textContent = '☀️';
+            darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltipLight || 'Modo claro');
+            localStorage.setItem('theme', 'dark');
+          } else {
+            darkModeToggle.textContent = '🌙';
+            darkModeToggle.setAttribute('data-tooltip', t.darkModeTooltip || 'Modo escuro');
+            localStorage.setItem('theme', 'light');
+          }
+        });
+      } else {
+        console.error('❌ Elementos do dark mode não encontrados');
+      }
+
+      // ============================================================================
+      // FUNCIONALIDADE DO SELETOR DE IDIOMA
+      // ============================================================================
+      const languageToggle = document.getElementById('languageToggle');
+      const languageDropdown = document.getElementById('languageDropdown');
+
+      // Idioma atual (será sincronizado com i18n.js)
+      let currentLanguage = localStorage.getItem('language') || 'pt-BR';
+
+      // Função para obter tradução atual (compatibilidade com código existente)
+      function getCurrentTranslation() {
+        if (window.i18n && window.i18n.translations && window.i18n.translations[currentLanguage]) {
+          return window.i18n.translations[currentLanguage];
+        }
+        // Fallback básico
+        return {
+          copyTooltip: currentLanguage === 'pt-BR' ? 'Copiar código' : 'Copy code',
+          copiedTooltip: currentLanguage === 'pt-BR' ? 'Copiado!' : 'Copied!',
+          copyFeedback: currentLanguage === 'pt-BR' ? 'Código copiado para a área de transferência!' : 'Code copied to clipboard!',
+          darkModeTooltip: currentLanguage === 'pt-BR' ? 'Modo escuro' : 'Dark mode',
+          darkModeTooltipLight: currentLanguage === 'pt-BR' ? 'Modo claro' : 'Light mode'
+        };
+      }
+
+      if (languageToggle && languageDropdown) {
+        // Aplicar idioma salvo ao carregar
+        if (currentLanguage === 'en-US') {
+          languageToggle.textContent = '🇺🇸';
+        }
+
+        // Toggle dropdown
+        languageToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          languageDropdown.classList.toggle('show');
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function() {
+          languageDropdown.classList.remove('show');
+        });
+
+        // Seleção de idioma - integração com i18n.js
+        document.querySelectorAll('.language-option').forEach(option => {
+          option.addEventListener('click', async function() {
+            const selectedLang = this.getAttribute('data-lang');
+            currentLanguage = selectedLang;
+            
+            // Usar o sistema i18n.js se disponível
+            if (window.i18n) {
+              await window.i18n.setLanguage(selectedLang);
+            } else {
+              localStorage.setItem('language', selectedLang);
+            }
+            
+            // Atualizar bandeira
+            if (selectedLang === 'en-US') {
+              languageToggle.textContent = '🇺🇸';
+            } else {
+              languageToggle.textContent = '🇧🇷';
+            }
+            
+            // Fechar dropdown
+            languageDropdown.classList.remove('show');
+          });
+        });
+
+        // Listener para mudanças de idioma do i18n.js
+        window.addEventListener('languageChanged', function(event) {
+          currentLanguage = event.detail.language;
+          console.log('🌐 Interface atualizada para idioma:', currentLanguage);
+        });
+      } else {
+        console.error('❌ Elementos do seletor de idioma não encontrados');
+      }
+
+      // ============================================================================
+      // FUNCIONALIDADE DO MODAL DE VARIÁVEIS
+      // ============================================================================
+      const variableModal = document.getElementById('variable-modal');
+      const createVariableBtn = document.getElementById('create-variable-btn');
+      const cancelVariableBtn = document.getElementById('cancel-variable-btn');
+      const closeModalSpan = document.getElementsByClassName('close')[0];
+      const createVariableButton = document.querySelector('button[callbackKey="CREATE_VARIABLE"]');
+
+      if (variableModal && createVariableBtn && cancelVariableBtn && closeModalSpan && createVariableButton) {
+        // Quando o usuário clica no botão de criar nova variável
+        createVariableButton.addEventListener('click', function() {
+          variableModal.style.display = 'block';
+        });
+
+        // Quando o usuário clica no botão de criar variável no modal
+        createVariableBtn.addEventListener('click', function() {
+          const variableName = document.getElementById('variable-name').value.trim();
+          
+          if (variableName) {
+            // Fecha o modal
+            variableModal.style.display = 'none';
+            
+            // Limpa o campo de entrada
+            document.getElementById('variable-name').value = '';
+          } else {
+            alert('Por favor, digite um nome válido para a variável.');
+          }
+        });
+
+        // Quando o usuário clica no botão de cancelar no modal
+        cancelVariableBtn.addEventListener('click', function() {
+          variableModal.style.display = 'none';
+        });
+
+        // Quando o usuário clica no "x" para fechar o modal
+        closeModalSpan.addEventListener('click', function() {
+          variableModal.style.display = 'none';
+        });
+
+        // Fecha o modal se o usuário clicar fora dele
+        window.addEventListener('click', function(event) {
+          if (event.target == variableModal) {
+            variableModal.style.display = 'none';
+          }
+        });
+      } else {
+        console.error('❌ Elementos do modal de variáveis não encontrados');
+      }
+
+    // Função para testar tradução dos blocos (disponível no console)
+    window.testBlockTranslation = function() {
+      if (window.i18n) {
+        console.log('🧪 Testando tradução dos blocos...');
+        window.i18n.forceTranslateBlocks();
+      } else {
+        console.log('❌ Sistema i18n não disponível');
+      }
+    };
+
+    // Adicionar evento de teclado para teste rápido (Ctrl+Shift+T)
+    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.shiftKey && event.key === 'T') {
+        event.preventDefault();
+        window.testBlockTranslation();
+      }
+    });
+
+      // ============================================================================
+      // ARDUINO CLI MODAL FUNCTIONALITY - Now handled by renderer.js
+      // ============================================================================
+      
+      console.log('🔄 Arduino CLI modal functionality moved to renderer.js');
+
+      // ============================================================================
+      // LÓGICA DAS OPÇÕES DE PLACAS ESP32
+      // ============================================================================
+      
+      // Configurações das placas para mostrar ao usuário (apenas ESP32)
+      const boardConfigs = {
+        'esp32:esp32:esp32': {
+          name: 'ESP32 Dev Module',
+          description: 'ESP32 genérico com configurações padrão',
+          speed: '921600 bps',
+          features: ['Auto-reset habilitado', 'Upload rápido', 'Compatibilidade geral'],
+          ideal: 'Ideal para a maioria dos projetos ESP32',
+          color: '#4CAF50'
+        },
+        'esp32:esp32:esp32wrover': {
+          name: 'ESP32 WROVER Module', 
+          description: 'ESP32 WROVER com PSRAM e configurações otimizadas',
+          speed: '460800 bps (conservativo)',
+          features: ['PSRAM integrada', 'Upload mais estável', 'Timeout estendido'],
+          ideal: 'Ideal para projetos que precisam de mais memória RAM',
+          color: '#2196F3'
+        }
+      };
+
+      // Atualizar informações da placa quando selecionada
+      function updateBoardInfo(selectElement, helpElement) {
+        if (!selectElement || !helpElement) return;
+        
+        const selectedBoard = selectElement.value;
+        const config = boardConfigs[selectedBoard];
+        
+        if (config) {
+          helpElement.innerHTML = `
+            <strong style="color: ${config.color};">${config.name}</strong><br>
+            📡 Velocidade: ${config.speed}<br>
+            💡 ${config.ideal}<br>
+            ✨ ${config.features.join(', ')}
+          `;
+        }
+      }
+
+      // Event listeners para seletores de placa
+      const boardSelect1 = document.getElementById('board-select');
+      const boardHelp1 = document.getElementById('board-help');
+      const boardSelectSerial = document.getElementById('board-select-serial');
+      const boardHelpSerial = document.getElementById('board-help-serial');
+
+      if (boardSelect1 && boardHelp1) {
+        boardSelect1.addEventListener('change', () => updateBoardInfo(boardSelect1, boardHelp1));
+        // Atualizar na inicialização
+        updateBoardInfo(boardSelect1, boardHelp1);
+      }
+
+      if (boardSelectSerial && boardHelpSerial) {
+        boardSelectSerial.addEventListener('change', () => updateBoardInfo(boardSelectSerial, boardHelpSerial));
+        // Atualizar na inicialização
+        updateBoardInfo(boardSelectSerial, boardHelpSerial);
+      }
+
+      console.log('✅ Todos os event listeners configurados com sucesso');
+    }); // Fim do DOMContentLoaded
+  </script>
+
+  <!-- Serial Plotter Header (Independent) -->
+  <div id="plotter-header" class="plotter-header" style="display: none;">
+    <div class="plotter-header-content">
+      <div class="plotter-header-top">
+        <div class="plotter-header-title">
+          <span class="plotter-icon">📊</span>
+          <span>Serial Plotter - MPU6050</span>
+        </div>
+        <div class="plotter-header-controls">
+          <button id="plotter-minimize" class="plotter-btn-minimize">−</button>
+          <button id="plotter-close" class="plotter-btn-close">×</button>
+        </div>
+      </div>
+      
+      <div class="plotter-content">
+        <div class="plotter-controls-bar">
+          <div class="plotter-actions">
+            <button id="plotter-pause-header" class="plotter-btn">⏸️ Pausar</button>
+            <button id="plotter-clear-header" class="plotter-btn">🗑️ Limpar</button>
+            <button id="plotter-export-header" class="plotter-btn" disabled>📊 Export CSV</button>
+          </div>
+          
+          <div class="plotter-sensor-checkboxes">
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-x-header" checked>
+              <span class="plotter-checkbox-color" style="color: #ef4444;">●</span>
+              <span>Accel X</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-y-header" checked>
+              <span class="plotter-checkbox-color" style="color: #10b981;">●</span>
+              <span>Accel Y</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="accel-z-header" checked>
+              <span class="plotter-checkbox-color" style="color: #3b82f6;">●</span>
+              <span>Accel Z</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-x-header" checked>
+              <span class="plotter-checkbox-color" style="color: #f59e0b;">●</span>
+              <span>Gyro X</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-y-header" checked>
+              <span class="plotter-checkbox-color" style="color: #8b5cf6;">●</span>
+              <span>Gyro Y</span>
+            </label>
+            <label class="plotter-checkbox-label">
+              <input type="checkbox" id="gyro-z-header" checked>
+              <span class="plotter-checkbox-color" style="color: #06b6d4;">●</span>
+              <span>Gyro Z</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="plotter-chart-container">
+          <div id="plotter-chart-header" class="plotter-chart">
+            <div class="plotter-chart-empty">
+              <div class="plotter-chart-icon">📊</div>
+              <div class="plotter-chart-title">Serial Plotter</div>
+              <div class="plotter-chart-message">Conecte ao ESP32 com MPU6050 para ver os gráficos</div>
+              <div class="plotter-chart-legend">
+                <div>• Acelerômetro: linhas contínuas (X=vermelho, Y=verde, Z=azul)</div>
+                <div>• Giroscópio: linhas tracejadas (X=laranja, Y=roxo, Z=ciano)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plotter-current-values" id="current-values-header" style="display: none;">
+          <h4 class="plotter-values-title">📊 Valores Atuais do MPU6050</h4>
+          <div class="plotter-values-grid">
+            <div class="plotter-values-section">
+              <h5 class="plotter-values-section-title">🏃 Acelerômetro (m/s²)</h5>
+              <div class="plotter-values-list">
+                <div class="plotter-value-item">
+                  <span style="color: #ef4444;">X:</span>
+                  <span id="accel-x-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #10b981;">Y:</span>
+                  <span id="accel-y-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #3b82f6;">Z:</span>
+                  <span id="accel-z-value-header">0.000</span>
+                </div>
+              </div>
+            </div>
+            <div class="plotter-values-section">
+              <h5 class="plotter-values-section-title">🔄 Giroscópio (°/s)</h5>
+              <div class="plotter-values-list">
+                <div class="plotter-value-item">
+                  <span style="color: #f59e0b;">X:</span>
+                  <span id="gyro-x-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #8b5cf6;">Y:</span>
+                  <span id="gyro-y-value-header">0.000</span>
+                </div>
+                <div class="plotter-value-item">
+                  <span style="color: #06b6d4;">Z:</span>
+                  <span id="gyro-z-value-header">0.000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

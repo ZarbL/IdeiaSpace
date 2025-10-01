@@ -1,0 +1,97 @@
+{
+  "name": "ideiaspace-mission",
+  "version": "1.0.0",
+  "description": "Plataforma digital de programação em blocos para ensino de conceitos aeroespaciais",
+  "main": "src/main/main.js",
+  "author": {
+    "name": "IdeiaSpace",
+    "email": "contato@ideiaspace.com.br"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron-forge start",
+    "dev": "electron . --dev",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backend:install": "cd backend && npm install",
+    "backend:setup": "cd backend && npm run auto-setup",
+    "backend:start": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:check": "cd backend && node check-prerequisites.js",
+    "setup": "npm install && npm run backend:setup",
+    "prestart": "npm run backend:check"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.2.0",
+    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/maker-rpm": "^7.2.0",
+    "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.2.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
+    "@electron-forge/plugin-webpack": "^0.0.2",
+    "electron": "^27.0.0",
+    "eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "blockly": "^10.4.3"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "name": "IdeiaSpace Mission",
+        "icon": "./src/assets/logo-dark.png",
+        "asar": true,
+        "overwrite": true
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "ideiaspace_mission",
+            "authors": "IdeiaSpace",
+            "description": "Plataforma de programação em blocos para ensino aeroespacial"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin",
+            "win32"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {
+            "options": {
+              "maintainer": "IdeiaSpace",
+              "homepage": "https://ideiaspace.com.br"
+            }
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "options": {
+              "maintainer": "IdeiaSpace",
+              "homepage": "https://ideiaspace.com.br"
+            }
+          }
+        }
+      ],
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "ideiaspace",
+              "name": "ideiaspace-mission"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
