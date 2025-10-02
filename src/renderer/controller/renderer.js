@@ -302,7 +302,7 @@ let serialMonitorState = {
   isConnected: false,
   websocket: null,
   currentTab: 'upload',
-  baudRate: '9600',
+  baudRate: '115200',
   selectedPort: '',
   availablePorts: [],
   sensorData: [],
@@ -3409,7 +3409,7 @@ const sensorExamples = {
 
 Adafruit_MPU6050 mpu;
 
-void setup(void) {
+void setup() {
   Serial.begin(115200);
   while (!Serial) {
     delay(10);

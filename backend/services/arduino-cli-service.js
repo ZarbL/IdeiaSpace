@@ -22,16 +22,23 @@ class ArduinoCLIService {
 
     const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
     this.cliPath = path.join(__dirname, '..', 'arduino-cli', executable);
-    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'arduino-cli.yaml');
+    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'arduino-cli.yaml');
+
+    // GARANTIR que o Arduino CLI use APENAS configurações locais
+    process.env.ARDUINO_CONFIG_FILE = this.configPath;
+    process.env.ARDUINO_DATA_DIR = path.join(__dirname, '..', 'arduino-cli', 'config', 'data');
+    process.env.ARDUINO_LIBRARY_DIR = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
 
     console.log(`🔍 Procurando Arduino CLI em: ${this.cliPath}`);
+    console.log(`🔧 Configuração: ${this.configPath}`);
+    console.log(`📚 Bibliotecas: ${process.env.ARDUINO_LIBRARY_DIR}`);
     
     if (!fs.existsSync(this.cliPath)) {
       throw new Error(`❌ Arduino CLI não encontrado em ${this.cliPath}.\n💡 Execute: npm run install-cli`);
     }
 
     this.isInitialized = true;
-    console.log('🚀 Arduino CLI Service inicializado');
+    console.log('🚀 Arduino CLI Service inicializado com configuração local');
   }
 
   /**
