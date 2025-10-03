@@ -17,6 +17,9 @@ class ArduinoCLIInstaller {
     this.cliDir = path.join(this.baseDir, 'arduino-cli');
     this.configDir = path.join(this.cliDir, 'config');
     
+    // Detectar arquitetura correta
+    this.arch = this.getArchitecture();
+    
     // URLs atualizadas para Arduino CLI v1.0.4 (mais recente)
     this.downloadUrls = {
       win32: [
@@ -24,7 +27,11 @@ class ArduinoCLIInstaller {
         'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_Windows_64bit.zip',
         'https://github.com/arduino/arduino-cli/releases/download/v0.34.2/arduino-cli_0.34.2_Windows_64bit.zip'
       ],
-      darwin: [
+      darwin: this.arch === 'arm64' ? [
+        'https://github.com/arduino/arduino-cli/releases/download/v1.0.4/arduino-cli_1.0.4_macOS_ARM64.tar.gz',
+        'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_macOS_ARM64.tar.gz',
+        'https://github.com/arduino/arduino-cli/releases/download/v0.34.2/arduino-cli_0.34.2_macOS_ARM64.tar.gz'
+      ] : [
         'https://github.com/arduino/arduino-cli/releases/download/v1.0.4/arduino-cli_1.0.4_macOS_64bit.tar.gz',
         'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_macOS_64bit.tar.gz',
         'https://github.com/arduino/arduino-cli/releases/download/v0.34.2/arduino-cli_0.34.2_macOS_64bit.tar.gz'
@@ -35,6 +42,13 @@ class ArduinoCLIInstaller {
         'https://github.com/arduino/arduino-cli/releases/download/v0.34.2/arduino-cli_0.34.2_Linux_64bit.tar.gz'
       ]
     };
+  }
+
+  getArchitecture() {
+    // Detectar arquitetura do sistema
+    const arch = process.arch;
+    console.log(`🔍 Sistema detectado: ${process.platform} ${arch}`);
+    return arch;
   }
 
   async install() {

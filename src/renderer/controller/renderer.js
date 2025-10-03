@@ -451,16 +451,27 @@ async function openSerialMonitorModal() {
     
     // Verificar status do backend primeiro
     console.log('🔍 Verificando status do backend...');
-    await checkBackendStatus();
+    const backendCheck = await checkBackendStatus();
+    console.log('📊 Resultado do check do backend:', backendCheck);
     
     // Forçar atualização do status de conexão após verificar backend
     updateConnectionStatus();
     
-    // Inicializar Arduino CLI client
+    // Inicializar Arduino CLI client com URL dinâmica
     if (!window.arduinoCLI) {
-      window.arduinoCLI = new ArduinoCLIClient();
-      console.log('🔧 Arduino CLI Client inicializado');
+      window.arduinoCLI = new ArduinoCLIClient(backendState.baseUrl);
+      console.log(`🔧 Arduino CLI Client inicializado com URL: ${backendState.baseUrl}`);
+    } else {
+      // Atualizar URL caso tenha mudado
+      window.arduinoCLI.baseUrl = backendState.baseUrl;
+      console.log(`🔄 Arduino CLI Client URL atualizada: ${backendState.baseUrl}`);
     }
+    
+    console.log('🔍 Estado atual do backend:', {
+      isRunning: backendState.isRunning,
+      baseUrl: backendState.baseUrl,
+      status: backendState.status
+    });
     
     // Se backend estiver rodando, testar conexão e atualizar portas
     if (backendState.isRunning) {
@@ -853,16 +864,37 @@ async function stopBackend() {
 
 async function checkBackendStatus() {
   try {
+    console.log('🔍 Fazendo IPC call para get-arduino-backend-status...');
     const { ipcRenderer } = require('electron');
     const result = await ipcRenderer.invoke('get-arduino-backend-status');
+    
+    console.log('📡 Resposta do IPC:', result);
     
     if (result.success) {
       backendState.isRunning = result.isRunning;
       backendState.status = result.status;
       
+      console.log('✅ Backend status atualizado:', {
+        isRunning: backendState.isRunning,
+        external: result.status?.external,
+        port: result.status?.port
+      });
+      
+      // Atualizar URL base se o backend informar uma porta diferente
+      if (result.status && result.status.port) {
+        const newUrl = `http://localhost:${result.status.port}`;
+        if (backendState.baseUrl !== newUrl) {
+          console.log(`🔄 Atualizando baseUrl: ${backendState.baseUrl} → ${newUrl}`);
+          backendState.baseUrl = newUrl;
+        }
+      }
+      
       if (result.status.lastError) {
         backendState.lastError = result.status.lastError;
+        console.warn('⚠️ Backend tem erro:', result.status.lastError);
       }
+    } else {
+      console.error('❌ Falha ao obter status do backend:', result.error);
     }
     
     updateBackendUI();

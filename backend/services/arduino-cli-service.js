@@ -42,6 +42,27 @@ class ArduinoCLIService {
   }
 
   /**
+   * Retorna o diretório temporário correto para o OS atual
+   */
+  getTempDirectory(subPath = '') {
+    let osTempDir;
+    
+    if (process.platform === 'win32') {
+      // Windows: tentar variáveis de ambiente, senão usar localAppData
+      osTempDir = process.env.TEMP || process.env.TMP || 
+                  path.join(process.env.LOCALAPPDATA || process.env.USERPROFILE || 'C:\\Users\\Default', 'Temp');
+    } else {
+      // macOS/Linux: usar TMPDIR ou /tmp
+      osTempDir = process.env.TMPDIR || '/tmp';
+    }
+    
+    // Limpar trailing slashes
+    osTempDir = osTempDir.replace(/[\/\\]+$/, '');
+    
+    return subPath ? path.join(osTempDir, subPath) : osTempDir;
+  }
+
+  /**
    * Executa comando do Arduino CLI
    */
   async executeCommand(command, options = {}) {
@@ -359,10 +380,10 @@ class ArduinoCLIService {
    * Compila um sketch Arduino
    */
   async compileSketch(code, board = 'esp32:esp32:esp32', options = {}) {
-    const tempDir = path.join('C:', 'temp', 'arduino_sketches', `compile_${Date.now()}`);
+    const tempDir = this.getTempDirectory(path.join('ideiaspace', 'arduino_sketches', `compile_${Date.now()}`));
     const sketchDir = path.join(tempDir, 'sketch');
     const sketchFile = path.join(sketchDir, 'sketch.ino');
-    const buildDir = path.join('C:', 'temp', 'arduino_builds', `build_${Date.now()}`);
+    const buildDir = this.getTempDirectory(path.join('ideiaspace', 'arduino_builds', `build_${Date.now()}`));
 
     try {
       // Validar código
@@ -421,7 +442,7 @@ class ArduinoCLIService {
    * Compila sketch e retorna informações detalhadas sobre o binário
    */
   async compileWithOutput(code, board = 'esp32:esp32:esp32', options = {}) {
-    const tempDir = path.join('C:', 'temp', 'arduino_sketches', `compile_output_${Date.now()}`);
+    const tempDir = this.getTempDirectory(path.join('ideiaspace', 'arduino_sketches', `compile_output_${Date.now()}`));
     const sketchDir = path.join(tempDir, 'sketch');
     const sketchFile = path.join(sketchDir, 'sketch.ino');
     const buildDir = path.join(tempDir, 'build');
@@ -506,7 +527,9 @@ class ArduinoCLIService {
   async uploadESP32Direct(code, port, board = 'esp32:esp32:esp32', onProgress = null) {
     const timestamp = Date.now();
     const sketchName = 'esp32_sketch';
-    const tempDir = path.join(process.env.TEMP || 'C:\\temp', 'ideiaspace', `${timestamp}`);
+    
+    // Usar método auxiliar para diretório temporário
+    const tempDir = this.getTempDirectory(path.join('ideiaspace', `${timestamp}`));
     const sketchDir = path.join(tempDir, sketchName);
     const sketchFile = path.join(sketchDir, `${sketchName}.ino`);
 

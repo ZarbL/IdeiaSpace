@@ -10,6 +10,8 @@
     "setup": "npm install && npm run install-cli",
     "auto-setup": "node auto-setup.js",
     "diagnostic": "node diagnostic.js",
+    "esp32-diagnostic": "node esp32-diagnostic.js",
+    "esp32-monitor": "node esp32-monitor.js",
     "fix-esp32": "node diagnostic.js && npm run install-cli",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prestart": "node auto-setup.js"

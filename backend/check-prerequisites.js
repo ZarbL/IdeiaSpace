@@ -111,7 +111,9 @@ class PrerequisitesChecker {
     console.log('⚙️ Verificando Arduino CLI...');
     
     const arduinoCliPath = path.join(this.backendDir, 'arduino-cli');
-    const arduinoCliExePath = path.join(arduinoCliPath, 'arduino-cli.exe');
+    // Detectar executável correto baseado no sistema operacional
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    const arduinoCliExePath = path.join(arduinoCliPath, executable);
     
     if (!fs.existsSync(arduinoCliExePath)) {
       console.log('   ❌ Arduino CLI não encontrado');

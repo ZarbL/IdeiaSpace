@@ -42,6 +42,7 @@ app.disableHardwareAcceleration();
 let backendProcess = null;
 let backendStatus = {
   running: false,
+  external: false, // Se é um backend rodando externamente
   port: 3001,
   wsPort: 8080,
   pid: null,
@@ -360,10 +361,31 @@ ipcMain.handle('stop-arduino-backend', async () => {
 
 // Obter status do backend
 ipcMain.handle('get-arduino-backend-status', async () => {
+  // Primeiro, verificar se há um backend externo rodando
+  try {
+    const { default: fetch } = await import('node-fetch');
+    const response = await fetch(`http://localhost:3001/ping`, { timeout: 2000 });
+    
+    if (response.ok) {
+      // Backend externo detectado
+      backendStatus.running = true;
+      backendStatus.external = true;
+      backendStatus.port = 3001;
+      console.log('✅ Backend externo detectado rodando na porta 3001');
+    }
+  } catch (error) {
+    // Backend externo não está rodando
+    if (backendStatus.external) {
+      backendStatus.running = false;
+      backendStatus.external = false;
+      console.log('⚠️ Backend externo parou de responder');
+    }
+  }
+  
   return {
     success: true,
     status: backendStatus,
-    isRunning: backendProcess && !backendProcess.killed
+    isRunning: backendStatus.running || (backendProcess && !backendProcess.killed)
   };
 });
 

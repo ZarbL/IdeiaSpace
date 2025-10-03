@@ -6,9 +6,12 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-// Arduino CLI Service configurado e funcionando
+// Auto-setup e Arduino CLI Service
+const AutoSetup = require('./auto-setup');
 const ArduinoCLIService = require('./services/arduino-cli-service');
 const SerialService = require('./services/serial-service');
+const ESP32Diagnostic = require('./esp32-diagnostic');
+const ESP32Monitor = require('./esp32-monitor');
 
 class BackendServer {
   constructor() {
@@ -18,6 +21,9 @@ class BackendServer {
     
     this.arduinoService = new ArduinoCLIService();
     this.serialService = new SerialService();
+    this.esp32Diagnostic = new ESP32Diagnostic();
+    this.esp32Monitor = null; // Será inicializado conforme necessário
+    this.isMonitoringESP32 = false;
     
     this.setupMiddleware();
     this.setupRoutes();
@@ -26,26 +32,29 @@ class BackendServer {
   setupMiddleware() {
     // CORS para permitir requisições do Electron
     this.app.use(cors({
-      origin: ['http://localhost:*', 'file://*', '*'],
+      origin: true, // Permitir qualquer origem para Electron
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      credentials: false
     }));
 
     // Parser JSON
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true }));
 
-    // Middleware de logging
+    // Middleware de logging melhorado
     this.app.use((req, res, next) => {
-      console.log(`🌐 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+      const origin = req.headers.origin || 'unknown';
+      console.log(`🌐 ${req.method} ${req.path} - Origin: ${origin} - ${new Date().toISOString()}`);
       next();
     });
 
-    // Headers de segurança
+    // Headers de segurança adicionais para Electron
     this.app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      res.header('Access-Control-Max-Age', '86400'); // Cache preflight por 24h
       
       if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
@@ -56,29 +65,28 @@ class BackendServer {
   }
 
   setupRoutes() {
-    // Rota de health check
-    this.app.get('/health', async (req, res) => {
-      try {
-        const arduinoHealth = await this.arduinoService.healthCheck();
-        const serialStatus = this.serialService.getConnectionsStatus();
-        
-        res.json({
-          status: 'ok',
-          timestamp: new Date().toISOString(),
-          arduino_cli: arduinoHealth,
-          serial_connections: serialStatus,
-          server: {
-            uptime: process.uptime(),
-            memory: process.memoryUsage(),
-            version: process.version
-          }
-        });
-      } catch (error) {
-        res.status(500).json({
-          status: 'error',
-          message: error.message
-        });
-      }
+        // Endpoint básico de ping
+    this.app.get('/ping', (req, res) => {
+      res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        message: 'IdeiaSpace Backend Running'
+      });
+    });
+
+    // Health check endpoint mais detalhado  
+    this.app.get('/health', (req, res) => {
+      res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        platform: process.platform,
+        arch: process.arch,
+        node_version: process.version,
+        uptime: process.uptime(),
+        arduino_cli: {
+          available: this.arduinoService ? true : false
+        }
+      });
     });
 
     // Rotas do Arduino CLI
@@ -107,6 +115,100 @@ class BackendServer {
   }
 
   setupArduinoRoutes() {
+    // === ROTAS ESP32 DIAGNÓSTICO E MONITORAMENTO ===
+    
+    // Diagnóstico automático ESP32
+    this.app.get('/api/esp32/diagnostic', async (req, res) => {
+      try {
+        console.log('🔬 Executando diagnóstico ESP32...');
+        
+        // Capturar output do diagnóstico
+        const diagnosticResult = await this.runESP32Diagnostic();
+        
+        res.json({
+          success: true,
+          diagnostic: diagnosticResult,
+          timestamp: new Date().toISOString(),
+          platform: process.platform,
+          arch: process.arch
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro no diagnóstico ESP32',
+          error: error.message
+        });
+      }
+    });
+
+    // Iniciar monitoramento ESP32
+    this.app.post('/api/esp32/start-monitor', async (req, res) => {
+      try {
+        if (this.isMonitoringESP32) {
+          return res.json({
+            success: true,
+            message: 'Monitor ESP32 já está ativo',
+            isMonitoring: true
+          });
+        }
+
+        console.log('📡 Iniciando monitor ESP32...');
+        await this.startESP32Monitor();
+        
+        res.json({
+          success: true,
+          message: 'Monitor ESP32 iniciado com sucesso',
+          isMonitoring: true
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao iniciar monitor ESP32',
+          error: error.message
+        });
+      }
+    });
+
+    // Parar monitoramento ESP32
+    this.app.post('/api/esp32/stop-monitor', async (req, res) => {
+      try {
+        if (!this.isMonitoringESP32) {
+          return res.json({
+            success: true,
+            message: 'Monitor ESP32 não está ativo',
+            isMonitoring: false
+          });
+        }
+
+        console.log('🛑 Parando monitor ESP32...');
+        await this.stopESP32Monitor();
+        
+        res.json({
+          success: true,
+          message: 'Monitor ESP32 parado',
+          isMonitoring: false
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao parar monitor ESP32',
+          error: error.message
+        });
+      }
+    });
+
+    // Status do monitor ESP32
+    this.app.get('/api/esp32/monitor-status', (req, res) => {
+      res.json({
+        success: true,
+        isMonitoring: this.isMonitoringESP32,
+        platform: process.platform,
+        hasESP32Monitor: !!this.esp32Monitor
+      });
+    });
+
+    // === ROTAS ARDUINO ORIGINAIS ===
+    
     // Compilação
     this.app.post('/api/arduino/compile', async (req, res) => {
       try {
@@ -470,7 +572,11 @@ class BackendServer {
           install_core: 'POST /api/arduino/core/install',
           update: 'POST /api/arduino/update',
           esp32_status: 'GET /api/arduino/esp32/status',
-          esp32_install: 'POST /api/arduino/esp32/install'
+          esp32_install: 'POST /api/arduino/esp32/install',
+          esp32_diagnostic: 'GET /api/esp32/diagnostic',
+          esp32_monitor_start: 'POST /api/esp32/start-monitor',
+          esp32_monitor_stop: 'POST /api/esp32/stop-monitor',
+          esp32_monitor_status: 'GET /api/esp32/monitor-status'
         },
         websocket: {
           port: this.wsPort,
@@ -481,20 +587,222 @@ class BackendServer {
           'Verificação automática de pré-requisitos',
           'Compilação otimizada para ESP32',
           'Melhor tratamento de erros',
-          'Remoção de lógica redundante'
+          'Auto-detecção ESP32 por sistema operacional',
+          'Monitor ESP32 automático para macOS',
+          'Diagnóstico avançado de conectividade USB'
         ]
       });
     });
   }
 
+  // === MÉTODOS ESP32 DIAGNÓSTICO E MONITORAMENTO ===
+
+  async runESP32Diagnostic() {
+    console.log('🔬 Executando diagnóstico ESP32 completo...');
+    
+    try {
+      // Simular execução do diagnóstico e capturar resultados
+      const diagnosticData = {
+        platform: process.platform,
+        arch: process.arch,
+        usbDevices: await this.checkUSBDevices(),
+        serialPorts: await this.checkSerialPorts(),
+        drivers: await this.checkDrivers(),
+        arduinoCLI: await this.testArduinoCLI()
+      };
+
+      return diagnosticData;
+    } catch (error) {
+      throw new Error(`Falha no diagnóstico ESP32: ${error.message}`);
+    }
+  }
+
+  async checkUSBDevices() {
+    try {
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+
+      if (process.platform === 'darwin') {
+        const { stdout } = await execAsync('system_profiler SPUSBDataType');
+        
+        // Procurar chips ESP32 comuns
+        const esp32Chips = ['CP210', 'CP2102', 'CH340', 'CH341', 'FTDI', 'Espressif', 'ESP32'];
+        const foundChips = esp32Chips.filter(chip => 
+          stdout.toLowerCase().includes(chip.toLowerCase())
+        );
+
+        return {
+          found: foundChips.length > 0,
+          chips: foundChips,
+          rawData: stdout.substring(0, 1000) // Primeiros 1000 chars para análise
+        };
+      }
+      
+      return { found: false, chips: [], rawData: 'Plataforma não suportada para USB scan' };
+    } catch (error) {
+      return { found: false, chips: [], error: error.message };
+    }
+  }
+
+  async checkSerialPorts() {
+    try {
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+
+      const { stdout: cuPorts } = await execAsync('ls /dev/cu.* 2>/dev/null || echo ""');
+      const { stdout: ttyPorts } = await execAsync('ls /dev/tty.* 2>/dev/null || echo ""');
+      
+      const allPorts = (cuPorts + '\n' + ttyPorts)
+        .split('\n')
+        .filter(port => port.trim() && !port.includes('Bluetooth') && !port.includes('debug-console'));
+
+      const esp32Patterns = ['usbserial', 'SLAB_USBtoUART', 'wchusbserial', 'usbmodem', 'wch'];
+      const esp32Ports = allPorts.filter(port => 
+        esp32Patterns.some(pattern => port.toLowerCase().includes(pattern.toLowerCase()))
+      );
+
+      return {
+        allPorts,
+        esp32Ports,
+        hasESP32: esp32Ports.length > 0
+      };
+    } catch (error) {
+      return { allPorts: [], esp32Ports: [], hasESP32: false, error: error.message };
+    }
+  }
+
+  async checkDrivers() {
+    try {
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+
+      if (process.platform === 'darwin') {
+        const { stdout } = await execAsync('kextstat | grep -i "usb\\|serial\\|slab\\|prolific\\|ftdi" || echo ""');
+        
+        const drivers = stdout.split('\n')
+          .filter(line => line.trim())
+          .map(line => {
+            const match = line.match(/com\.[^\s]+/);
+            return match ? match[0] : line.trim().substring(0, 50);
+          });
+
+        return {
+          found: drivers.length > 0,
+          drivers,
+          count: drivers.length
+        };
+      }
+      
+      return { found: false, drivers: [], count: 0 };
+    } catch (error) {
+      return { found: false, drivers: [], count: 0, error: error.message };
+    }
+  }
+
+  async testArduinoCLI() {
+    try {
+      const result = await this.arduinoService.listPorts();
+      return {
+        working: true,
+        ports: result.ports || [],
+        count: result.ports ? result.ports.length : 0
+      };
+    } catch (error) {
+      return {
+        working: false,
+        error: error.message,
+        ports: [],
+        count: 0
+      };
+    }
+  }
+
+  async startESP32Monitor() {
+    if (this.isMonitoringESP32) {
+      return;
+    }
+
+    console.log('📡 Iniciando monitoramento ESP32 em background...');
+    
+    this.esp32Monitor = new ESP32Monitor();
+    this.isMonitoringESP32 = true;
+
+    // Configurar callbacks para detectar mudanças
+    this.esp32Monitor.onDeviceConnected = (deviceInfo) => {
+      console.log(`🔌 ESP32 detectada: ${deviceInfo.port}`);
+      // Aqui poderia emitir evento via WebSocket para o frontend
+    };
+
+    this.esp32Monitor.onDeviceDisconnected = (deviceInfo) => {
+      console.log(`🔌 ESP32 desconectada: ${deviceInfo.port}`);
+    };
+
+    // Iniciar monitoramento de forma não-bloqueante
+    setTimeout(() => {
+      this.esp32Monitor.start().catch(error => {
+        console.error('❌ Erro no monitor ESP32:', error.message);
+        this.isMonitoringESP32 = false;
+      });
+    }, 1000);
+  }
+
+  async stopESP32Monitor() {
+    if (!this.isMonitoringESP32 || !this.esp32Monitor) {
+      return;
+    }
+
+    console.log('🛑 Parando monitor ESP32...');
+    
+    try {
+      await this.esp32Monitor.stop();
+    } catch (error) {
+      console.error('⚠️ Erro ao parar monitor:', error.message);
+    }
+    
+    this.esp32Monitor = null;
+    this.isMonitoringESP32 = false;
+  }
+
+  async autoDetectAndSetupESP32() {
+    console.log('🔍 Auto-detecção ESP32 para ' + process.platform + '...');
+    
+    try {
+      // Executar diagnóstico rápido
+      const diagnostic = await this.runESP32Diagnostic();
+      
+      // Se não encontrou ESP32, iniciar monitor automaticamente em macOS
+      if (process.platform === 'darwin' && !diagnostic.serialPorts.hasESP32) {
+        console.log('🍎 macOS detectado - ESP32 não encontrada, iniciando monitor automático...');
+        await this.startESP32Monitor();
+      }
+      
+      return diagnostic;
+    } catch (error) {
+      console.error('❌ Erro na auto-detecção ESP32:', error.message);
+      return null;
+    }
+  }
+
   async start() {
     try {
+      // Executar auto-setup antes de inicializar serviços
+      console.log('🔧 Executando auto-setup...');
+      const autoSetup = new AutoSetup();
+      await autoSetup.run();
+      
       // Inicializar serviços
       console.log('🚀 Inicializando Arduino CLI Service...');
       await this.arduinoService.initialize();
       
       console.log('🌐 Inicializando Serial WebSocket Service...');
       this.serialService.startWebSocketServer(this.wsPort);
+      
+      // Auto-detecção e setup ESP32 (especialmente para macOS)
+      console.log('🔍 Executando auto-detecção ESP32...');
+      await this.autoDetectAndSetupESP32();
       
       // Iniciar servidor HTTP
       this.server = this.app.listen(this.port, () => {

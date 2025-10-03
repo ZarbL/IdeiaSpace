@@ -43,7 +43,10 @@ class AutoSetup {
 
   async isAlreadySetup() {
     const nodeModulesExists = fs.existsSync(path.join(this.backendDir, 'node_modules'));
-    const arduinoCliExists = fs.existsSync(path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe'));
+    
+    // Detectar executável correto baseado no sistema operacional
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    const arduinoCliExists = fs.existsSync(path.join(this.backendDir, 'arduino-cli', executable));
     
     return nodeModulesExists && arduinoCliExists;
   }
@@ -64,10 +67,12 @@ class AutoSetup {
   }
 
   async autoSetupArduinoCLI() {
-    const arduinoCliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+    // Detectar executável correto baseado no sistema operacional
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    const arduinoCliPath = path.join(this.backendDir, 'arduino-cli', executable);
     
     if (!fs.existsSync(arduinoCliPath)) {
-      console.log('⚙️ Configurando Arduino CLI automaticamente...');
+      console.log(`⚙️ Configurando Arduino CLI automaticamente para ${process.platform}...`);
       
       try {
         await execAsync('node install-arduino-cli.js', { cwd: this.backendDir });

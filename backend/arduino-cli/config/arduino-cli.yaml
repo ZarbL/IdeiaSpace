@@ -9,9 +9,9 @@
     "port": "50051"
   },
   "directories": {
-    "data": "C:\\temp\\arduino_data",
-    "downloads": "C:\\temp\\arduino_downloads",
-    "user": "C:\\temp\\arduino_user"
+    "data": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/data",
+    "downloads": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/downloads",
+    "user": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/user"
   },
   "library": {
     "enable_unsafe_install": false
