@@ -9,9 +9,9 @@
     "port": "50051"
   },
   "directories": {
-    "data": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/data",
-    "downloads": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/downloads",
-    "user": "/Users/luiszarbielli/Trabalho/IdeiaSpace/backend/arduino-cli/config/user"
+    "data": "C:\\Users\\Ideia Space\\Desktop\\Executavel do Ideia Space Mission\\IdeiaSpace\\backend\\arduino-cli\\config\\data",
+    "downloads": "C:\\Users\\Ideia Space\\Desktop\\Executavel do Ideia Space Mission\\IdeiaSpace\\backend\\arduino-cli\\config\\downloads",
+    "user": "C:\\Users\\Ideia Space\\Desktop\\Executavel do Ideia Space Mission\\IdeiaSpace\\backend\\arduino-cli\\config\\user"
   },
   "library": {
     "enable_unsafe_install": false

@@ -119,9 +119,11 @@ ipcMain.handle('start-arduino-backend', async () => {
     // Verificar se auto-setup precisa ser executado
     const needsSetup = await checkIfSetupNeeded(backendDir);
     let useMinimalServer = false;
+    let setupPerformed = false;
     
     if (needsSetup) {
       console.log('🔧 Executando configuração automática do backend...');
+      setupPerformed = true;
       
       try {
         // Executar auto-setup e aguardar conclusão
@@ -206,6 +208,7 @@ ipcMain.handle('start-arduino-backend', async () => {
       status: backendStatus,
       message: `Backend iniciado com sucesso! (${serverType === 'minimal' ? 'modo mínimo' : 'modo completo'})`,
       autoSetupExecuted: needsSetup,
+      setupPerformed: setupPerformed,
       serverType: serverType,
       limitations: serverType === 'minimal' ? [
         'Upload de código não disponível',

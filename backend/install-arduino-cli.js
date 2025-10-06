@@ -314,7 +314,7 @@ class ArduinoCLIInstaller {
       console.log('✅ Índices atualizados!');
       
       // Instalar core ESP32 com retry
-      console.log('📱 Instalando core ESP32...');
+      console.log('📱 Instalando core ESP32 (único core necessário)...');
       await this.executeWithRetry(
         `"${cliPath}" --config-file "${configPath}" core install esp32:esp32`,
         'Instalação ESP32 core',
@@ -323,22 +323,12 @@ class ArduinoCLIInstaller {
       );
       console.log('✅ Core ESP32 instalado!');
       
-      // Instalar core Arduino AVR com retry
-      console.log('🔵 Instalando core Arduino AVR...');
-      await this.executeWithRetry(
-        `"${cliPath}" --config-file "${configPath}" core install arduino:avr`,
-        'Instalação Arduino AVR core',
-        2, // 2 tentativas
-        300000 // 5 minutos timeout
-      );
-      console.log('✅ Core Arduino AVR instalado!');
-      
     } catch (error) {
-      console.log('⚠️ Alguns cores podem não ter sido instalados automaticamente');
+      console.log('⚠️ Core ESP32 pode não ter sido instalado automaticamente');
       console.log('Isso pode ser devido à conexão de rede ou firewall');
-      console.log('Você pode instalá-los manualmente depois executando:');
+      console.log('Você pode instalá-lo manualmente depois executando:');
       console.log('  arduino-cli core install esp32:esp32');
-      console.log('  arduino-cli core install arduino:avr');
+      console.log('💡 Nota: Apenas o core ESP32 é necessário para este projeto');
     }
     
     console.log('✅ Configuração concluída!');

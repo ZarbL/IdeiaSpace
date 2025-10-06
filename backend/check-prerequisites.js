@@ -16,6 +16,7 @@ class PrerequisitesChecker {
   constructor() {
     this.backendDir = __dirname;
     this.hasErrors = false;
+    this.hasCoreIssues = false;
   }
 
   async run() {
@@ -25,12 +26,17 @@ class PrerequisitesChecker {
       await this.checkNodeVersion();
       await this.checkDependencies();
       await this.checkArduinoCLI();
+      await this.checkEsp32Cores();
       await this.checkEssentialFiles();
       
       if (this.hasErrors) {
         console.log('\n⚠️ Alguns problemas foram encontrados.');
         console.log('💡 Execute "npm run backend:setup" para configurar automaticamente.\n');
         process.exit(1);
+      } else if (this.hasCoreIssues) {
+        console.log('\n⚠️ Cores ESP32 não estão instalados.');
+        console.log('✅ Aplicação iniciará normalmente.');
+        console.log('💡 Cores serão instalados automaticamente quando usar "Iniciar Backend".\n');
       } else {
         console.log('\n✅ Todos os pré-requisitos estão ok!');
         console.log('🚀 Backend pronto para iniciar.\n');
@@ -130,6 +136,56 @@ class PrerequisitesChecker {
     } catch (error) {
       console.log('   ⚠️ Arduino CLI encontrado mas pode ter problemas');
       console.log('   💡 Execute: npm run install-cli');
+    }
+  }
+
+  async checkEsp32Cores() {
+    console.log('📱 Verificando cores ESP32...');
+    
+    const arduinoCliPath = path.join(this.backendDir, 'arduino-cli');
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    const arduinoCliExePath = path.join(arduinoCliPath, executable);
+    const configPath = path.join(this.backendDir, 'arduino-cli', 'config', 'arduino-cli.yaml');
+    
+    if (!fs.existsSync(arduinoCliExePath)) {
+      console.log('   ⚠️ Arduino CLI não encontrado, pulando verificação de cores');
+      return;
+    }
+
+    try {
+      // Verificar cores instalados
+      const command = `"${arduinoCliExePath}" --config-file "${configPath}" core list --format json`;
+      const { stdout } = await execAsync(command);
+      
+      if (stdout && stdout.trim()) {
+        const coreData = JSON.parse(stdout);
+        
+        if (coreData.platforms && Array.isArray(coreData.platforms)) {
+          const esp32Core = coreData.platforms.find(core => 
+            core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
+          );
+          
+          if (esp32Core) {
+            console.log(`   ✅ ESP32 core instalado (${esp32Core.id})`);
+          } else {
+            console.log('   ⚠️ Core ESP32 não encontrado');
+            console.log('   💡 Será instalado automaticamente no primeiro uso do "Iniciar Backend"');
+            this.hasCoreIssues = true;
+          }
+        } else {
+          console.log('   ⚠️ Nenhum core instalado');
+          console.log('   💡 Cores ESP32 serão instalados automaticamente no primeiro uso');
+          this.hasCoreIssues = true;
+        }
+      } else {
+        console.log('   ❌ Não foi possível verificar cores instalados');
+        this.hasCoreIssues = true;
+      }
+      
+    } catch (error) {
+      console.log('   ⚠️ Erro ao verificar cores ESP32:', error.message);
+      console.log('   💡 Cores serão instalados automaticamente quando necessário');
+      this.hasCoreIssues = true;
     }
   }
 

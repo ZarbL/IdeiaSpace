@@ -781,6 +781,10 @@ async function startBackend() {
   
   try {
     const { ipcRenderer } = require('electron');
+    
+    // Mostrar feedback sobre verificação de componentes
+    updateBackendFeedback('🔍 Verificando Arduino CLI e componentes...');
+    
     const result = await ipcRenderer.invoke('start-arduino-backend');
     
     if (result.success) {
@@ -788,6 +792,13 @@ async function startBackend() {
       backendState.isRunning = true;
       backendState.status = result.status;
       backendState.lastError = null;
+      
+      // Mostrar mensagem de sucesso específica
+      if (result.setupPerformed) {
+        updateBackendFeedback('✅ Arduino CLI e cores ESP32 configurados e backend iniciado!');
+      } else {
+        updateBackendFeedback('✅ Backend iniciado com sucesso!');
+      }
       
       handleManualStartResult(result);
       
@@ -804,18 +815,34 @@ async function startBackend() {
     } else {
       console.error('❌ Erro ao iniciar backend:', result.error);
       backendState.lastError = result.error;
+      
+      // Mensagem de erro mais informativa
+      if (result.error.includes('Arduino CLI')) {
+        updateBackendFeedback('❌ Erro na configuração do Arduino CLI. Verifique sua conexão de internet.');
+      } else {
+        updateBackendFeedback(`❌ Erro ao iniciar backend: ${result.error}`);
+      }
+      
       handleManualStartResult(result);
     }
     
   } catch (error) {
     console.error('❌ Erro IPC ao iniciar backend:', error.message);
     backendState.lastError = error.message;
+    updateBackendFeedback(`❌ Erro de comunicação: ${error.message}`);
     handleManualStartResult({ success: false, error: error.message });
   }
   
   backendState.isStarting = false;
   updateBackendUI();
   updateConnectionStatus();
+}
+
+function updateBackendFeedback(message) {
+  const backendInfo = document.getElementById('backend-info');
+  if (backendInfo) {
+    backendInfo.textContent = message;
+  }
 }
 
 async function stopBackend() {

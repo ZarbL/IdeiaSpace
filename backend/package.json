@@ -9,6 +9,8 @@
     "install-cli": "node install-arduino-cli.js",
     "setup": "npm install && npm run install-cli",
     "auto-setup": "node auto-setup.js",
+    "setup-esp32": "node setup-esp32-core.js",
+    "test-setup": "node test-setup.js",
     "diagnostic": "node diagnostic.js",
     "esp32-diagnostic": "node esp32-diagnostic.js",
     "esp32-monitor": "node esp32-monitor.js",
