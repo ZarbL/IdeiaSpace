@@ -2,16 +2,29 @@ module.exports = {
   packagerConfig: {
     name: "IdeiaSpace Mission",
     icon: 'src/assets/logo-dark.png',
-    asar: true,
+    asar: {
+      unpack: "*.{node,dll}"
+    },
     overwrite: true,
+    // Otimizações de memória e performance
+    executableName: "ideiaspace-mission",
+    // Ignorar arquivos desnecessários para reduzir tamanho
     ignore: [
       /^\/\.git/,
-      /^\/node_modules/,
+      /^\/node_modules\/.*\/test/,
+      /^\/node_modules\/.*\/tests/,
+      /^\/node_modules\/.*\/\.nyc_output/,
+      /^\/node_modules\/.*\/coverage/,
+      /^\/node_modules\/.*\/\.github/,
+      /^\/backend\/arduino-cli\/config\/downloads/,
+      /^\/backend\/arduino-cli\/config\/tmp/,
       /^\/out/,
       /^\/\.env/,
       /^\/forge\.config\.js/,
       /^\/README\.md/,
-      /^\/\.gitignore/
+      /^\/\.gitignore/,
+      /^\/memory-optimization\.md/,
+      /^\/cleanup-arduino-cli\.sh/
     ]
   },
   rebuildConfig: {},

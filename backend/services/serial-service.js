@@ -8,9 +8,10 @@ const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 
 class SerialService {
-  constructor() {
+  constructor(arduinoService = null) {
     this.connections = new Map(); // port -> { serialPort, clients }
     this.wsServer = null;
+    this.arduinoService = arduinoService;
   }
 
   /**
@@ -114,6 +115,7 @@ class SerialService {
 
       switch (type) {
         case 'list_ports':
+        case 'listPorts':
           await this.sendAvailablePorts(ws);
           break;
 
@@ -175,6 +177,25 @@ class SerialService {
    */
   async getAvailablePorts() {
     try {
+      // Se temos Arduino CLI Service, usar ele primeiro
+      if (this.arduinoService) {
+        console.log('🔍 Usando Arduino CLI Service para listar portas...');
+        const result = await this.arduinoService.listPorts();
+        if (result.ports && result.ports.length > 0) {
+          return result.ports.map(port => ({
+            path: port.address,
+            manufacturer: port.manufacturer || 'Desconhecido',
+            serialNumber: port.serialNumber || '',
+            protocol: port.protocol || 'serial',
+            protocolLabel: port.protocolLabel || 'Serial Port',
+            vid: port.vid || '',
+            pid: port.pid || ''
+          }));
+        }
+      }
+      
+      // Fallback para SerialPort nativo
+      console.log('🔍 Usando SerialPort nativo como fallback...');
       const ports = await SerialPort.list();
       return ports.map(port => ({
         path: port.path,
@@ -197,8 +218,9 @@ class SerialService {
   async sendAvailablePorts(ws) {
     const ports = await this.getAvailablePorts();
     this.sendToClient(ws, {
-      type: 'ports_list',
-      ports: ports
+      type: 'ports',
+      ports: ports,
+      timestamp: new Date().toISOString()
     });
   }
 

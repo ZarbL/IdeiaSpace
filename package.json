@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron-forge start",
-    "dev": "electron . --dev",
+    "dev": "electron . --dev --disable-gpu --memory-pressure-off",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -22,7 +22,9 @@
     "backend:dev": "cd backend && npm run dev",
     "backend:check": "cd backend && node check-prerequisites.js",
     "setup": "npm install && npm run backend:setup",
-    "prestart": "npm run backend:check"
+    "prestart": "npm run backend:check",
+    "clean:arduino": "./cleanup-arduino-cli.sh",
+    "optimize": "npm run clean:arduino && npm run start"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.2.0",

@@ -20,7 +20,7 @@ class BackendServer {
     this.wsPort = process.env.WS_PORT || 8080;
     
     this.arduinoService = new ArduinoCLIService();
-    this.serialService = new SerialService();
+    this.serialService = new SerialService(this.arduinoService);
     this.esp32Diagnostic = new ESP32Diagnostic();
     this.esp32Monitor = null; // Será inicializado conforme necessário
     this.isMonitoringESP32 = false;
@@ -315,12 +315,26 @@ class BackendServer {
     // Listar portas
     this.app.get('/api/arduino/ports', async (req, res) => {
       try {
+        console.log('🔍 Endpoint /api/arduino/ports chamado');
         const result = await this.arduinoService.listPorts();
-        res.json(result);
+        console.log('📡 Resultado das portas:', JSON.stringify(result, null, 2));
+        
+        // Garantir que sempre retornamos um formato consistente
+        const response = {
+          ports: result.ports || [],
+          error: result.error || null,
+          timestamp: new Date().toISOString(),
+          platform: process.platform
+        };
+        
+        res.json(response);
       } catch (error) {
+        console.error('❌ Erro crítico no endpoint de portas:', error);
         res.status(500).json({
           ports: [],
-          error: error.message
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          platform: process.platform
         });
       }
     });

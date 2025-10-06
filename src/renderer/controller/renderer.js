@@ -773,10 +773,11 @@ function updateBackendConnectionStatus(isConnected) {
 // ============================================================================
 
 async function startBackend() {
-  console.log('🚀 Iniciando backend Arduino CLI...');
+  console.log('🚀 Iniciando backend Arduino CLI manualmente...');
   
   backendState.isStarting = true;
   updateBackendUI();
+  showBackendStartFeedback();
   
   try {
     const { ipcRenderer } = require('electron');
@@ -788,30 +789,33 @@ async function startBackend() {
       backendState.status = result.status;
       backendState.lastError = null;
       
+      handleManualStartResult(result);
+      
       // Atualizar UI imediatamente após sucesso
       updateBackendUI();
-      updateConnectionStatus(); // ← Adicionar esta linha para atualizar botão conectar
+      updateConnectionStatus();
       
       // Aguardar um pouco e tentar conectar
       setTimeout(async () => {
         await refreshPorts();
-        // Atualizar novamente após refresh das portas
         updateConnectionStatus();
       }, 2000);
       
     } else {
       console.error('❌ Erro ao iniciar backend:', result.error);
       backendState.lastError = result.error;
+      handleManualStartResult(result);
     }
     
   } catch (error) {
     console.error('❌ Erro IPC ao iniciar backend:', error.message);
     backendState.lastError = error.message;
+    handleManualStartResult({ success: false, error: error.message });
   }
   
   backendState.isStarting = false;
   updateBackendUI();
-  updateConnectionStatus(); // ← Adicionar esta linha também
+  updateConnectionStatus();
 }
 
 async function stopBackend() {
@@ -981,6 +985,140 @@ function updateBackendUI() {
       backendInfo.textContent = 'Backend Arduino CLI não iniciado';
       backendInfo.style.color = '#6c757d';
     }
+  }
+  
+  // Atualizar também os botões de upload, pois dependem do backend
+  updateUploadTab();
+}
+
+// ============================================================================
+// FEEDBACK VISUAL PARA INICIALIZAÇÃO MANUAL - ECONOMIA DE MEMÓRIA
+// ============================================================================
+
+// NOTA: Funções showBackendAutoStartIndicator e handleAutoStartResult foram removidas
+// pois a inicialização automática foi desabilitada para economizar memória.
+// O backend agora inicia apenas quando o usuário clica explicitamente no botão.
+
+function showBackendStartFeedback() {
+  console.log('🚀 Mostrando feedback de inicialização manual...');
+  
+  // Mostrar toast informativo
+  showToast('🚀 Iniciando backend Arduino CLI...', 'info', 3000);
+  
+  // Atualizar console serial
+  addToSerialConsole('🚀 INICIALIZAÇÃO MANUAL DO BACKEND');
+  addToSerialConsole('⏳ Verificando configuração...');
+  addToSerialConsole('📦 Instalando dependências se necessário...');
+}
+
+function handleManualStartResult(result) {
+  console.log('📡 Processando resultado da inicialização manual:', result);
+  
+  if (result.success) {
+    showToast('✅ Backend iniciado com sucesso!', 'success', 4000);
+    
+    addToSerialConsole('✅ BACKEND INICIADO COM SUCESSO!');
+    addToSerialConsole(' Servidor: http://localhost:3001');
+    addToSerialConsole('🔌 WebSocket: ws://localhost:8080');
+    addToSerialConsole('🎯 Sistema pronto para uso!');
+    
+    // Detectar portas após inicialização
+    setTimeout(async () => {
+      addToSerialConsole('🔍 Detectando portas seriais...');
+      await refreshPorts();
+      updateConnectionStatus();
+    }, 2000);
+    
+  } else {
+    showToast('❌ Erro ao iniciar backend', 'error', 5000);
+    addToSerialConsole('❌ ERRO NA INICIALIZAÇÃO');
+    addToSerialConsole('🔧 ' + result.error);
+    addToSerialConsole('💡 Verifique a configuração e tente novamente');
+  }
+}
+
+// ============================================================================
+// SISTEMA DE TOAST PARA FEEDBACK VISUAL
+// ============================================================================
+
+function showToast(message, type = 'info', duration = 3000) {
+  // Criar container de toasts se não existir
+  let toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+  
+  // Criar toast
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = message;
+  
+  // Estilos do toast
+  toast.style.cssText = `
+    padding: 12px 16px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    max-width: 350px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  `;
+  
+  // Cores por tipo
+  const colors = {
+    info: '#3498db',
+    success: '#27ae60',
+    warning: '#f39c12',
+    error: '#e74c3c'
+  };
+  
+  toast.style.backgroundColor = colors[type] || colors.info;
+  
+  // Adicionar ao container
+  toastContainer.appendChild(toast);
+  
+  // Animação de entrada
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(0)';
+  });
+  
+  // Remover ao clicar
+  toast.addEventListener('click', () => {
+    removeToast(toast);
+  });
+  
+  // Remover automaticamente
+  setTimeout(() => {
+    removeToast(toast);
+  }, duration);
+}
+
+function removeToast(toast) {
+  if (toast && toast.parentNode) {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
   }
 }
 
@@ -1679,152 +1817,23 @@ function detectSensorDataFormat(data) {
  * Adiciona mensagem formatada ao console baseada no tipo de dados
  */
 function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
-  // Se for mensagem de upload, usar formatação especial
+  // Console simples e limpo, estilo Arduino IDE
   if (messageType === 'upload') {
     serialMonitorState.consoleHistory.push(
-      `[${timestamp}] 🚀 Upload: ${data}`
+      `[${timestamp}] Upload: ${data}`
     );
     return;
   }
   
-  // Se for dados brutos, usar formatação especial
   if (messageType === 'raw') {
     serialMonitorState.consoleHistory.push(
-      `[${timestamp}] ⚡ RAW: ${data}`
+      `[${timestamp}] RAW: ${data}`
     );
     return;
   }
   
-  // SEMPRE mostrar a mensagem original primeiro
-  serialMonitorState.consoleHistory.push(
-    `[${timestamp}] <span class="serial-original">${data}</span>`
-  );
-  
-  // Tentar detectar se é dado de sensor para adicionar interpretação
-  const sensorFormat = detectSensorDataFormat(data);
-  
-  if (sensorFormat) {
-    let interpretation = '';
-    
-    switch (sensorFormat.type) {
-      case 'dht':
-        // Interpretação para dados DHT
-        let dhtParts = [];
-        if (sensorFormat.temperature !== null) {
-          dhtParts.push(`🌡️ ${sensorFormat.temperature.toFixed(1)}°C`);
-        }
-        if (sensorFormat.humidity !== null) {
-          dhtParts.push(`💧 ${sensorFormat.humidity.toFixed(1)}%`);
-        }
-        if (sensorFormat.heatIndex !== null) {
-          dhtParts.push(`🔥 ${sensorFormat.heatIndex.toFixed(1)}°C`);
-        }
-        
-        if (dhtParts.length > 0) {
-          interpretation = `<span class="sensor-dht">📊 DHT:</span> <span class="sensor-values">${dhtParts.join(' | ')}</span>`;
-        }
-        break;
-        
-      case 'bmp180':
-        // Interpretação para sensor BMP180
-        let bmpParts = [];
-        if (sensorFormat.pressure !== null) {
-          bmpParts.push(`🌪️ ${sensorFormat.pressure.toFixed(2)} hPa`);
-        }
-        if (sensorFormat.temperature !== null) {
-          bmpParts.push(`🌡️ ${sensorFormat.temperature.toFixed(1)}°C`);
-        }
-        if (sensorFormat.altitude !== null) {
-          bmpParts.push(`⛰️ ${sensorFormat.altitude.toFixed(1)}m`);
-        }
-        
-        if (bmpParts.length > 0) {
-          interpretation = `<span class="sensor-bmp180">📊 BMP180:</span> <span class="sensor-values">${bmpParts.join(' | ')}</span>`;
-        }
-        break;
-        
-      case 'bh1750':
-        // Interpretação para sensor BH1750
-        interpretation = `<span class="sensor-bh1750">📊 BH1750:</span> <span class="sensor-values">☀️ ${sensorFormat.lux.toFixed(2)} lux</span>`;
-        break;
-        
-      case 'hmc5883':
-        // Interpretação para magnetômetro HMC5883
-        let hmcParts = [];
-        if (sensorFormat.magX !== null && sensorFormat.magY !== null && sensorFormat.magZ !== null) {
-          hmcParts.push(`🧭 X:${sensorFormat.magX.toFixed(2)} Y:${sensorFormat.magY.toFixed(2)} Z:${sensorFormat.magZ.toFixed(2)}`);
-        }
-        if (sensorFormat.heading !== null) {
-          hmcParts.push(`📍 ${sensorFormat.heading.toFixed(1)}°`);
-        }
-        
-        if (hmcParts.length > 0) {
-          interpretation = `<span class="sensor-hmc5883">📊 HMC5883:</span> <span class="sensor-values">${hmcParts.join(' | ')}</span>`;
-        }
-        break;
-        
-      case 'mpu6050':
-        const [ax, ay, az, gx, gy, gz] = sensorFormat.values;
-        interpretation = `<span class="sensor-mpu6050">📊 MPU6050:</span> <span class="sensor-values">📐 Accel(${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) 🌀 Gyro(${gx.toFixed(2)}, ${gy.toFixed(2)}, ${gz.toFixed(2)})</span>`;
-        break;
-        
-      case 'mpu6050_individual':
-        // Interpretação para valores individuais do MPU6050
-        let mpuParts = [];
-        if (sensorFormat.accelX !== null || sensorFormat.accelY !== null || sensorFormat.accelZ !== null) {
-          const accelValues = [
-            sensorFormat.accelX !== null ? sensorFormat.accelX.toFixed(2) : '---',
-            sensorFormat.accelY !== null ? sensorFormat.accelY.toFixed(2) : '---',
-            sensorFormat.accelZ !== null ? sensorFormat.accelZ.toFixed(2) : '---'
-          ];
-          mpuParts.push(`📐 Accel(${accelValues.join(', ')})`);
-        }
-        if (sensorFormat.gyroX !== null || sensorFormat.gyroY !== null || sensorFormat.gyroZ !== null) {
-          const gyroValues = [
-            sensorFormat.gyroX !== null ? sensorFormat.gyroX.toFixed(2) : '---',
-            sensorFormat.gyroY !== null ? sensorFormat.gyroY.toFixed(2) : '---',
-            sensorFormat.gyroZ !== null ? sensorFormat.gyroZ.toFixed(2) : '---'
-          ];
-          mpuParts.push(`🌀 Gyro(${gyroValues.join(', ')})`);
-        }
-        
-        if (mpuParts.length > 0) {
-          interpretation = `<span class="sensor-mpu6050">📊 MPU6050:</span> <span class="sensor-values">${mpuParts.join(' | ')}</span>`;
-        }
-        break;
-        
-      case 'csv':
-        interpretation = `<span class="sensor-csv">📈 Sensor Data:</span> <span class="sensor-values">${sensorFormat.values.map(v => v.toFixed(2)).join(', ')}</span>`;
-        break;
-        
-      case 'csv_short':
-        interpretation = `<span class="sensor-csv">📈 Data:</span> <span class="sensor-values">${sensorFormat.values.map(v => v.toFixed(2)).join(', ')}</span>`;
-        break;
-        
-      case 'json_mpu':
-        interpretation = `<span class="sensor-json">📋 JSON MPU:</span> <span class="sensor-values">${JSON.stringify(sensorFormat.object)}</span>`;
-        break;
-        
-      case 'json_dht':
-        interpretation = `<span class="sensor-json">📋 JSON DHT:</span> <span class="sensor-values">${JSON.stringify(sensorFormat.object)}</span>`;
-        break;
-        
-      case 'json':
-        interpretation = `<span class="sensor-json">📋 JSON Data:</span> <span class="sensor-values">${JSON.stringify(sensorFormat.object)}</span>`;
-        break;
-        
-      case 'info':
-        interpretation = `<span class="sensor-info">ℹ️ Info:</span> <span class="sensor-message">${sensorFormat.message}</span>`;
-        break;
-    }
-    
-    // Se houver interpretação, adicionar como linha separada
-    if (interpretation) {
-      serialMonitorState.consoleHistory.push(
-        `[${timestamp}] <span class="sensor-interpretation">└─ ${interpretation}</span>`
-      );
-    }
-  }
+  // Formato simples e limpo - apenas timestamp e dados
+  serialMonitorState.consoleHistory.push(`${timestamp} - ${data}`);
 }
 
 function disconnectSerial() {
@@ -1912,11 +1921,14 @@ function updateConnectionStatus() {
   // Update connection buttons
   if (connectBtn) {
     console.log(`🔍 Status do backend: isRunning=${backendState.isRunning}, isStarting=${backendState.isStarting}, isStopping=${backendState.isStopping}`);
+    console.log(`🔍 Porta selecionada: ${serialMonitorState.selectedPort}`);
     
-    // Desabilitar botão se: conectado OU backend não está rodando OU backend está iniciando/parando
+    // Desabilitar botão se: conectado OU backend não está rodando OU backend está iniciando/parando OU nenhuma porta selecionada
+    const noPortSelected = !serialMonitorState.selectedPort || serialMonitorState.selectedPort === '';
     connectBtn.disabled = serialMonitorState.isConnected || 
                           (!backendState.isRunning && !backendState.isStarting) || 
-                          backendState.isStopping;
+                          backendState.isStopping || 
+                          noPortSelected;
     
     if (backendState.isStarting) {
       connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Iniciando Backend...</span>';
@@ -1924,6 +1936,8 @@ function updateConnectionStatus() {
       connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Parando Backend...</span>';
     } else if (!backendState.isRunning) {
       connectBtn.innerHTML = '<span class="btn-icon">⚠️</span><span class="btn-text">Backend Offline</span>';
+    } else if (noPortSelected) {
+      connectBtn.innerHTML = '<span class="btn-icon">📍</span><span class="btn-text">Selecione uma Porta</span>';
     } else if (serialMonitorState.isConnected) {
       connectBtn.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Conectado</span>';
     } else {
@@ -1972,12 +1986,17 @@ function updateUploadTab() {
   const uploadBtnModal = document.getElementById('upload-btn');
   const uploadBtnMain = document.getElementById('upload-code');
   
-  // Enable buttons based on connection status
-  if (compileBtn) compileBtn.disabled = false;
-  if (uploadBtnModal) uploadBtnModal.disabled = !serialMonitorState.isConnected;
-  if (uploadBtnMain) uploadBtnMain.disabled = !serialMonitorState.isConnected;
+  // Para upload, só precisa de porta selecionada, não de conexão serial ativa
+  const hasPortSelected = serialMonitorState.selectedPort && serialMonitorState.selectedPort !== '';
+  const backendRunning = backendState.isRunning;
   
-  console.log('📤 Status da conexão:', serialMonitorState.isConnected);
+  // Enable buttons based on port selection and backend status
+  if (compileBtn) compileBtn.disabled = false; // Compilar sempre funciona
+  if (uploadBtnModal) uploadBtnModal.disabled = !hasPortSelected || !backendRunning;
+  if (uploadBtnMain) uploadBtnMain.disabled = !hasPortSelected || !backendRunning;
+  
+  console.log('📤 Porta selecionada:', serialMonitorState.selectedPort);
+  console.log('📤 Backend rodando:', backendRunning);
   console.log('📤 Botão modal habilitado:', uploadBtnModal ? !uploadBtnModal.disabled : 'não encontrado');
   console.log('📤 Botão principal habilitado:', uploadBtnMain ? !uploadBtnMain.disabled : 'não encontrado');
 }
@@ -2145,10 +2164,8 @@ function stopSerialMonitoring() {
 async function uploadSketch() {
   console.log('📤 FUNÇÃO UPLOADSKETCH CHAMADA - Fazendo upload do sketch...');
   
-  if (!serialMonitorState.isConnected) {
-    showSerialNotification('❌ Conecte-se a uma porta primeiro!', 'error');
-    return;
-  }
+  // Para upload, não precisa estar conectado ao monitor serial, só precisa ter porta selecionada
+  // Remover verificação de isConnected - isso é só para monitor serial
   
   const code = getModalCode();
   console.log('📤 Código obtido para upload:', code ? code.substring(0, 100) + '...' : 'null');
@@ -2174,7 +2191,14 @@ async function uploadSketch() {
   
   console.log('✅ Código validado com sucesso');
   
-  const selectedPort = serialMonitorState.selectedPort;
+  // Pegar porta diretamente do seletor do modal de upload
+  const uploadPortSelector = document.getElementById('upload-port-select');
+  const selectedPort = uploadPortSelector ? uploadPortSelector.value : serialMonitorState.selectedPort;
+  
+  console.log('🔍 Porta do seletor upload:', uploadPortSelector ? uploadPortSelector.value : 'não encontrado');
+  console.log('🔍 Porta do state global:', serialMonitorState.selectedPort);
+  console.log('🔍 Porta selecionada final:', selectedPort);
+  
   if (!selectedPort) {
     showSerialNotification('❌ Nenhuma porta selecionada!', 'error');
     return;
@@ -5330,6 +5354,31 @@ function ensureSerialPlotterChart() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🎯 Configurando event listeners do Serial Monitor...');
   
+  // ============================================================================
+  // INICIALIZAÇÃO MANUAL APENAS - ECONOMIA DE MEMÓRIA
+  // ============================================================================
+  
+  // NOTA: Inicialização automática foi removida para economizar memória.
+  // O backend agora inicia apenas quando o usuário clica no botão "Iniciar Backend"
+  console.log('� Backend será iniciado apenas quando necessário (modo econômico)');
+  
+  // ============================================================================
+  // EVENT LISTENERS EXISTENTES
+  // ============================================================================
+  
+  // Mostrar mensagem de boas-vindas explicativa sobre modo econômico
+  setTimeout(() => {
+    addToSerialConsole('🎯 BEM-VINDO AO IDEIASPACE!');
+    addToSerialConsole('💡 MODO ECONÔMICO ATIVADO');
+    addToSerialConsole('📋 Para começar a programar:');
+    addToSerialConsole('   1. Clique no botão "Iniciar Backend"');
+    addToSerialConsole('   2. Conecte seu Arduino/ESP32');
+    addToSerialConsole('   3. Comece a criar seus projetos!');
+    addToSerialConsole('');
+    addToSerialConsole('⚡ O backend será iniciado apenas quando necessário,');
+    addToSerialConsole('   economizando memória e recursos do sistema.');
+  }, 1000);
+  
   // Serial Monitor Modal buttons - Connect to Execute button (startButton)
   const executeBtn = document.getElementById('startButton');
   if (executeBtn) {
@@ -5753,17 +5802,29 @@ document.addEventListener('DOMContentLoaded', function() {
       serialMonitorState.selectedPort = this.value;
       console.log(`🔌 Porta selecionada (principal): ${this.value}`);
       
-      // Auto conectar quando uma porta é selecionada
+      // Apenas atualizar o estado - NÃO auto-conectar
       if (this.value && this.value !== '') {
-        console.log('🔄 Auto-conectando à porta selecionada...');
-        serialMonitorState.isConnected = true;
-        updateConnectionStatus();
+        console.log('� Porta selecionada. Use o botão Conectar para iniciar a conexão.');
+        showSerialNotification(`📌 Porta ${this.value} selecionada. Clique em Conectar para iniciar.`, 'info');
+        
+        // Habilitar botão conectar
+        const connectBtn = document.getElementById('connect-btn');
+        if (connectBtn) {
+          connectBtn.disabled = false;
+        }
+        
+        // Atualizar botões de upload também
         updateUploadTab();
-        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
       } else {
         serialMonitorState.isConnected = false;
         updateConnectionStatus();
         updateUploadTab();
+        
+        // Desabilitar botão conectar
+        const connectBtn = document.getElementById('connect-btn');
+        if (connectBtn) {
+          connectBtn.disabled = true;
+        }
       }
     });
   }
@@ -5772,17 +5833,14 @@ document.addEventListener('DOMContentLoaded', function() {
     uploadPortSelector.addEventListener('change', function() {
       serialMonitorState.selectedPort = this.value;
       console.log(`🔌 Porta selecionada (upload): ${this.value}`);
+      console.log(`🔍 State atualizado - serialMonitorState.selectedPort:`, serialMonitorState.selectedPort);
       
-      // Auto conectar quando uma porta é selecionada
+      // Apenas atualizar o estado - NÃO auto-conectar
       if (this.value && this.value !== '') {
-        console.log('🔄 Auto-conectando à porta selecionada...');
-        serialMonitorState.isConnected = true;
-        updateConnectionStatus();
+        console.log('� Porta selecionada para upload. Use o botão Conectar se quiser monitorar.');
+        showSerialNotification(`📌 Porta ${this.value} selecionada para upload.`, 'info');
         updateUploadTab();
-        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
       } else {
-        serialMonitorState.isConnected = false;
-        updateConnectionStatus();
         updateUploadTab();
       }
     });
@@ -5793,16 +5851,12 @@ document.addEventListener('DOMContentLoaded', function() {
       serialMonitorState.selectedPort = this.value;
       console.log(`🔌 Porta selecionada (modal): ${this.value}`);
       
-      // Auto conectar quando uma porta é selecionada no modal
+      // Apenas atualizar o estado - NÃO auto-conectar
       if (this.value && this.value !== '') {
-        console.log('🔄 Auto-conectando à porta selecionada no modal...');
-        serialMonitorState.isConnected = true;
-        updateConnectionStatus();
+        console.log('� Porta selecionada no modal. Use o botão Conectar se quiser monitorar.');
+        showSerialNotification(`📌 Porta ${this.value} selecionada no modal.`, 'info');
         updateUploadTab();
-        showSerialNotification(`✅ Porta ${this.value} selecionada`, 'success');
       } else {
-        serialMonitorState.isConnected = false;
-        updateConnectionStatus();
         updateUploadTab();
       }
     });

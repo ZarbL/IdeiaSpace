@@ -3,34 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { exec, spawn } = require('child_process');
 // Teste de commit
-// Fix GPU, cache, GLES2 and virtualization issues
-app.commandLine.appendSwitch('--disable-gpu-sandbox');
-app.commandLine.appendSwitch('--disable-software-rasterizer');
-app.commandLine.appendSwitch('--disable-gpu');
+// Configurações otimizadas para reduzir uso de memória
 app.commandLine.appendSwitch('--no-sandbox');
-app.commandLine.appendSwitch('--disable-web-security');
-app.commandLine.appendSwitch('--disable-features=VizDisplayCompositor');
+app.commandLine.appendSwitch('--disable-gpu');
 app.commandLine.appendSwitch('--disable-dev-shm-usage');
-app.commandLine.appendSwitch('--disk-cache-size=0');
-app.commandLine.appendSwitch('--disable-extensions');
-app.commandLine.appendSwitch('--disable-plugins');
+app.commandLine.appendSwitch('--memory-pressure-off');
+app.commandLine.appendSwitch('--max_old_space_size=512'); // Limite de memória
 app.commandLine.appendSwitch('--disable-background-timer-throttling');
-app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
-app.commandLine.appendSwitch('--disable-renderer-backgrounding');
-// Fix GLES2 and virtualization errors
-app.commandLine.appendSwitch('--disable-gl-extensions');
-app.commandLine.appendSwitch('--disable-accelerated-2d-canvas');
-app.commandLine.appendSwitch('--disable-accelerated-jpeg-decoding');
-app.commandLine.appendSwitch('--disable-accelerated-mjpeg-decode');
-app.commandLine.appendSwitch('--disable-accelerated-video-decode');
-app.commandLine.appendSwitch('--disable-gpu-compositing');
-app.commandLine.appendSwitch('--disable-gpu-rasterization');
-app.commandLine.appendSwitch('--disable-gpu-memory-buffer-video-frames');
-app.commandLine.appendSwitch('--use-gl=swiftshader');
-app.commandLine.appendSwitch('--ignore-gpu-blacklist');
-app.commandLine.appendSwitch('--disable-3d-apis');
-app.commandLine.appendSwitch('--disable-webgl');
-app.commandLine.appendSwitch('--disable-webgl2');
 
 // Disable hardware acceleration completely
 app.disableHardwareAcceleration();
@@ -61,12 +40,9 @@ function createWindow() {
       contextIsolation: false,
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: false,
-      allowRunningInsecureContent: true,
-      experimentalFeatures: true,
-      enableRemoteModule: true,
       backgroundThrottling: false,
       hardwareAcceleration: false,
-      offscreen: false
+      // Removidas configurações desnecessárias para economizar memória
     },
     show: false // Don't show until ready
   });
@@ -74,9 +50,22 @@ function createWindow() {
   // Show window when ready to prevent visual glitches
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    
+    // Limpeza de memória após carregamento
+    if (global.gc) {
+      global.gc();
+    }
+    
+    // NOTA: Backend NÃO inicia automaticamente para economizar memória
+    console.log(' IdeiaSpace iniciado - Backend será iniciado apenas quando necessário');
   });
 
   mainWindow.loadFile(path.join(__dirname, '../renderer/view/index.html'));
+
+  // Otimização de memória: limpar cache periodicamente
+  setInterval(() => {
+    mainWindow.webContents.session.clearCache();
+  }, 300000); // 5 minutos
 
   // Open the DevTools only in development mode
   // mainWindow.webContents.openDevTools();
@@ -552,3 +541,11 @@ app.on('before-quit', () => {
     backendProcess.kill('SIGTERM');
   }
 });
+
+// ============================================================================
+// FUNÇÃO DE INICIALIZAÇÃO AUTOMÁTICA DO BACKEND - REMOVIDA PARA ECONOMIZAR MEMÓRIA
+// ============================================================================
+
+// NOTA: As funções startBackendAutomatically e startBackendInternal foram removidas
+// para evitar consumo desnecessário de memória. O backend agora inicia apenas
+// quando o usuário clica explicitamente no botão "Iniciar Backend".

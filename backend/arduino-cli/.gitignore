@@ -1,0 +1,8 @@
+# Arquivos temporários e cache
+downloads/packages/*.tar.bz2
+downloads/packages/*.tar.gz
+downloads/packages/*.zip
+config/tmp/*
+logs/*.log
+*.tmp
+*.lock

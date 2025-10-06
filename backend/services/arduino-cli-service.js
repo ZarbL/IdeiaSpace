@@ -22,7 +22,7 @@ class ArduinoCLIService {
 
     const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
     this.cliPath = path.join(__dirname, '..', 'arduino-cli', executable);
-    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'arduino-cli.yaml');
+    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'arduino-cli.yaml');
 
     // GARANTIR que o Arduino CLI use APENAS configurações locais
     process.env.ARDUINO_CONFIG_FILE = this.configPath;
@@ -552,14 +552,14 @@ class ArduinoCLIService {
         throw new Error(`Porta ${port} não encontrada. Disponíveis: ${available}`);
       }
 
-      // 4. Upload DIRETO - com baud rate mais baixo via build property
-      console.log(`🚀 Upload DIRETO ESP32 para ${port}...`);
+      // 4. Upload com sistema de fallback: Windows primeiro, depois macOS
+      console.log(`🚀 Upload ESP32 para ${port} (tentativa múltipla)...`);
       
-      // CORREÇÃO: Usar build-property para configurar baud rate mais baixo (115200)
-      const uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --build-property "upload.speed=115200"`;
-      console.log(`🔧 Comando: ${uploadCommand}`);
+      // Primeira tentativa: configurações Windows (padrão que funcionava)
+      let uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --build-property "upload.speed=115200"`;
+      console.log(`🔧 Primeira tentativa (Windows config): ${uploadCommand}`);
       
-      // Progress callback simplificado
+      // Progress callback com instruções específicas para macOS
       const handleProgress = (line) => {
         if (onProgress && (
           line.includes('Connecting') || 
@@ -575,44 +575,130 @@ class ArduinoCLIService {
             timestamp: Date.now()
           });
         }
+        
+        // Instruções específicas para macOS durante conexão
+        if (line.includes('Connecting') && process.platform === 'darwin') {
+          if (onProgress) {
+            onProgress({
+              type: 'upload_instruction',
+              message: '🍎 macOS: Segure o botão BOOT no ESP32 e pressione o botão EN (reset) uma vez, depois solte o BOOT',
+              timestamp: Date.now()
+            });
+          }
+        }
+        
         console.log(`📡 ${line}`);
       };
       
-      // EXECUÇÃO ÚNICA - sem tentativas múltiplas
-      const result = await this.executeCommand(uploadCommand, {
+      // SISTEMA DE TENTATIVAS MÚLTIPLAS
+      let result;
+      let attemptNumber = 1;
+      let lastError = '';
+      
+      // Primeira tentativa: configurações Windows (padrão)
+      console.log(`🔄 Tentativa ${attemptNumber}: Configurações Windows`);
+      result = await this.executeCommand(uploadCommand, {
         timeout: 120000, // 2 minutos para ESP32
         onData: handleProgress
       });
+
+      // Se falhou e estamos no macOS, tentar configurações específicas do macOS
+      if (!result.success && process.platform === 'darwin') {
+        lastError = result.error;
+        attemptNumber = 2;
+        
+        console.log(`⚠️ Primeira tentativa falhou no macOS, tentando configurações otimizadas...`);
+        
+        // Segunda tentativa: configurações macOS
+        uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --build-property "upload.speed=9600" --build-property "upload.resetmethod=no_reset"`;
+        console.log(`🔄 Tentativa ${attemptNumber} (macOS otimizado): ${uploadCommand}`);
+        
+        // Callback específico para macOS
+        const handleProgressMacOS = (line) => {
+          if (onProgress && (
+            line.includes('Connecting') || 
+            line.includes('Uploading') ||
+            line.includes('Writing') ||
+            line.includes('Hash of data verified') ||
+            line.includes('Hard resetting') ||
+            line.includes('%')
+          )) {
+            onProgress({
+              type: 'upload_progress',
+              message: line.trim(),
+              timestamp: Date.now()
+            });
+          }
+          
+          // Instruções específicas para macOS durante conexão
+          if (line.includes('Connecting')) {
+            if (onProgress) {
+              onProgress({
+                type: 'upload_instruction',
+                message: '🍎 macOS Modo Manual: Segure BOOT → Pressione EN → Solte EN → Solte BOOT',
+                timestamp: Date.now()
+              });
+            }
+          }
+          
+          console.log(`📡 ${line}`);
+        };
+        
+        result = await this.executeCommand(uploadCommand, {
+          timeout: 180000, // 3 minutos para macOS (mais tempo)
+          onData: handleProgressMacOS
+        });
+      }
 
       // 5. Limpar e retornar resultado
       this.cleanupTempDir(tempDir);
 
       if (result.success) {
-        console.log('✅ Upload ESP32 concluído!');
+        console.log(`✅ Upload ESP32 concluído na tentativa ${attemptNumber}!`);
         return {
           success: true,
-          message: 'Upload ESP32 realizado com sucesso!',
+          message: `Upload ESP32 realizado com sucesso! (tentativa ${attemptNumber})`,
           output: result.output,
           board: board,
           port: port,
-          method: 'esp32_direct'
+          method: attemptNumber === 1 ? 'esp32_windows_config' : 'esp32_macos_config'
         };
       } else {
-        console.log('❌ Upload ESP32 falhou');
+        console.log(`❌ Upload ESP32 falhou após ${attemptNumber} tentativa(s)`);
         
-        // Análise específica para ESP32
-        let errorMessage = 'Falha no upload ESP32';
+        // Análise específica para ESP32 com instruções para macOS
+        let errorMessage = `Falha no upload ESP32 após ${attemptNumber} tentativa(s)`;
         let suggestion = 'Verifique conexão USB e tente novamente';
         
-        if (result.error.includes('Packet content transfer stopped')) {
+        // Mostrar erro da tentativa mais relevante
+        const finalError = result.error;
+        
+        if (finalError.includes('Packet content transfer stopped') || finalError.includes('chip stopped responding')) {
           errorMessage = 'ESP32 saiu do modo de programação';
-          suggestion = 'Segure botão BOOT na ESP32 durante o upload';
-        } else if (result.error.includes('Failed to communicate with the flash chip')) {
+          if (process.platform === 'darwin') {
+            suggestion = '🍎 macOS: 1) Segure botão BOOT, 2) Pressione EN (reset), 3) Solte EN, 4) Solte BOOT, 5) Tente upload novamente. Se persistir, verifique drivers CH340/CP210x.';
+          } else {
+            suggestion = 'Segure botão BOOT na ESP32 durante o upload';
+          }
+        } else if (finalError.includes('Failed to communicate with the flash chip')) {
           errorMessage = 'Problema de comunicação com flash ESP32';
-          suggestion = 'Verifique cabo USB (deve ser de dados) e alimentação da ESP32';
-        } else if (result.error.includes('No serial port found')) {
+          if (process.platform === 'darwin') {
+            suggestion = '🍎 macOS: Verifique cabo USB (deve ser de dados), drivers CH340/CP210x, e tente com velocidade menor';
+          } else {
+            suggestion = 'Verifique cabo USB (deve ser de dados) e alimentação da ESP32';
+          }
+        } else if (finalError.includes('No serial port found')) {
           errorMessage = 'Porta serial não encontrada';
-          suggestion = 'Verifique se ESP32 está conectada e drivers instalados';
+          if (process.platform === 'darwin') {
+            suggestion = '🍎 macOS: Instale drivers CH340/CP210x e verifique em Configurações > Segurança se o driver foi bloqueado';
+          } else {
+            suggestion = 'Verifique se ESP32 está conectada e drivers instalados';
+          }
+        }
+        
+        // Adicionar informação sobre as tentativas no macOS
+        if (process.platform === 'darwin' && attemptNumber === 2) {
+          suggestion += '\n\n💡 Foram testadas configurações Windows e macOS. Problema pode ser hardware/drivers.';
         }
         
         return {

@@ -76,9 +76,13 @@ class ArduinoCLIClient {
   /**
    * Lista portas seriais disponíveis
    */
-  async listPorts() {
+  async listPorts(retryCount = 0) {
+    const maxRetries = 3;
+    
     try {
-      console.log(`🔍 Listando portas via: ${this.baseUrl}/api/arduino/ports`);
+      console.log(`🔍 Listando portas via: ${this.baseUrl}/api/arduino/ports (tentativa ${retryCount + 1})`);
+      console.log(`🌐 User Agent: ${navigator.userAgent}`);
+      console.log(`🔧 Contexto: ${this.isElectron ? 'Electron' : 'Browser'}`);
       
       // Primeiro, verificar se a conexão está funcionando
       if (!this.isConnected) {
@@ -128,14 +132,15 @@ class ArduinoCLIClient {
       // Filtrar especificamente portas do ESP32 (CH340, CP2102, etc.)
       if (data.ports && Array.isArray(data.ports)) {
         const esp32Ports = data.ports.filter(port => {
-          const isEsp32Port = port.port && (
-            port.port.includes('cu.usbserial') ||  // macOS ESP32
-            port.port.includes('cu.SLAB_USBtoUART') || // CP2102
-            port.port.includes('ttyUSB') ||         // Linux ESP32
-            port.port.includes('COM')               // Windows ESP32
+          const portAddress = port.address || port.port || '';
+          const isEsp32Port = portAddress && (
+            portAddress.includes('cu.usbserial') ||  // macOS ESP32
+            portAddress.includes('cu.SLAB_USBtoUART') || // CP2102
+            portAddress.includes('ttyUSB') ||         // Linux ESP32
+            portAddress.includes('COM')               // Windows ESP32
           );
           if (isEsp32Port) {
-            console.log(`🎯 ESP32 port detected: ${port.port}`);
+            console.log(`🎯 ESP32 port detected: ${portAddress}`);
           }
           return isEsp32Port;
         });
@@ -161,6 +166,19 @@ class ArduinoCLIClient {
       
       // Verificar se é erro de rede/conexão
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        console.log('🔄 Tentando fallback via WebSocket...');
+        const fallbackResult = await this.listPortsViaWebSocket();
+        if (fallbackResult.success) {
+          return fallbackResult.data;
+        }
+        
+        // Se WebSocket também falhou e ainda temos tentativas
+        if (retryCount < maxRetries) {
+          console.log(`🔄 Tentando novamente em 2 segundos... (${retryCount + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return this.listPorts(retryCount + 1);
+        }
+        
         return { 
           ports: [], 
           error: `Erro de conexão com backend (${this.baseUrl}). Verifique se o backend está rodando.` 
@@ -168,6 +186,12 @@ class ArduinoCLIClient {
       }
       
       if (error.name === 'AbortError') {
+        if (retryCount < maxRetries) {
+          console.log(`🔄 Timeout - tentando novamente... (${retryCount + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return this.listPorts(retryCount + 1);
+        }
+        
         return {
           ports: [],
           error: 'Timeout ao listar portas - verifique se o backend está respondendo'
@@ -296,6 +320,56 @@ class ArduinoCLIClient {
       console.error('❌ Erro ao verificar ESP32:', error.message);
       return { success: false, error: error.message };
     }
+  }
+
+  /**
+   * Fallback para listar portas via WebSocket
+   */
+  async listPortsViaWebSocket() {
+    return new Promise((resolve) => {
+      try {
+        const wsUrl = this.baseUrl.replace('http', 'ws').replace('3001', '8080');
+        console.log(`🔄 Tentando WebSocket fallback: ${wsUrl}`);
+        
+        const ws = new WebSocket(wsUrl);
+        const timeout = setTimeout(() => {
+          ws.close();
+          resolve({ success: false, error: 'WebSocket timeout' });
+        }, 5000);
+        
+        ws.onopen = () => {
+          console.log('✅ WebSocket conectado');
+          ws.send(JSON.stringify({
+            type: 'listPorts'
+          }));
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'ports') {
+              clearTimeout(timeout);
+              ws.close();
+              resolve({ success: true, data: data.ports });
+            }
+          } catch (error) {
+            console.error('❌ Erro ao processar resposta WebSocket:', error);
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error('❌ Erro WebSocket:', error);
+          clearTimeout(timeout);
+          resolve({ success: false, error: 'WebSocket error' });
+        };
+        
+        ws.onclose = () => {
+          clearTimeout(timeout);
+        };
+      } catch (error) {
+        resolve({ success: false, error: error.message });
+      }
+    });
   }
 
   /**
