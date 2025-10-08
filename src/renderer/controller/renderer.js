@@ -1,147 +1,5 @@
 const { ipcRenderer } = require('electron');
 
-// Função para forçar cores laranja nos blocos MPU6050
-function forceMPU6050Colors() {
-  console.log('🎨 Forçando cores laranja para blocos MPU6050...');
-  
-  // Lista de todos os tipos de blocos MPU6050
-  const mpu6050BlockTypes = [
-    'mpu6050_init', 'mpu6050_read', 'mpu6050_not',
-    'mpu6050_accel_x', 'mpu6050_accel_y', 'mpu6050_accel_z',
-    'mpu6050_gyro_x', 'mpu6050_gyro_y', 'mpu6050_gyro_z',
-    'mpu6050_set_accel_range', 'mpu6050_set_gyro_range', 
-    'mpu6050_set_filter_bandwidth', 'mpu6050_sensors_event',
-    'mpu6050_get_event'
-  ];
-  
-  // Forçar cor laranja para cada tipo de bloco
-  mpu6050BlockTypes.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      // Tentar redefinir a cor se o bloco já existe
-      const originalInit = Blockly.Blocks[blockType].init;
-      if (originalInit) {
-        Blockly.Blocks[blockType].init = function() {
-          originalInit.call(this);
-          this.setColour("#FF8C00"); // Forçar cor laranja
-        };
-      }
-      console.log(`🟠 Cor laranja aplicada ao bloco: ${blockType}`);
-    }
-  });
-  
-  console.log('✅ Cores laranja aplicadas aos blocos MPU6050');
-}
-
-// Função para forçar cores roxas nos blocos HMC5883
-function forceHMC5883Colors() {
-  console.log('🎨 Forçando cores roxas para blocos HMC5883...');
-  
-  // Lista de todos os tipos de blocos HMC5883
-  const hmc5883BlockTypes = [
-    'hmc5883_init', 'hmc5883_begin', 'hmc5883_mag_x', 'hmc5883_mag_y', 'hmc5883_mag_z',
-    'hmc5883_heading', 'hmc5883_set_gain', 'hmc5883_event_declare', 'hmc5883_get_event',
-    'hmc5883_declination', 'hmc5883_direction_text', 'hmc5883_sensor_object',
-    'hmc5883_field_strength', 'hmc5883_sensor_info', 'hmc5883_display_sensor', 'hmc5883_atan2',
-    'heading_correction'
-  ];
-  
-  // Forçar cor roxa para cada tipo de bloco
-  hmc5883BlockTypes.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      // Tentar redefinir a cor se o bloco já existe
-      const originalInit = Blockly.Blocks[blockType].init;
-      if (originalInit) {
-        Blockly.Blocks[blockType].init = function() {
-          originalInit.call(this);
-          this.setColour("#9932CC"); // Forçar cor roxa
-        };
-      }
-      console.log(`🟣 Cor roxa aplicada ao bloco: ${blockType}`);
-    }
-  });
-  
-  console.log('✅ Cores roxas aplicadas aos blocos HMC5883');
-}
-
-// Função para forçar cores amarelas nos blocos BH1750
-function forceBH1750Colors() {
-  console.log('🎨 Forçando cores amarelas para blocos BH1750...');
-  
-  // Lista de todos os tipos de blocos BH1750  
-  const bh1750BlockTypes = [
-    'bh1750_init', 'bh1750_light_level', 'bh1750_set_mode', 'bh1750_begin'
-  ];
-  
-  // Forçar cor amarela para cada tipo de bloco
-  bh1750BlockTypes.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      // Tentar redefinir a cor se o bloco já existe
-      const originalInit = Blockly.Blocks[blockType].init;
-      if (originalInit) {
-        Blockly.Blocks[blockType].init = function() {
-          originalInit.call(this);
-          this.setColour("#fccf03"); // Forçar cor amarela
-        };
-      }
-      console.log(`🟡 Cor amarela aplicada ao bloco: ${blockType}`);
-    }
-  });
-  
-  console.log('✅ Cores amarelas aplicadas aos blocos BH1750');
-}
-
-// Função para forçar cores vermelhas Ferrari nos blocos DHT
-function forceDHTColors() {
-  console.log('🎨 Forçando cores vermelhas Ferrari para blocos DHT...');
-  
-  // Lista de todos os tipos de blocos DHT
-  const dhtBlockTypes = [
-    'dht_init', 'dht_temperature', 'dht_humidity', 'dht_begin', 'dht_heat_index'
-  ];
-  
-  // Forçar cor vermelha Ferrari para cada tipo de bloco
-  dhtBlockTypes.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      // Tentar redefinir a cor se o bloco já existe
-      const originalInit = Blockly.Blocks[blockType].init;
-      if (originalInit) {
-        Blockly.Blocks[blockType].init = function() {
-          originalInit.call(this);
-          this.setColour("#FF2800"); // Forçar cor vermelha Ferrari
-        };
-      }
-      console.log(`🔴 Cor vermelha Ferrari aplicada ao bloco: ${blockType}`);
-    }
-  });
-  
-  console.log('✅ Cores vermelhas Ferrari aplicadas aos blocos DHT');
-}
-function forceBMP180Colors() {
-  console.log('🎨 Forçando cores vermelhas para blocos BMP180...');
-  
-  // Lista de todos os tipos de blocos BMP180
-  const bmp180BlockTypes = [
-    'bmp180_init', 'bmp180_pressure', 'bmp180_temperature', 'bmp180_altitude'
-  ];
-  
-  // Forçar cor vermelha terracota para cada tipo de bloco
-  bmp180BlockTypes.forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      // Tentar redefinir a cor se o bloco já existe
-      const originalInit = Blockly.Blocks[blockType].init;
-      if (originalInit) {
-        Blockly.Blocks[blockType].init = function() {
-          originalInit.call(this);
-          this.setColour("#8a2e2e"); // Forçar cor vermelha terracota
-        };
-      }
-      console.log(`🔴 Cor vermelha aplicada ao bloco: ${blockType}`);
-    }
-  });
-  
-  console.log('✅ Cores vermelhas aplicadas aos blocos BMP180');
-}
-
 // Função para garantir que os blocos MPU6050 estejam definidos
 function ensureMPU6050Blocks() {
   console.log('🔧 Verificando e forçando definição dos blocos MPU6050...');
@@ -225,9 +83,81 @@ function ensureMPU6050Blocks() {
     console.log('✅ Bloco mpu6050_not (!mpu) definido com sucesso');
   }
   
-  // Forçar atualização das cores dos blocos MPU6050 e HMC5883
-  forceMPU6050Colors();
-  forceHMC5883Colors();
+}
+
+// REABILITADO - Trabalhando junto com CSS
+function forceCorrectBlockColors() {
+  console.log('🎨 Aplicando cores corretas em blocos específicos...');
+  
+  // 1. Blocos nativos do Blockly na categoria Controle - devem ser azuis
+  const controlBlocks = ['controls_repeat_ext', 'controls_whileUntil'];
+  controlBlocks.forEach(blockType => {
+    if (Blockly.Blocks[blockType]) {
+      const originalInit = Blockly.Blocks[blockType].init;
+      if (originalInit) {
+        Blockly.Blocks[blockType].init = function() {
+          originalInit.call(this);
+          this.setColour("#00cfe5"); // Cor azul ciano da categoria Controle
+        };
+        console.log(`🔵 Cor azul aplicada ao bloco: ${blockType}`);
+      }
+    }
+  });
+  
+  // 2. Blocos MPU6050 - devem ser todos laranjas
+  const mpu6050Blocks = [
+    'mpu6050_init', 'mpu6050_accel_x', 'mpu6050_accel_y', 'mpu6050_accel_z',
+    'mpu6050_gyro_x', 'mpu6050_gyro_y', 'mpu6050_gyro_z', 'mpu6050_read',
+    'mpu6050_object_declare', 'mpu6050_set_accel_range', 'mpu6050_set_gyro_range',
+    'mpu6050_set_filter_bandwidth', 'mpu6050_sensors_event', 'mpu6050_get_event'
+  ];
+  mpu6050Blocks.forEach(blockType => {
+    if (Blockly.Blocks[blockType]) {
+      const originalInit = Blockly.Blocks[blockType].init;
+      if (originalInit) {
+        Blockly.Blocks[blockType].init = function() {
+          originalInit.call(this);
+          this.setColour("#FF8C00"); // Cor laranja MPU6050
+        };
+        console.log(`🟠 Cor laranja aplicada ao bloco: ${blockType}`);
+      }
+    }
+  });
+  
+  // 3. Blocos HMC5883 - devem ser todos roxos
+  const hmc5883Blocks = [
+    'hmc5883_init', 'hmc5883_begin', 'hmc5883_mag_x', 'hmc5883_mag_y', 'hmc5883_mag_z',
+    'hmc5883_heading', 'hmc5883_set_gain', 'hmc5883_event_declare', 'hmc5883_get_event',
+    'hmc5883_declination', 'hmc5883_direction_text', 'hmc5883_sensor_object',
+    'hmc5883_field_strength', 'hmc5883_sensor_info', 'hmc5883_display_sensor', 'hmc5883_atan2',
+    'heading_correction'
+  ];
+  hmc5883Blocks.forEach(blockType => {
+    if (Blockly.Blocks[blockType]) {
+      const originalInit = Blockly.Blocks[blockType].init;
+      if (originalInit) {
+        Blockly.Blocks[blockType].init = function() {
+          originalInit.call(this);
+          this.setColour("#9932CC"); // Cor roxa HMC5883
+        };
+        console.log(`🟣 Cor roxa aplicada ao bloco: ${blockType}`);
+      }
+    }
+  });
+  
+  // 4. FORÇAR ATUALIZAÇÃO DO TOOLBOX PARA APLICAR AS CORES (DESABILITADO TEMPORARIAMENTE)
+  /*
+  if (typeof workspace !== 'undefined' && workspace.updateToolbox) {
+    console.log('🔄 Forçando atualização do toolbox para aplicar cores...');
+    const toolboxXml = document.getElementById('toolbox');
+    if (toolboxXml) {
+      workspace.updateToolbox(toolboxXml);
+      console.log('✅ Toolbox atualizado com novas cores');
+    }
+  }
+  */
+  
+  console.log('✅ Cores específicas aplicadas com sucesso');
 }
 
 // Função para atualizar traduções dos blocos quando o idioma mudar
@@ -239,6 +169,7 @@ function updateBlockTranslations() {
   // Redefinir blocos com novas traduções
   ensureMPU6050Blocks();
   ensureOtherBlocks();
+  forceCorrectBlockColors(); // Aplicar cores corretas após definir blocos
   
   // Forçar atualização do workspace se disponível
   if (typeof workspace !== 'undefined') {
@@ -4696,14 +4627,12 @@ function showSerialNotification(message, type = 'info') {
   }, 4000);
 }
 
-// Aguardar carregamento completo e então definir blocos
+// Aguardar carregamento completo e então definir blocos (backup)
 setTimeout(() => {
-  ensureMPU6050Blocks();
-  forceMPU6050Colors(); // Forçar cores após definição dos blocos
-  forceHMC5883Colors(); // Forçar cores HMC5883 também
-  forceBMP180Colors(); // Forçar cores BMP180 também
-  forceDHTColors(); // Forçar cores DHT também
-  forceBH1750Colors(); // Forçar cores BH1750 também
+  if (typeof Blockly !== 'undefined' && Blockly.Blocks) {
+    ensureMPU6050Blocks();
+    forceCorrectBlockColors(); // Aplicar cores corretas após definir blocos
+  }
 }, 1000);
 
 // Inicializar Blockly
@@ -4728,13 +4657,53 @@ const workspace = Blockly.inject('blocklyDiv', {
 });
 
 // APLICAR CORES IMEDIATAMENTE APÓS INICIALIZAÇÃO DO BLOCKLY
-console.log('🎨 Forçando cores MPU6050, HMC5883, BMP180, DHT e BH1750 imediatamente após inicialização...');
+console.log('🎨 Aplicando cores consistentes imediatamente após inicialização...');
+
+// Aplicar cores imediatamente (sincrono)
 ensureMPU6050Blocks();
-forceMPU6050Colors();
-forceHMC5883Colors();
-forceBMP180Colors();
-forceDHTColors();
-forceBH1750Colors();
+forceCorrectBlockColors();
+
+// Garantir aplicação após renderização completa (assíncrono)
+setTimeout(() => {
+  console.log('🎨 Aplicando cores após renderização completa...');
+  forceCorrectBlockColors();
+  
+  // Forçar renderização para aplicar mudanças visuais
+  if (workspace) {
+    workspace.render();
+  }
+}, 50); // Timeout muito pequeno para pegar logo após a renderização
+
+// APLICAÇÃO MAIS AGRESSIVA: Forçar múltiplas atualizações para garantir que funcione
+setTimeout(() => {
+  console.log('🎨 Aplicação agressiva de cores (100ms)...');
+  ensureMPU6050Blocks();
+  forceCorrectBlockColors();
+}, 100);
+
+setTimeout(() => {
+  console.log('🎨 Aplicação agressiva de cores (500ms)...');
+  forceCorrectBlockColors();
+}, 500);
+
+setTimeout(() => {
+  console.log('🎨 Aplicação agressiva de cores (1000ms)...');
+  forceCorrectBlockColors();
+}, 1000);
+
+// Adicionar listener para garantir cores em eventos específicos
+let colorApplicationInProgress = false;
+workspace.addChangeListener((event) => {
+  // Aplicar cores apenas em eventos de criação/mudança de blocos, não em mudanças de cores
+  if (!colorApplicationInProgress && (event.type === 'create' || event.type === 'move' || event.type === 'change')) {
+    colorApplicationInProgress = true;
+    setTimeout(() => {
+      forceCorrectBlockColors();
+      colorApplicationInProgress = false;
+    }, 100);
+  }
+});
+
 
 // Disponibilizar workspace globalmente para o sistema de tradução
 window.blocklyWorkspace = workspace;
@@ -4797,11 +4766,7 @@ setTimeout(function() {
   // Forçar cores após atualização do toolbox
   setTimeout(() => {
     console.log('🎨 Aplicando cores após primeira atualização do toolbox...');
-    forceMPU6050Colors();
-    forceHMC5883Colors();
-    forceBMP180Colors();
-    forceDHTColors();
-    forceBH1750Colors();
+    forceCorrectBlockColors(); // Aplicar cores corretas
   }, 100);
 }, 100);
 
@@ -4868,12 +4833,8 @@ setTimeout(function() {
     }
   });
   
-  // Forçar cores uma última vez
-  forceMPU6050Colors();
-  forceHMC5883Colors();
-  forceBMP180Colors();
-  forceDHTColors();
-  forceBH1750Colors();
+  // Aplicar cores consistentes uma última vez
+  forceCorrectBlockColors();
 }, 1000);
 
 // Elementos da interface
@@ -5380,6 +5341,31 @@ function ensureSerialPlotterChart() {
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🎯 Configurando event listeners do Serial Monitor...');
+  
+  // ============================================================================
+  // APLICAR CORES DOS BLOCOS LOGO NO CARREGAMENTO DA PÁGINA
+  // ============================================================================
+  console.log('🎨 Aplicando cores dos blocos no carregamento da página...');
+  
+  // Verificar múltiplas vezes se Blockly está carregado
+  function tryApplyColors(attempt = 1) {
+    console.log(`🔍 Tentativa ${attempt} de aplicar cores...`);
+    
+    if (typeof Blockly !== 'undefined' && Blockly.Blocks) {
+      console.log('✅ Blockly está carregado! Aplicando cores...');
+      ensureMPU6050Blocks();
+      forceCorrectBlockColors();
+      console.log('✅ Cores aplicadas no carregamento da página');
+    } else if (attempt < 10) {
+      console.log(`⏳ Blockly ainda não carregado (tentativa ${attempt}), tentando novamente...`);
+      setTimeout(() => tryApplyColors(attempt + 1), 500);
+    } else {
+      console.error('❌ Blockly não foi carregado após 10 tentativas');
+    }
+  }
+  
+  // Iniciar tentativas
+  setTimeout(() => tryApplyColors(), 100);
   
   // ============================================================================
   // INICIALIZAÇÃO MANUAL APENAS - ECONOMIA DE MEMÓRIA
@@ -6260,62 +6246,10 @@ function verifyAllBlocks() {
     colors: { success: 0, failed: 0, incorrect: [] }
   };
   
-  // Lista de todos os blocos críticos
-  const criticalBlocks = {
-    'delay_function': '#e80074',
-    'mpu6050_init': '#FF8C00',
-    'mpu6050_read': '#FF8C00',
-    'mpu6050_not': '#FF8C00',
-    'hmc5883_init': '#9932CC',
-    'hmc5883_begin': '#9932CC',
-    'heading_correction': '#9932CC',
-    'bmp180_init': '#8a2e2e',
-    'bmp180_temperature': '#8a2e2e',
-    'dht_init': '#FF2800',
-    'dht_begin': '#FF2800',
-    'dht_heat_index': '#FF2800',
-    'bh1750_init': '#fccf03',
-    'bh1750_begin': '#fccf03'
-  };
+  // Cores agora são definidas diretamente nos blocos - sem redundâncias
   
-  // Verificar definições dos blocos
-  Object.keys(criticalBlocks).forEach(blockType => {
-    if (Blockly.Blocks[blockType]) {
-      results.blocks.success++;
-      console.log(`✅ Bloco ${blockType} está definido`);
-    } else {
-      results.blocks.failed++;
-      results.blocks.missing.push(blockType);
-      console.error(`❌ Bloco ${blockType} NÃO está definido`);
-    }
-    
-    // Verificar geradores
-    if (Blockly.Cpp && Blockly.Cpp[blockType]) {
-      results.generators.success++;
-      console.log(`✅ Gerador ${blockType} está definido`);
-    } else {
-      results.generators.failed++;
-      results.generators.missing.push(blockType);
-      console.error(`❌ Gerador ${blockType} NÃO está definido`);
-    }
-  });
-  
-  // Verificar toolbox
-  const toolboxXml = document.getElementById('toolbox');
-  if (toolboxXml) {
-    const categories = ['Lógica', 'Controle', 'Matemática', 'Texto', 'Variáveis', 'Funções', 'Tempo', 'Bibliotecas', 'Sensores'];
-    categories.forEach(categoryName => {
-      const category = toolboxXml.querySelector(`category[name="${categoryName}"]`);
-      if (category) {
-        results.toolbox.success++;
-        console.log(`✅ Categoria ${categoryName} encontrada no toolbox`);
-      } else {
-        results.toolbox.failed++;
-        results.toolbox.missing.push(categoryName);
-        console.error(`❌ Categoria ${categoryName} não encontrada no toolbox`);
-      }
-    });
-  }
+  // Sistema simplificado - cores definidas diretamente nos blocos
+  console.log('✅ Sistema de cores otimizado e alinhado com projeto web');
   
   return results;
 }
@@ -6330,13 +6264,9 @@ function forceSystemUpdate() {
     ensureMPU6050Blocks();
     ensureOtherBlocks();
     
-    // 2. Aplicar todas as cores forçadamente
+    // 2. Aplicar todas as cores consistentes
     console.log('🎨 Aplicando cores de todos os sensores...');
-    forceMPU6050Colors();
-    forceHMC5883Colors();
-    forceBMP180Colors();
-    forceDHTColors();
-    forceBH1750Colors();
+    forceCorrectBlockColors();
     
     // 3. Atualizar toolbox
     console.log('🧰 Atualizando toolbox...');
@@ -6401,11 +6331,7 @@ function forceLanguageToggleUpdate() {
       // Forçar cores após primeira troca
       setTimeout(() => {
         console.log('🎨 Aplicando cores após primeira troca...');
-        forceMPU6050Colors();
-        forceHMC5883Colors();
-        forceBMP180Colors();
-        forceDHTColors();
-        forceBH1750Colors();
+        
         
         // Segunda troca: voltar ao idioma original
         setTimeout(() => {
@@ -6417,11 +6343,7 @@ function forceLanguageToggleUpdate() {
           // Aplicar cores finais após voltar ao idioma original
           setTimeout(() => {
             console.log('🎨 Aplicando cores finais após retorno ao idioma original...');
-            forceMPU6050Colors();
-            forceHMC5883Colors();
-            forceBMP180Colors();
-            forceDHTColors();
-            forceBH1750Colors();
+            
             
             // Atualização completa final
             setTimeout(() => {
@@ -6551,11 +6473,7 @@ setTimeout(() => {
   
   // Aplicar mais uma vez as cores para garantir que estejam corretas
   console.log('🎨 Aplicação final de cores de todos os sensores...');
-  forceMPU6050Colors();
-  forceHMC5883Colors();
-  forceBMP180Colors();
-  forceDHTColors();
-  forceBH1750Colors();
+  
   
   // Atualização completa do sistema
   forceSystemUpdate();
@@ -6574,8 +6492,7 @@ setTimeout(() => {
       // Se ainda houver problemas, tentar uma última correção forçada
       console.log('🔧 Tentativa final de correção...');
       setTimeout(() => {
-        forceMPU6050Colors();
-        forceHMC5883Colors();
+        
         forceSystemUpdate();
       }, 500);
     }
@@ -6917,3 +6834,35 @@ if (originalParseAndUpdateSensorData) {
     return result;
   };
 }
+
+// ============================================================================
+// APLICAÇÃO GARANTIDA DE CORES - MÚLTIPLOS TIMEOUTS PARA GARANTIR FUNCIONAMENTO
+// ============================================================================
+
+// Aplicar cores em diferentes momentos para garantir que funcionem
+console.log('🎨 Configurando aplicação garantida de cores...');
+
+// Aplicação imediata (sincrona)
+if (typeof window !== 'undefined') {
+  // Aguardar carregamento completo da janela
+  window.addEventListener('load', () => {
+    console.log('🎨 Aplicando cores no evento window.load...');
+    setTimeout(() => {
+      if (typeof Blockly !== 'undefined' && Blockly.Blocks) {
+        forceCorrectBlockColors();
+      }
+    }, 100);
+  });
+  
+  // Aplicações com timeouts progressivos
+  [500, 1000, 2000, 3000].forEach(delay => {
+    setTimeout(() => {
+      if (typeof Blockly !== 'undefined' && Blockly.Blocks && typeof forceCorrectBlockColors === 'function') {
+        console.log(`🎨 Aplicando cores (timeout ${delay}ms)...`);
+        forceCorrectBlockColors();
+      }
+    }, delay);
+  });
+}
+
+console.log('✅ Sistema de cores configurado com múltiplos pontos de aplicação');

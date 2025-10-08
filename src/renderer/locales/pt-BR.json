@@ -115,6 +115,8 @@
   "CAT_BH1750": "Luminosidade (BH1750)",
   "CAT_HMC5883": "Magnetômetro (HMC5883)",
   "CAT_DHT": "Temperatura e Umidade (DHT)",
+  "CAT_LED": "LED",
+  "CAT_CALCULATOR": "Calculadora",
   "CAT_ULTRASOUND": "Ultrassom",
   
   "_comment_mpu6050": "Blocos MPU6050",

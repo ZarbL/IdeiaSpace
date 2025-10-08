@@ -120,7 +120,7 @@ Blockly.Blocks['variable_declaration'] = {
         .appendField("=");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Declara uma nova variável com tipo específico");
     this.setHelpUrl("");
   }
@@ -140,7 +140,7 @@ Blockly.Blocks['int_declaration'] = {
         .setCheck("Number");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Declara uma variável inteira no estilo Arduino: int nome = valor;");
     this.setHelpUrl("");
   }
@@ -155,7 +155,7 @@ Blockly.Blocks['int_variable_get'] = {
     this.appendDummyInput()
         .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.setOutput(true, "Number");
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Retorna o valor de uma variável inteira");
     this.setHelpUrl("");
   }
@@ -175,7 +175,7 @@ Blockly.Blocks['int_variable_set'] = {
         .setCheck("Number");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Atribui um novo valor a uma variável inteira");
     this.setHelpUrl("");
   }
@@ -195,7 +195,7 @@ Blockly.Blocks['float_declaration'] = {
         .setCheck("Number");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Declara uma variável de ponto flutuante no estilo Arduino: float nome = valor;");
     this.setHelpUrl("");
   }
@@ -215,7 +215,7 @@ Blockly.Blocks['bool_declaration'] = {
         .setCheck("Boolean");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Declara uma variável booleana no estilo Arduino: bool nome = valor;");
     this.setHelpUrl("");
   }
@@ -235,8 +235,28 @@ Blockly.Blocks['string_declaration'] = {
         .setCheck("String");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(160);
+    this.setColour("#AF916D");
     this.setTooltip("Declara uma variável String no estilo Arduino: String nome = valor;");
+    this.setHelpUrl("");
+  }
+};
+
+/**
+ * Block for char variable declaration - Arduino style.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['char_declaration'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("char")
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
+        .appendField("=");
+    this.appendValueInput("VALUE")
+        .setCheck(["String", "Number"]); // char pode aceitar tanto caractere quanto código ASCII
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#AF916D");
+    this.setTooltip("Declara uma variável char no estilo Arduino: char nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -645,7 +665,7 @@ Blockly.Blocks['library_bmp180'] = {
         .appendField("Incluir biblioteca BMP180");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui as bibliotecas necessárias para o sensor BMP180 (pressão, temperatura, altitude)');
     this.setHelpUrl('');
   }
@@ -662,7 +682,7 @@ Blockly.Blocks['library_mpu6050'] = {
         .appendField("Incluir biblioteca MPU6050");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui as bibliotecas necessárias para o sensor MPU6050 (acelerômetro e giroscópio)');
     this.setHelpUrl('');
   }
@@ -683,7 +703,7 @@ Blockly.Blocks['library_dht'] = {
         ]), "TYPE");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui as bibliotecas necessárias para sensores DHT11/DHT22 (temperatura e umidade)');
     this.setHelpUrl('');
   }
@@ -700,7 +720,7 @@ Blockly.Blocks['library_wire'] = {
         .appendField("Incluir biblioteca Wire (I2C)");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui a biblioteca Wire para comunicação I2C');
     this.setHelpUrl('');
   }
@@ -717,7 +737,7 @@ Blockly.Blocks['library_arduino_basic'] = {
         .appendField("Incluir bibliotecas básicas Arduino");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui as bibliotecas básicas do Arduino (pinMode, digitalWrite, digitalRead, etc.)');
     this.setHelpUrl('');
   }
@@ -734,7 +754,7 @@ Blockly.Blocks['library_sensor'] = {
         .appendField("Biblioteca AdaFruit");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui a biblioteca Adafruit_Sensor.h necessária para sensores Adafruit');
     this.setHelpUrl('');
   }
@@ -751,7 +771,7 @@ Blockly.Blocks['library_bh1750'] = {
         .appendField("Incluir biblioteca BH1750");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui as bibliotecas necessárias para o sensor BH1750 (luminosidade)');
     this.setHelpUrl('');
   }
@@ -768,7 +788,7 @@ Blockly.Blocks['library_hmc5883'] = {
         .appendField("Biblioteca HMC5883");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui a biblioteca Adafruit_HMC5883_U.h para magnetômetro/bússola');
     this.setHelpUrl('');
   }
@@ -785,7 +805,7 @@ Blockly.Blocks['library_math'] = {
         .appendField("Biblioteca Math");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(60);
+    this.setColour("#B66DFF");
     this.setTooltip('Inclui a biblioteca math.h para constantes matemáticas (PI, funções trigonométricas, etc.)');
     this.setHelpUrl('');
   }
@@ -1261,7 +1281,7 @@ Blockly.Blocks['text_print'] = {
         .appendField(new Blockly.FieldCheckbox('TRUE'), 'ADD_NEWLINE');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour('#00FFFF');
+    this.setColour("#4CAF50");
     this.setTooltip('Imprime texto no console serial. Marque a caixa para adicionar quebra de linha.');
     this.setHelpUrl('');
   }
@@ -1277,7 +1297,7 @@ Blockly.Blocks['text'] = {
         .appendField('💬')
         .appendField(new Blockly.FieldTextInput(''), 'TEXT');
     this.setOutput(true, 'String');
-    this.setColour('#00FFFF');
+    this.setColour("#4CAF50");
     this.setTooltip('Campo de texto para inserir strings');
     this.setHelpUrl('');
   }
@@ -1296,7 +1316,7 @@ Blockly.Blocks['text_join'] = {
         .setCheck(['String', 'Number'])
         .appendField('com');
     this.setOutput(true, 'String');
-    this.setColour('#00FFFF');
+    this.setColour("#4CAF50");
     this.setTooltip('Junta dois textos em um só');
     this.setHelpUrl('');
   }
@@ -1441,7 +1461,7 @@ Blockly.Blocks['arduino_setup'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#00cfe5");
     this.setTooltip('Função setup() do Arduino - executa uma vez no início');
     this.setHelpUrl('');
   }
@@ -1459,7 +1479,7 @@ Blockly.Blocks['arduino_loop'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#00cfe5");
     this.setTooltip('Função loop() do Arduino - executa continuamente');
     this.setHelpUrl('');
   }
@@ -1477,7 +1497,7 @@ Blockly.Blocks['arduino_serial_begin'] = {
         .appendField(")");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#00cfe5");
     this.setTooltip('Inicializa a comunicação serial com a velocidade especificada');
     this.setHelpUrl('');
   }
@@ -1492,7 +1512,7 @@ Blockly.Blocks['serial_not'] = {
     this.appendDummyInput()
         .appendField('❌ !Serial');
     this.setOutput(true, 'Boolean');
-    this.setColour(120);
+    this.setColour("#00cfe5");
     this.setTooltip('Verifica se a comunicação serial NÃO está disponível');
     this.setHelpUrl('');
   }
@@ -1510,10 +1530,241 @@ Blockly.Blocks['void_display'] = {
         .setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(120);
+    this.setColour("#00cfe5");
     this.setTooltip('Função para exibir detalhes dos sensores - útil para debug e informações');
     this.setHelpUrl('');
   }
 };
 
 // Blocos de estrutura Arduino definidos com sucesso
+
+// ============================================================================
+// BLOCOS LED - NOVOS BLOCOS ADICIONADOS DO PROJETO WEB
+// ============================================================================
+
+/**
+ * Block for pinMode configuration.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['pin_mode_block'] = {
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Number')
+        .appendField('pinMode(');
+    this.appendDummyInput()
+        .appendField(',')
+        .appendField(new Blockly.FieldDropdown([
+          ['OUTPUT', 'OUTPUT'],
+          ['INPUT', 'INPUT'],
+          ['INPUT_PULLUP', 'INPUT_PULLUP']
+        ]), 'MODE')
+        .appendField(');');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Define o modo de um pino (OUTPUT, INPUT, INPUT_PULLUP)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED PIN reference.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_builtin_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('LED PIN');
+    this.setOutput(true, null);
+    this.setColour(45);
+    this.setTooltip('Referência ao pino LED');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED PIN setup.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_builtin_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('🔧 Configurar LED PIN como saída');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Configura o LED PIN (LED_PIN) como OUTPUT');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED digital write.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_digital_write'] = {
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Number')
+        .appendField('digitalWrite(');
+    this.appendDummyInput()
+        .appendField(',')
+        .appendField(new Blockly.FieldDropdown([
+          ['HIGH', 'HIGH'],
+          ['LOW', 'LOW']
+        ]), 'STATE')
+        .appendField(');');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Escreve HIGH ou LOW em um pino digital');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED analog write (PWM).
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_analog_write'] = {
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Number')
+        .appendField('analogWrite(');
+    this.appendValueInput('VALUE')
+        .setCheck('Number')
+        .appendField(',');
+    this.appendDummyInput()
+        .appendField(');');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Escreve um valor PWM (0-255) em um pino analógico');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED blink function.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_blink'] = {
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Number')
+        .appendField('💡 Piscar LED no pino');
+    this.appendValueInput('DELAY')
+        .setCheck('Number')
+        .appendField('por');
+    this.appendDummyInput()
+        .appendField('ms');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Faz um LED piscar uma vez com delay especificado');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for LED fade effect.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_fade'] = {
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Number')
+        .appendField('🌟 Fade LED no pino');
+    this.appendValueInput('FROM')
+        .setCheck('Number')
+        .appendField('de');
+    this.appendValueInput('TO')
+        .setCheck('Number')
+        .appendField('até');
+    this.appendValueInput('STEP_DELAY')
+        .setCheck('Number')
+        .appendField('delay');
+    this.appendDummyInput()
+        .appendField('ms');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(45);
+    this.setTooltip('Cria um efeito fade no LED do valor inicial ao final');
+    this.setHelpUrl('');
+  }
+};
+
+// ============================================================================
+// BLOCOS CALCULADORA - NOVOS BLOCOS ADICIONADOS DO PROJETO WEB
+// ============================================================================
+
+/**
+ * Block for const modifier wrapper.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['const_modifier'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('const');
+    this.appendStatementInput('INNER_BLOCK')
+        .setCheck(null); // Aceita qualquer bloco de declaração
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#AF916D'); // Mesma cor das variáveis
+    this.setTooltip('Wrapper const - coloque uma declaração de variável dentro para torná-la constante');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for finding operator in string.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['find_operator'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Achar Operador')
+        .appendField(new Blockly.FieldDropdown([
+          ['+', '+'],
+          ['-', '-'],
+          ['*', '*'],
+          ['/', '/']
+        ]), 'OPERATOR');
+    this.setOutput(true, 'Number');
+    this.setColour('#FF6B35');
+    this.setTooltip('Encontra a posição do operador matemático na string inputString');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for performing mathematical operations.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['perform_operations'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Realizar Operações');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#FF6B35');
+    this.setTooltip('Executa operações matemáticas usando switch com os operadores +, -, *, /');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for printing operation result.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['print_result'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Imprimir Resultado');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#FF6B35');
+    this.setTooltip('Imprime o resultado da operação matemática se for válida, senão exibe erro de operador inválido');
+    this.setHelpUrl('');
+  }
+};

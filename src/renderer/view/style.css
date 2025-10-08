@@ -16,6 +16,13 @@ body {
   --accent-pink: #e80074;
   --accent-cyan: #00cfe5;
   --workspace-bg: #ffffff;
+  
+  /* Cores dos sensores - SINCRONIZADAS COM O PROJETO WEB */
+  --sensor-mpu6050: #FF8C00;
+  --sensor-hmc5883: #9932CC;
+  --sensor-bh1750: #fccf03;
+  --sensor-dht: #FF2800;
+  --sensor-bmp180: #8a2e2e;
 }
 
 .dark-mode {
@@ -722,6 +729,30 @@ button#generate-btn:hover {
   box-shadow: 0 4px 15px rgba(0, 207, 229, 0.3) !important;
 }
 
+/* Correção específica para blocos matemáticos */
+.blocklyFlyout g[data-category="Math"] .blocklyBlock,
+.blocklyFlyout g[data-category="MATH"] .blocklyBlock {
+  margin: 12px 8px !important;
+  transform: none !important;
+}
+
+/* Garantir que separadores sejam visíveis */
+.blocklyFlyout .blocklyFlyoutSeparator {
+  height: 12px !important;
+  width: 100% !important;
+  background: transparent !important;
+  margin: 8px 0 !important;
+  clear: both !important;
+}
+
+/* Estilos para o contêiner do toolbox quando selecionado */
+.blocklyToolboxCategory.blocklyTreeSelected {
+  background-color: var(--accent-pink) !important;
+  color: white !important;
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.4) !important;
+}
+
 /* Estilo para o texto das categorias */
 .blocklyTreeLabel {
   font-weight: 600 !important;
@@ -1199,6 +1230,26 @@ body {
 }
 
 /* Estilos para os blocos de sensores */
+.sensor-block.mpu6050 {
+  border-left: 4px solid var(--sensor-mpu6050);
+}
+
+.sensor-block.hmc5883 {
+  border-left: 4px solid var(--sensor-hmc5883);
+}
+
+.sensor-block.bh1750 {
+  border-left: 4px solid var(--sensor-bh1750);
+}
+
+.sensor-block.dht {
+  border-left: 4px solid var(--sensor-dht);
+}
+
+.sensor-block.bmp180 {
+  border-left: 4px solid var(--sensor-bmp180);
+}
+
 .blocklyTreeRow {
   cursor: pointer;
 }
@@ -2000,6 +2051,83 @@ g.blocklyBlock[data-type*="mpu6050"] > rect,
 *[data-type*="mpu6050"] {
   background-color: #FF8C00 !important;
   fill: #FF8C00 !important;
+}
+
+/* SOBRESCREVER qualquer cor padrão do Blockly para HMC5883 */
+g.blocklyBlock[data-type*="hmc5883"] > path,
+g.blocklyBlock[data-type*="hmc5883"] > rect,
+.blocklyBlockBackground[data-type*="hmc5883"],
+.blocklyPath[data-type*="hmc5883"] {
+  fill: #9932CC !important;
+  stroke: #8A2BE2 !important;
+}
+
+/* Regra final catch-all para elementos HMC5883 */
+*[data-type*="hmc5883"] {
+  background-color: #9932CC !important;
+  fill: #9932CC !important;
+}
+
+/* ============================================================================
+   REGRAS DE CORES PARA BLOCOS NATIVOS DO BLOCKLY - CATEGORIA CONTROLE
+   ============================================================================ */
+
+/* Blocos nativos de controle devem ser azuis */
+g.blocklyBlock[data-type="controls_repeat_ext"] > path,
+g.blocklyBlock[data-type="controls_repeat_ext"] > rect,
+g.blocklyBlock[data-type="controls_whileUntil"] > path,
+g.blocklyBlock[data-type="controls_whileUntil"] > rect {
+  fill: #00cfe5 !important;
+  stroke: #00B8CC !important;
+}
+
+*[data-type="controls_repeat_ext"],
+*[data-type="controls_whileUntil"] {
+  background-color: #00cfe5 !important;
+  fill: #00cfe5 !important;
+}
+
+/* ============================================================================
+   REGRAS COMPLEMENTARES PARA OUTROS SENSORES
+   ============================================================================ */
+
+/* BMP180 - Vermelho terracota */
+g.blocklyBlock[data-type*="bmp180"] > path,
+g.blocklyBlock[data-type*="bmp180"] > rect,
+.blocklyBlockBackground[data-type*="bmp180"] {
+  fill: #8a2e2e !important;
+  stroke: #7A1E1E !important;
+}
+
+*[data-type*="bmp180"] {
+  background-color: #8a2e2e !important;
+  fill: #8a2e2e !important;
+}
+
+/* BH1750 - Amarelo */
+g.blocklyBlock[data-type*="bh1750"] > path,
+g.blocklyBlock[data-type*="bh1750"] > rect,
+.blocklyBlockBackground[data-type*="bh1750"] {
+  fill: #fccf03 !important;
+  stroke: #E6B700 !important;
+}
+
+*[data-type*="bh1750"] {
+  background-color: #fccf03 !important;
+  fill: #fccf03 !important;
+}
+
+/* DHT - Vermelho Ferrari */
+g.blocklyBlock[data-type*="dht"] > path,
+g.blocklyBlock[data-type*="dht"] > rect,
+.blocklyBlockBackground[data-type*="dht"] {
+  fill: #FF2800 !important;
+  stroke: #E02200 !important;
+}
+
+*[data-type*="dht"] {
+  background-color: #FF2800 !important;
+  fill: #FF2800 !important;
 }
 
 /* ============================================================================

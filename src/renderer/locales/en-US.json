@@ -115,6 +115,8 @@
   "CAT_BH1750": "Light Sensor (BH1750)",
   "CAT_HMC5883": "Magnetometer (HMC5883)",
   "CAT_DHT": "Temperature and Humidity (DHT)",
+  "CAT_LED": "LED",
+  "CAT_CALCULATOR": "Calculator",
   "CAT_ULTRASOUND": "Ultrasonic",
   
   "_comment_mpu6050": "MPU6050 Blocks", 

@@ -232,7 +232,7 @@ const i18n = {
             ]), "SDA_PIN");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(120);
+        this.setColour("#00cfe5");
         this.setTooltip(window.i18n.t('mpu6050_init_tooltip') || "Inicializa o sensor MPU6050 com os pinos SCL e SDA especificados");
         this.setHelpUrl("");
       };
@@ -561,7 +561,7 @@ const i18n = {
             .appendField(window.i18n.t('include_library_bmp180') || "Incluir biblioteca BMP180");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui as bibliotecas necessárias para o sensor BMP180 (pressão, temperatura, altitude)');
         this.setHelpUrl('');
       };
@@ -574,7 +574,7 @@ const i18n = {
             .appendField(window.i18n.t('include_library_mpu6050') || "Incluir biblioteca MPU6050");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui as bibliotecas necessárias para o sensor MPU6050 (acelerômetro e giroscópio)');
         this.setHelpUrl('');
       };
@@ -591,7 +591,7 @@ const i18n = {
             ]), "TYPE");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui as bibliotecas necessárias para sensores DHT11/DHT22 (temperatura e umidade)');
         this.setHelpUrl('');
       };
@@ -604,7 +604,7 @@ const i18n = {
             .appendField(window.i18n.t('include_library_wire') || "Incluir biblioteca Wire (I2C)");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui a biblioteca Wire para comunicação I2C');
         this.setHelpUrl('');
       };
@@ -617,7 +617,7 @@ const i18n = {
             .appendField(window.i18n.t('include_basic_arduino_libraries') || "Incluir bibliotecas básicas Arduino");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui as bibliotecas básicas do Arduino (pinMode, digitalWrite, digitalRead, etc.)');
         this.setHelpUrl('');
       };
@@ -630,7 +630,7 @@ const i18n = {
             .appendField(window.i18n.t('adafruit_library') || "Biblioteca AdaFruit");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui a biblioteca Adafruit_Sensor.h necessária para sensores Adafruit');
         this.setHelpUrl('');
       };
@@ -643,7 +643,7 @@ const i18n = {
             .appendField(window.i18n.t('include_library_bh1750') || "Incluir biblioteca BH1750");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui as bibliotecas necessárias para o sensor BH1750 (luminosidade)');
         this.setHelpUrl('');
       };
@@ -656,7 +656,7 @@ const i18n = {
             .appendField(window.i18n.t('hmc5883_library') || "Biblioteca HMC5883");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui a biblioteca Adafruit_HMC5883_U.h para magnetômetro/bússola');
         this.setHelpUrl('');
       };
@@ -669,7 +669,7 @@ const i18n = {
             .appendField(window.i18n.t('math_library') || "Biblioteca Math");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(60);
+        this.setColour("#B66DFF");
         this.setTooltip('Inclui a biblioteca math.h para constantes matemáticas (PI, funções trigonométricas, etc.)');
         this.setHelpUrl('');
       };
@@ -1522,15 +1522,70 @@ const i18n = {
         // Atualizar o toolbox - isso força a recriação dos blocos com as novas definições
         workspace.updateToolbox(translatedToolbox);
         
-        // Pequeno delay e forçar refresh adicional para garantir que os blocos sejam recriados
+        // CRITICAL FIX: Aplicar cores corretas IMEDIATAMENTE após updateToolbox
         setTimeout(() => {
+          this.forceCorrectColorsAfterToolboxUpdate();
           workspace.refreshToolboxSelection();
-          console.log('✅ Toolbox atualizado com traduções!');
-        }, 100);
+          console.log('✅ Toolbox atualizado com traduções e cores corretas!');
+        }, 50); // Reduzido para 50ms para aplicar mais rápido
       }
     } else {
       console.log('⚠️ Workspace não disponível para atualização do toolbox');
     }
+  },
+
+  // Função específica para forçar cores corretas após atualização do toolbox
+  forceCorrectColorsAfterToolboxUpdate() {
+    console.log('🎨 [ESTRATÉGIA AGRESSIVA] Aplicando cores corretas após atualização do toolbox...');
+    
+    // Aplicar cores específicas para sensores usando CSS + JavaScript
+    const sensorColors = {
+      'mpu6050': '#FF8C00',    // Laranja para MPU6050
+      'hmc5883': '#9932CC',    // Roxo para HMC5883
+      'bmp180': '#FF6347',     // Vermelho tomate para BMP180
+      'dht': '#32CD32',        // Verde limão para DHT
+      'bh1750': '#1E90FF'      // Azul dodger para BH1750
+    };
+    
+    // Função interna para aplicar cores
+    const applyColors = (attempt = 1) => {
+      console.log(`🎨 [TENTATIVA ${attempt}] Aplicando cores corretas...`);
+      
+      if (window.blocklyWorkspace) {
+        const allBlocks = window.blocklyWorkspace.getAllBlocks();
+        let appliedCount = 0;
+        
+        allBlocks.forEach(block => {
+          if (block.type) {
+            Object.entries(sensorColors).forEach(([sensor, color]) => {
+              if (block.type.toLowerCase().includes(sensor)) {
+                const oldColor = block.getColour();
+                block.setColour(color);
+                console.log(`✅ [${attempt}] Cor aplicada: ${block.type} | ${oldColor} → ${color}`);
+                appliedCount++;
+              }
+            });
+          }
+        });
+        
+        console.log(`🎨 [TENTATIVA ${attempt}] Total de blocos com cores aplicadas: ${appliedCount}`);
+      } else {
+        console.log(`⚠️ [TENTATIVA ${attempt}] Workspace não disponível`);
+      }
+    };
+    
+    // ESTRATÉGIA MÚLTIPLA: Aplicar imediatamente e depois com múltiplos delays
+    applyColors(1); // Imediatamente
+    
+    setTimeout(() => applyColors(2), 10);   // 10ms depois
+    setTimeout(() => applyColors(3), 50);   // 50ms depois  
+    setTimeout(() => applyColors(4), 100);  // 100ms depois
+    setTimeout(() => applyColors(5), 200);  // 200ms depois
+    setTimeout(() => applyColors(6), 500);  // 500ms depois
+    setTimeout(() => applyColors(7), 1000); // 1 segundo depois
+    setTimeout(() => applyColors(8), 2000); // 2 segundos depois
+    
+    console.log('🎨 [ESTRATÉGIA AGRESSIVA] Configuração completa! Múltiplas aplicações agendadas.');
   },
   
   // Funções públicas para atualizar elementos específicos quando mudados via JS
@@ -1697,6 +1752,74 @@ window.addEventListener('blocklyReady', function(event) {
     window.i18n.redefineBlocksWithTranslations();
     window.i18n.updateToolboxCategories();
   }
+});
+
+// =================================================================
+// MONITORAMENTO CONTÍNUO DE CORES - GARANTIA ADICIONAL
+// =================================================================
+
+// Função que monitora e corrige cores constantemente
+function startColorWatchdog() {
+  console.log('🐕 Iniciando Color Watchdog - Monitoramento contínuo de cores...');
+  
+  const sensorColors = {
+    'mpu6050': '#FF8C00',    // Laranja para MPU6050
+    'hmc5883': '#9932CC',    // Roxo para HMC5883
+    'bmp180': '#FF6347',     // Vermelho tomate para BMP180
+    'dht': '#32CD32',        // Verde limão para DHT
+    'bh1750': '#1E90FF'      // Azul dodger para BH1750
+  };
+  
+  let watchdogActive = true;
+  let watchdogCount = 0;
+  
+  const checkAndFixColors = () => {
+    if (!watchdogActive || !window.blocklyWorkspace) return;
+    
+    watchdogCount++;
+    const allBlocks = window.blocklyWorkspace.getAllBlocks();
+    let fixedCount = 0;
+    
+    allBlocks.forEach(block => {
+      if (block.type) {
+        Object.entries(sensorColors).forEach(([sensor, expectedColor]) => {
+          if (block.type.toLowerCase().includes(sensor)) {
+            const currentColor = block.getColour();
+            // Converter para hex se necessário e comparar
+            const currentHex = currentColor.toString().toUpperCase();
+            const expectedHex = expectedColor.toUpperCase();
+            
+            if (currentHex !== expectedHex) {
+              console.log(`🔧 [WATCHDOG ${watchdogCount}] Corrigindo cor: ${block.type} | ${currentHex} → ${expectedHex}`);
+              block.setColour(expectedColor);
+              fixedCount++;
+            }
+          }
+        });
+      }
+    });
+    
+    if (fixedCount > 0) {
+      console.log(`🐕 [WATCHDOG ${watchdogCount}] ${fixedCount} cores corrigidas automaticamente`);
+    }
+  };
+  
+  // Verificar a cada 3 segundos
+  const watchdogInterval = setInterval(checkAndFixColors, 3000);
+  
+  // Parar o watchdog após 2 minutos para não ficar rodando infinitamente
+  setTimeout(() => {
+    watchdogActive = false;
+    clearInterval(watchdogInterval);
+    console.log('🐕 Color Watchdog desativado após 2 minutos de monitoramento');
+  }, 120000);
+  
+  return watchdogInterval;
+}
+
+// Iniciar o watchdog quando o Blockly estiver pronto
+document.addEventListener('blocklyReady', () => {
+  setTimeout(startColorWatchdog, 1000); // Aguardar 1 segundo após o Blockly estar pronto
 });
 
 // Disponibilizar globalmente

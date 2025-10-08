@@ -1,0 +1,36 @@
+board_manager:
+  additional_urls:
+    - https://espressif.github.io/arduino-esp32/package_esp32_index.json
+    - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+
+daemon:
+  port: "50051"
+
+# Diretórios usando caminhos absolutos relativos ao arduino-cli
+# Funciona em Windows, Mac e Linux
+directories:
+  data: "config/data"
+  downloads: "config/downloads" 
+  user: "config/user"
+
+library:
+  enable_unsafe_install: false
+
+logging:
+  level: "info"
+  format: "text"
+
+metrics:
+  enabled: false
+
+sketch:
+  always_export_binaries: false
+
+# Configurações específicas para melhor compatibilidade
+network:
+  proxy: ""
+  user_agent_extra: "IdeiaSpace/1.0.0"
+
+# Configurações de timeout para downloads
+timeout:
+  network: 300s

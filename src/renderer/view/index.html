@@ -640,7 +640,7 @@
   </div>
 
   <xml id="toolbox" class="toolbox">
-    <category name="Lógica" colour="#1d1856" data-translate-name="CAT_LOGIC">
+    <category name="Lógica" colour="#5C81A6" data-translate-name="CAT_LOGIC">
       <block type="controls_if"></block>
       <block type="logic_compare"></block>
       <block type="logic_operation"></block>
@@ -667,7 +667,30 @@
       <block type="math_boolean"></block>
       <block type="math_pi"></block>
     </category>
-    <category name="Texto" colour="#5C7CFA" data-translate-name="CAT_TEXT">
+    <category name="Calculadora" colour="#FF6B35" data-translate-name="CAT_CALCULATOR">
+      <block type="math_number"><field name="NUM">0</field></block>
+      <block type="math_number"><field name="NUM">1</field></block>
+      <block type="math_number"><field name="NUM">10</field></block>
+      <sep></sep>
+      <block type="math_arithmetic">
+        <value name="A">
+          <shadow type="math_number"><field name="NUM">1</field></shadow>
+        </value>
+        <value name="B">
+          <shadow type="math_number"><field name="NUM">1</field></shadow>
+        </value>
+      </block>
+      <block type="math_single">
+        <value name="NUM">
+          <shadow type="math_number"><field name="NUM">9</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
+      <block type="find_operator"></block>
+      <block type="perform_operations"></block>
+      <block type="print_result"></block>
+    </category>
+    <category name="Texto" colour="#4CAF50" data-translate-name="CAT_TEXT">
       <block type="text"></block>
       <block type="text_join"></block>
       <block type="text_print">
@@ -678,8 +701,10 @@
         </value>
       </block>
     </category>
-    <category name="Variáveis" colour="#00cfe5" data-translate-name="CAT_VARIABLES">
+    <category name="Variáveis" colour="#AF916D" data-translate-name="CAT_VARIABLES">
       <button text="➕ Criar Nova Variável" callbackKey="CREATE_VARIABLE" data-translate-text="createVariableButton"></button>
+      <block type="const_modifier"></block>
+      <sep></sep>
       <block type="int_declaration">
         <value name="VALUE">
           <shadow type="math_number"><field name="NUM">0</field></shadow>
@@ -700,6 +725,11 @@
           <shadow type="text"><field name="TEXT">texto</field></shadow>
         </value>
       </block>
+      <block type="char_declaration">
+        <value name="VALUE">
+          <shadow type="text"><field name="TEXT">'A'</field></shadow>
+        </value>
+      </block>
       <sep></sep>
       <block type="int_variable_get"></block>
       <block type="int_variable_set">
@@ -707,7 +737,6 @@
           <shadow type="math_number"><field name="NUM">0</field></shadow>
         </value>
       </block>
-    </category>
     </category>
     <category name="Funções" colour="#e80074" custom="PROCEDURE" data-translate-name="CAT_FUNCTIONS">
     </category>
@@ -720,7 +749,53 @@
         </value>
       </block>
     </category>
-    <category name="Bibliotecas" colour="#3c3c3c" data-translate-name="CAT_LIBRARIES">
+    <category name="LED" colour="#FFD700" data-translate-name="CAT_LED">
+      <block type="pin_mode_block">
+        <value name="PIN">
+          <shadow type="math_number"><field name="NUM">13</field></shadow>
+        </value>
+      </block>
+      <block type="led_builtin_block"></block>
+      <block type="led_builtin_setup"></block>
+      <sep></sep>
+      <block type="led_digital_write">
+        <value name="PIN">
+          <shadow type="math_number"><field name="NUM">13</field></shadow>
+        </value>
+      </block>
+      <block type="led_analog_write">
+        <value name="PIN">
+          <shadow type="math_number"><field name="NUM">9</field></shadow>
+        </value>
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">255</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
+      <block type="led_blink">
+        <value name="PIN">
+          <shadow type="math_number"><field name="NUM">13</field></shadow>
+        </value>
+        <value name="DELAY">
+          <shadow type="math_number"><field name="NUM">1000</field></shadow>
+        </value>
+      </block>
+      <block type="led_fade">
+        <value name="PIN">
+          <shadow type="math_number"><field name="NUM">9</field></shadow>
+        </value>
+        <value name="FROM">
+          <shadow type="math_number"><field name="NUM">0</field></shadow>
+        </value>
+        <value name="TO">
+          <shadow type="math_number"><field name="NUM">255</field></shadow>
+        </value>
+        <value name="STEP_DELAY">
+          <shadow type="math_number"><field name="NUM">30</field></shadow>
+        </value>
+      </block>
+    </category>
+    <category name="Bibliotecas" colour="#B66DFF" data-translate-name="CAT_LIBRARIES">
       <block type="library_arduino_basic"></block>
       <sep></sep>
       <block type="library_wire"></block>

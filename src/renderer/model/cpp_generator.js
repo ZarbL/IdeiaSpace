@@ -1711,3 +1711,204 @@ Blockly.Cpp['hmc5883_atan2'] = function(block) {
 };
 
 // Fim dos geradores HMC5883
+
+// ============================================================================
+// GERADORES LED - NOVOS GERADORES ADICIONADOS DO PROJETO WEB
+// ============================================================================
+
+/**
+ * C++ code generator for pinMode block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['pin_mode_block'] = function(block) {
+  var pin = Blockly.Cpp.valueToCode(block, 'PIN', Blockly.Cpp.ORDER_ATOMIC) || '13';
+  var mode = block.getFieldValue('MODE');
+  
+  var code = 'pinMode(' + pin + ', ' + mode + ');\n';
+  return code;
+};
+
+/**
+ * C++ code generator for LED PIN reference.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['led_builtin_block'] = function(block) {
+  var code = 'LED_PIN';
+  return [code, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for LED PIN setup.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_builtin_setup'] = function(block) {
+  var code = 'pinMode(LED_PIN, OUTPUT);\n';
+  return code;
+};
+
+/**
+ * C++ code generator for LED digital write.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_digital_write'] = function(block) {
+  var pin = Blockly.Cpp.valueToCode(block, 'PIN', Blockly.Cpp.ORDER_ATOMIC) || '13';
+  var state = block.getFieldValue('STATE');
+  
+  var code = 'digitalWrite(' + pin + ', ' + state + ');\n';
+  return code;
+};
+
+/**
+ * C++ code generator for LED analog write.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_analog_write'] = function(block) {
+  var pin = Blockly.Cpp.valueToCode(block, 'PIN', Blockly.Cpp.ORDER_ATOMIC) || '9';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ATOMIC) || '255';
+  
+  var code = 'analogWrite(' + pin + ', ' + value + ');\n';
+  return code;
+};
+
+/**
+ * C++ code generator for LED blink.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_blink'] = function(block) {
+  var pin = Blockly.Cpp.valueToCode(block, 'PIN', Blockly.Cpp.ORDER_ATOMIC) || '13';
+  var delay = Blockly.Cpp.valueToCode(block, 'DELAY', Blockly.Cpp.ORDER_ATOMIC) || '1000';
+  
+  var code = 'digitalWrite(' + pin + ', HIGH);\n' +
+             'delay(' + delay + ');\n' +
+             'digitalWrite(' + pin + ', LOW);\n' +
+             'delay(' + delay + ');\n';
+  return code;
+};
+
+/**
+ * C++ code generator for LED fade.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_fade'] = function(block) {
+  var pin = Blockly.Cpp.valueToCode(block, 'PIN', Blockly.Cpp.ORDER_ATOMIC) || '9';
+  var from = Blockly.Cpp.valueToCode(block, 'FROM', Blockly.Cpp.ORDER_ATOMIC) || '0';
+  var to = Blockly.Cpp.valueToCode(block, 'TO', Blockly.Cpp.ORDER_ATOMIC) || '255';
+  var stepDelay = Blockly.Cpp.valueToCode(block, 'STEP_DELAY', Blockly.Cpp.ORDER_ATOMIC) || '30';
+  
+  var code = '// Fade LED no pino ' + pin + '\n' +
+             'for (int fadeValue = ' + from + '; fadeValue <= ' + to + '; fadeValue += 5) {\n' +
+             '  analogWrite(' + pin + ', fadeValue);\n' +
+             '  delay(' + stepDelay + ');\n' +
+             '}\n' +
+             'for (int fadeValue = ' + to + '; fadeValue >= ' + from + '; fadeValue -= 5) {\n' +
+             '  analogWrite(' + pin + ', fadeValue);\n' +
+             '  delay(' + stepDelay + ');\n' +
+             '}\n';
+  return code;
+};
+
+// ============================================================================
+// GERADORES CALCULADORA - NOVOS GERADORES ADICIONADOS DO PROJETO WEB
+// ============================================================================
+
+/**
+ * C++ code generator for const modifier wrapper.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['const_modifier'] = function(block) {
+  // Pega o bloco interno que está dentro do const
+  var innerStatement = Blockly.Cpp.statementToCode(block, 'INNER_BLOCK');
+  
+  if (!innerStatement) {
+    console.warn('Bloco const sem declaração interna');
+    return '';
+  }
+  
+  // Remove linha extra e adiciona const no início
+  var cleanStatement = innerStatement.trim();
+  var constStatement = 'const ' + cleanStatement + '\n';
+  
+  return constStatement;
+};
+
+/**
+ * C++ code generator for find operator block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {array} Generated C++ code with order.
+ */
+Blockly.Cpp['find_operator'] = function(block) {
+  var operator = block.getFieldValue('OPERATOR');
+  var code = 'inputString.indexOf(\'' + operator + '\')';
+  return [code, Blockly.Cpp.ORDER_FUNCTION_CALL];
+};
+
+/**
+ * C++ code generator for perform operations block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['perform_operations'] = function(block) {
+  var code = 'switch (operatorChar) {\n' +
+             '  case \'+\':\n' +
+             '    result = num1 + num2;\n' +
+             '    break;\n' +
+             '  case \'-\':\n' +
+             '    result = num1 - num2;\n' +
+             '    break;\n' +
+             '  case \'*\':\n' +
+             '    result = num1 * num2;\n' +
+             '    break;\n' +
+             '  case \'/\':\n' +
+             '    // Evita a divisão por zero\n' +
+             '    if (num2 != 0) {\n' +
+             '      result = num1 / num2;\n' +
+             '    } else {\n' +
+             '      Serial.println("Erro: Divisao por zero!");\n' +
+             '      validOperation = false;\n' +
+             '    }\n' +
+             '    break;\n' +
+             '}\n';
+  return code;
+};
+
+/**
+ * C++ code generator for print result block.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['print_result'] = function(block) {
+  var code = '// Imprime o resultado, se a operação for válida\n' +
+             'if (validOperation) {\n' +
+             '  Serial.print("Resultado: ");\n' +
+             '  Serial.println(result, 2); // Exibe o resultado com 2 casas decimais\n' +
+             '} else {\n' +
+             '  Serial.println("Erro: Operador invalido. Use +, -, *, /");\n' +
+             '}\n';
+  return code;
+};
+
+/**
+ * C++ code generator for char variable declaration.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['char_declaration'] = function(block) {
+  var varName = block.getFieldValue('VAR_NAME') || 'minhaVariavel';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || "'A'";
+  
+  // Validar nome da variável
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
+    console.warn('Nome de variável inválido:', varName);
+    varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
+  }
+  
+  return 'char ' + varName + ' = ' + value + ';\n';
+};
