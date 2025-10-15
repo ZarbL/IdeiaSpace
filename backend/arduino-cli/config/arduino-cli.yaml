@@ -9,9 +9,9 @@
     "port": "50051"
   },
   "directories": {
-    "data": "C:\\temp\\arduino_data",
-    "downloads": "C:\\temp\\arduino_downloads",
-    "user": "C:\\temp\\arduino_user"
+    "data": "data",
+    "downloads": "downloads",
+    "user": "user"
   },
   "library": {
     "enable_unsafe_install": false
