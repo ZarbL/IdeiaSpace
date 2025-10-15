@@ -79,7 +79,15 @@ class ArduinoCLIInstaller {
   }
 
   async createDirectories() {
-    const dirs = [this.cliDir, this.configDir];
+    // Criar estrutura completa de diretórios necessários
+    const dirs = [
+      this.cliDir, 
+      this.configDir,
+      path.join(this.configDir, 'data'),
+      path.join(this.configDir, 'downloads'),
+      path.join(this.configDir, 'user'),
+      path.join(this.configDir, 'user', 'libraries')
+    ];
     
     for (const dir of dirs) {
       if (!fs.existsSync(dir)) {
@@ -267,7 +275,7 @@ class ArduinoCLIInstaller {
       await execAsync(`chmod +x "${cliPath}"`);
     }
     
-    // Criar arquivo de configuração
+    // Criar arquivo de configuração com caminhos relativos
     const configPath = path.join(this.configDir, 'arduino-cli.yaml');
     const config = {
       board_manager: {
@@ -280,9 +288,9 @@ class ArduinoCLIInstaller {
         port: '50051'
       },
       directories: {
-        data: path.join(this.configDir, 'data'),
-        downloads: path.join(this.configDir, 'downloads'),
-        user: path.join(this.configDir, 'user')
+        data: 'data',
+        downloads: 'downloads',
+        user: 'user'
       },
       library: {
         enable_unsafe_install: false
@@ -300,7 +308,38 @@ class ArduinoCLIInstaller {
     };
     
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    console.log('📄 Arquivo de configuração criado!');
+    console.log('📄 Arquivo de configuração criado com caminhos relativos!');
+    
+    // Criar arquivo YAML principal também (para compatibilidade)
+    const mainConfigPath = path.join(this.cliDir, 'arduino-cli.yaml');
+    const yamlConfig = `board_manager:
+    additional_urls:
+        - https://espressif.github.io/arduino-esp32/package_esp32_index.json
+        - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+
+directories:
+    user: config/user
+    data: config/data
+    downloads: config/downloads
+
+library:
+    enable_unsafe_install: false
+
+daemon:
+    port: "50051"
+
+logging:
+    level: warn
+
+sketch:
+    always_export_binaries: false
+
+build_cache:
+    compilations_before_purge: 10
+    ttl: 720h0m0s
+`;
+    fs.writeFileSync(mainConfigPath, yamlConfig);
+    console.log('📄 Arquivo de configuração YAML principal criado!');
     
     // Inicializar core com retry e timeout aumentado
     try {

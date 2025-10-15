@@ -1,195 +1,180 @@
 #!/usr/bin/env node
 
 /**
- * Script para configurar cores ESP32 pré-instalados
- * Evita necessidade de download durante instalação
+ * Script para instalar ESP32 Core no Arduino CLI
+ * Garante que o ESP32 esteja disponível para uploads
  */
 
-const fs = require('fs');
-const path = require('path');
 const { exec } = require('child_process');
 const { promisify } = require('util');
+const path = require('path');
+const fs = require('fs');
 
 const execAsync = promisify(exec);
 
-class ESP32CoreManager {
+class ESP32CoreInstaller {
   constructor() {
     this.backendDir = __dirname;
-    this.cliDir = path.join(this.backendDir, 'arduino-cli');
-    this.configDir = path.join(this.cliDir, 'config');
-    this.dataDir = path.join(this.configDir, 'data');
-    this.packagesDir = path.join(this.dataDir, 'packages');
+    this.cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+    this.configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
   }
 
-  async setupESP32CoreOffline() {
-    console.log('📱 Configurando core ESP32 offline...');
+  async install() {
+    console.log('🚀 Instalador de ESP32 Core');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     try {
-      // Verificar se já existe instalação
-      const esp32Dir = path.join(this.packagesDir, 'esp32');
-      if (fs.existsSync(esp32Dir)) {
-        console.log('✅ Core ESP32 já está instalado');
-        return true;
+      // Verificar se Arduino CLI existe
+      if (!fs.existsSync(this.cliPath)) {
+        throw new Error('❌ Arduino CLI não encontrado. Execute: npm run backend:setup');
       }
 
-      // Tentar instalação online primeiro
-      const installed = await this.tryOnlineInstallation();
-      if (installed) {
-        console.log('✅ Core ESP32 instalado via download');
-        return true;
+      // Verificar se ESP32 já está instalado
+      console.log('🔍 Verificando cores instalados...');
+      const isInstalled = await this.checkESP32Installed();
+      
+      if (isInstalled) {
+        console.log('✅ ESP32 core já está instalado!');
+        await this.showInstalledCores();
+        return;
       }
 
-      // Se falhar, usar método offline
-      console.log('📦 Usando configuração offline...');
-      await this.createMinimalESP32Config();
-      
-      return true;
-      
-    } catch (error) {
-      console.error('❌ Erro ao configurar ESP32 core:', error.message);
-      return false;
-    }
-  }
+      console.log('📥 ESP32 core não encontrado. Iniciando instalação...\n');
 
-  async tryOnlineInstallation() {
-    try {
-      const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
-      const cliPath = path.join(this.cliDir, executable);
-      const configPath = path.join(this.configDir, 'arduino-cli.yaml');
+      // Atualizar índices
+      console.log('🔄 [1/3] Atualizando índices de pacotes...');
+      await this.updateIndex();
+      console.log('✅ Índices atualizados!\n');
+
+      // Instalar ESP32 core
+      console.log('📦 [2/3] Instalando ESP32 core (isso pode demorar alguns minutos)...');
+      console.log('⏳ Baixando ferramentas e compiladores ESP32...');
+      await this.installESP32Core();
+      console.log('✅ ESP32 core instalado!\n');
+
+      // Verificar instalação
+      console.log('🔍 [3/3] Verificando instalação...');
+      const verified = await this.verifyInstallation();
       
-      if (!fs.existsSync(cliPath)) {
-        return false;
+      if (verified) {
+        console.log('✅ Verificação completa!\n');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🎉 ESP32 Core instalado com sucesso!');
+        console.log('📋 Cores disponíveis:');
+        await this.showInstalledCores();
+        console.log('\n💡 Agora você pode fazer upload para ESP32!');
+      } else {
+        throw new Error('Falha na verificação da instalação');
       }
 
-      console.log('🌐 Tentando instalação online...');
-      
-      // Comando com timeout menor para falhar rápido se não tiver conexão
-      await execAsync(
-        `"${cliPath}" --config-file "${configPath}" core install esp32:esp32`,
-        { timeout: 60000 } // 1 minuto apenas
-      );
-      
-      return true;
-      
     } catch (error) {
-      console.log('⚠️ Instalação online falhou:', error.message);
-      return false;
-    }
-  }
-
-  async createMinimalESP32Config() {
-    console.log('⚙️ Criando configuração mínima ESP32...');
-    
-    // Criar estrutura de diretórios
-    const esp32Dir = path.join(this.packagesDir, 'esp32');
-    const hardwareDir = path.join(esp32Dir, 'hardware', 'esp32');
-    const toolsDir = path.join(esp32Dir, 'tools');
-    
-    this.ensureDirectoryExists(esp32Dir);
-    this.ensureDirectoryExists(hardwareDir);
-    this.ensureDirectoryExists(toolsDir);
-    
-    // Criar arquivo de package básico
-    const packageData = {
-      "name": "esp32",
-      "maintainer": "Espressif Systems",
-      "websiteURL": "https://github.com/espressif/arduino-esp32",
-      "email": "support@espressif.com",
-      "help": {
-        "online": "https://github.com/espressif/arduino-esp32"
-      },
-      "platforms": [
-        {
-          "name": "ESP32 Arduino",
-          "architecture": "esp32",
-          "version": "3.0.7",
-          "category": "ESP32",
-          "url": "embedded",
-          "archiveFileName": "embedded",
-          "checksum": "embedded",
-          "size": "embedded",
-          "boards": [
-            {
-              "name": "ESP32 Dev Module"
-            }
-          ],
-          "toolsDependencies": []
-        }
-      ]
-    };
-    
-    const packagePath = path.join(esp32Dir, 'package_esp32_index.json');
-    fs.writeFileSync(packagePath, JSON.stringify(packageData, null, 2));
-    
-    // Criar arquivo board básico para ESP32 Dev Module
-    const boardsData = `
-esp32.name=ESP32 Dev Module
-esp32.vid.0=0x10C4
-esp32.pid.0=0xEA60
-esp32.vid.1=0x1A86
-esp32.pid.1=0x7523
-
-esp32.upload.tool=esptool_py
-esp32.upload.maximum_size=1310720
-esp32.upload.maximum_data_size=327680
-esp32.upload.wait_for_upload_port=true
-
-esp32.serial.disableDTR=true
-esp32.serial.disableRTS=true
-
-esp32.build.mcu=esp32
-esp32.build.f_cpu=240000000L
-esp32.build.flash_mode=dio
-esp32.build.flash_size=4MB
-esp32.build.board=ESP32_DEV
-esp32.build.variant=esp32
-esp32.build.core=esp32
-`;
-    
-    const boardsPath = path.join(hardwareDir, '3.0.7', 'boards.txt');
-    this.ensureDirectoryExists(path.dirname(boardsPath));
-    fs.writeFileSync(boardsPath, boardsData);
-    
-    console.log('✅ Configuração mínima ESP32 criada');
-  }
-
-  ensureDirectoryExists(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
-  }
-
-  async listAvailableBoards() {
-    try {
-      const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
-      const cliPath = path.join(this.cliDir, executable);
-      const configPath = path.join(this.configDir, 'arduino-cli.yaml');
-      
-      const { stdout } = await execAsync(
-        `"${cliPath}" --config-file "${configPath}" board listall esp32`
-      );
-      
-      console.log('📋 Boards ESP32 disponíveis:');
-      console.log(stdout);
-      
-    } catch (error) {
-      console.log('⚠️ Não foi possível listar boards:', error.message);
-    }
-  }
-}
-
-// Executar se chamado diretamente
-if (require.main === module) {
-  const manager = new ESP32CoreManager();
-  manager.setupESP32CoreOffline().then(success => {
-    if (success) {
-      console.log('🎉 Core ESP32 configurado com sucesso!');
-      manager.listAvailableBoards();
-    } else {
-      console.log('❌ Falha na configuração do core ESP32');
+      console.error('\n❌ Erro durante instalação:', error.message);
+      console.error('\n💡 Possíveis soluções:');
+      console.error('   1. Verifique sua conexão com a internet');
+      console.error('   2. Tente novamente (pode ser timeout)');
+      console.error('   3. Execute: npm run backend:setup');
       process.exit(1);
     }
-  });
+  }
+
+  async checkESP32Installed() {
+    try {
+      const command = `"${this.cliPath}" --config-file "${this.configPath}" core list`;
+      const { stdout } = await execAsync(command, { timeout: 30000 });
+      
+      // Procurar por esp32:esp32
+      return stdout.includes('esp32:esp32') || stdout.includes('esp32');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async updateIndex() {
+    const command = `"${this.cliPath}" --config-file "${this.configPath}" core update-index`;
+    
+    try {
+      const { stdout, stderr } = await execAsync(command, { 
+        timeout: 120000, // 2 minutos
+        maxBuffer: 1024 * 1024 * 50 // 50MB
+      });
+      
+      if (stderr && !stderr.includes('Downloading') && !stderr.includes('Downloaded')) {
+        console.log('⚠️ Avisos durante atualização:', stderr);
+      }
+      
+      return true;
+    } catch (error) {
+      throw new Error(`Falha ao atualizar índices: ${error.message}`);
+    }
+  }
+
+  async installESP32Core() {
+    const command = `"${this.cliPath}" --config-file "${this.configPath}" core install esp32:esp32`;
+    
+    try {
+      // Usar spawn para ver o progresso em tempo real
+      const { spawn } = require('child_process');
+      
+      return new Promise((resolve, reject) => {
+        const child = spawn(this.cliPath, [
+          '--config-file', this.configPath,
+          'core', 'install', 'esp32:esp32'
+        ], {
+          stdio: 'inherit' // Mostrar output em tempo real
+        });
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Instalação falhou com código ${code}`));
+          }
+        });
+
+        child.on('error', (err) => {
+          reject(new Error(`Erro ao executar comando: ${err.message}`));
+        });
+      });
+      
+    } catch (error) {
+      throw new Error(`Falha ao instalar ESP32 core: ${error.message}`);
+    }
+  }
+
+  async verifyInstallation() {
+    try {
+      const command = `"${this.cliPath}" --config-file "${this.configPath}" core list`;
+      const { stdout } = await execAsync(command, { timeout: 30000 });
+      
+      return stdout.includes('esp32:esp32');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async showInstalledCores() {
+    try {
+      const command = `"${this.cliPath}" --config-file "${this.configPath}" core list`;
+      const { stdout } = await execAsync(command, { timeout: 30000 });
+      
+      const lines = stdout.split('\n').filter(line => line.trim());
+      lines.forEach(line => {
+        if (line.includes('esp32')) {
+          console.log('   📱 ' + line.trim());
+        } else if (line.trim() && !line.includes('ID') && !line.includes('==')) {
+          console.log('   📋 ' + line.trim());
+        }
+      });
+    } catch (error) {
+      console.log('   ⚠️ Não foi possível listar cores');
+    }
+  }
 }
 
-module.exports = ESP32CoreManager;
+// Executar instalação se chamado diretamente
+if (require.main === module) {
+  const installer = new ESP32CoreInstaller();
+  installer.install();
+}
+
+module.exports = ESP32CoreInstaller;

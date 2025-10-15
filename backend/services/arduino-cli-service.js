@@ -1176,30 +1176,84 @@ Se o problema persistir, tente:
   async checkEsp32CoreAvailable() {
     try {
       console.log('🔍 Verificando disponibilidade do ESP32 core...');
+      console.log(`   📂 Usando config: ${this.configPath}`);
+      console.log(`   📂 CLI Path: ${this.cliPath}`);
       
-      // Verificar cores instalados
+      // MÉTODO SIMPLES PRIMEIRO (mais confiável - texto plano)
+      console.log('🔍 Tentando verificação simples (texto plano)...');
+      const simpleListResult = await this.executeCommand('core list');
+      
+      if (simpleListResult.success && simpleListResult.output) {
+        const hasEsp32 = simpleListResult.output.toLowerCase().includes('esp32');
+        if (hasEsp32) {
+          // Extrair versão do output texto
+          const lines = simpleListResult.output.split('\n');
+          const esp32Line = lines.find(line => line.toLowerCase().includes('esp32'));
+          
+          if (esp32Line) {
+            const parts = esp32Line.trim().split(/\s+/);
+            const version = parts.length >= 2 ? parts[1] : 'unknown';
+            
+            console.log(`✅ ESP32 core encontrado (texto simples): ${parts[0]} versão ${version}`);
+            return {
+              installed: true,
+              core: { id: 'esp32:esp32', version: version },
+              version: version,
+              id: 'esp32:esp32',
+              method: 'simple_text_search'
+            };
+          }
+        }
+      }
+      
+      // Fallback: Tentar JSON (menos confiável)
+      console.log('🔍 Tentando verificação JSON...');
       const listResult = await this.executeCommand('core list --format json');
+      console.log(`   📊 Resultado success: ${listResult.success}`);
+      console.log(`   📊 Output length: ${listResult.output ? listResult.output.length : 0}`);
+      
       if (listResult.success && listResult.output) {
         try {
+          console.log(`   📄 Raw output: ${listResult.output.substring(0, 200)}...`);
           const installedCores = JSON.parse(listResult.output);
           
           // O formato real retorna um array de objetos com estrutura:
           // [{ "id": "esp32:esp32", "installed_version": "3.3.1", "latest_version": "3.3.1", "name": "esp32", "maintainer": "Espressif Systems", "email": "...", "boards": [...] }]
-          if (Array.isArray(installedCores)) {
-            const esp32Core = installedCores.find(core => 
-              core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
-            );
+          if (Array.isArray(installedCores) && installedCores.length > 0) {
+            console.log(`   📊 Cores encontrados no array: ${installedCores.length}`);
+            
+            // Procurar ESP32 core no array
+            const esp32Core = installedCores.find(core => {
+              // Verificar se é um objeto válido
+              if (!core || typeof core !== 'object') return false;
+              
+              // Verificar diferentes formatos possíveis
+              const coreId = core.id || core.ID || '';
+              const installed = core.installed_version || core.installed || core.InstalledVersion;
+              
+              // Procurar por 'esp32' no ID
+              const isESP32 = coreId.toLowerCase().includes('esp32');
+              
+              console.log(`   🔍 Verificando core: ${coreId}, instalado: ${installed ? 'SIM' : 'NÃO'}, é ESP32: ${isESP32}`);
+              
+              return isESP32 && installed;
+            });
           
             if (esp32Core) {
-              console.log('✅ ESP32 core encontrado:', esp32Core.id, 'versão:', esp32Core.installed_version);
+              const version = esp32Core.installed_version || esp32Core.latest_version || 'unknown';
+              console.log(`✅ ESP32 core encontrado: ${esp32Core.id} versão: ${version}`);
               return {
                 installed: true,
                 core: esp32Core,
-                version: esp32Core.installed_version || esp32Core.latest_version || 'unknown',
+                version: version,
                 id: esp32Core.id,
                 method: 'core_list_json'
               };
+            } else {
+              console.log('   ⚠️ ESP32 não encontrado no array de cores');
             }
+          } else {
+            console.log(`   ⚠️ Array de cores vazio ou inválido: ${JSON.stringify(installedCores).substring(0, 100)}`);
           }
           
           // Fallback: tentar buscar na estrutura aninhada se existir
@@ -1223,28 +1277,6 @@ Se o problema persistir, tente:
         } catch (parseError) {
           console.warn('⚠️ Erro ao analisar JSON dos cores instalados:', parseError.message);
           console.warn('Output recebido:', listResult.output.substring(0, 500) + '...');
-        }
-      }
-      
-      // Fallback final: verificar usando comando simples
-      console.log('🔍 Verificação final usando comando simples...');
-      const simpleListResult = await this.executeCommand('core list');
-      if (simpleListResult.success && simpleListResult.output) {
-        const hasEsp32 = simpleListResult.output.includes('esp32:esp32');
-        if (hasEsp32) {
-          // Extrair versão do output texto
-          const lines = simpleListResult.output.split('\n');
-          const esp32Line = lines.find(line => line.includes('esp32:esp32'));
-          const version = esp32Line ? esp32Line.split(/\s+/)[1] || 'unknown' : 'unknown';
-          
-          console.log('✅ ESP32 core encontrado (verificação simples):', version);
-          return {
-            installed: true,
-            core: { id: 'esp32:esp32', version: version },
-            version: version,
-            id: 'esp32:esp32',
-            method: 'simple_text_search'
-          };
         }
       }
       

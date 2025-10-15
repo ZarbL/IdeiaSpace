@@ -21,6 +21,9 @@ class AutoSetup {
     console.log('🔧 Auto-setup do backend...');
 
     try {
+      // SEMPRE validar e corrigir configurações primeiro
+      await this.validateAndFixConfigs();
+      
       // Verificar se já está configurado
       if (await this.isAlreadySetup()) {
         console.log('✅ Backend já configurado.');
@@ -46,54 +49,24 @@ class AutoSetup {
 
   async isAlreadySetup() {
     const nodeModulesExists = fs.existsSync(path.join(this.backendDir, 'node_modules'));
+    const arduinoCliExists = fs.existsSync(path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe'));
+    const esp32CoreExists = await this.checkESP32Core();
     
-    // Detectar executável correto baseado no sistema operacional
-    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
-    const arduinoCliExists = fs.existsSync(path.join(this.backendDir, 'arduino-cli', executable));
-    
-    // Verificar se os cores ESP32 estão instalados
-    const esp32CoreInstalled = await this.checkEsp32CoreInstalled();
-    
-    return nodeModulesExists && arduinoCliExists && esp32CoreInstalled;
+    return nodeModulesExists && arduinoCliExists && esp32CoreExists;
   }
 
-  async checkEsp32CoreInstalled() {
+  async checkESP32Core() {
     try {
-      const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
-      const cliPath = path.join(this.backendDir, 'arduino-cli', executable);
-      const configPath = path.join(this.backendDir, 'arduino-cli', 'config', 'arduino-cli.yaml');
+      const cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+      const configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
       
-      if (!fs.existsSync(cliPath)) {
-        return false;
-      }
-
-      // Verificar cores instalados
-      const command = `"${cliPath}" --config-file "${configPath}" core list --format json`;
-      const { stdout } = await execAsync(command);
+      if (!fs.existsSync(cliPath)) return false;
       
-      if (stdout && stdout.trim()) {
-        try {
-          const coreData = JSON.parse(stdout);
-          
-          // O formato real é { "platforms": [...] } ou { "platforms": null }
-          if (coreData.platforms && Array.isArray(coreData.platforms)) {
-            const esp32Core = coreData.platforms.find(core => 
-              core.id && (core.id.includes('esp32') || core.id === 'esp32:esp32')
-            );
-            return !!esp32Core;
-          } else {
-            // Não há cores instalados (platforms é null ou vazio)
-            return false;
-          }
-        } catch (parseError) {
-          console.log('⚠️ Erro ao interpretar resposta dos cores:', parseError.message);
-          return false;
-        }
-      }
+      const command = `"${cliPath}" --config-file "${configPath}" core list`;
+      const { stdout } = await execAsync(command, { timeout: 10000 });
       
-      return false;
+      return stdout.includes('esp32:esp32') || stdout.includes('esp32');
     } catch (error) {
-      console.log('⚠️ Não foi possível verificar cores ESP32:', error.message);
       return false;
     }
   }
@@ -129,6 +102,150 @@ class AutoSetup {
         console.log('💡 Execute: npm run install-cli');
       }
     }
+    
+    // Verificar e instalar ESP32 core se necessário
+    await this.autoSetupESP32Core();
+  }
+  
+  async autoSetupESP32Core() {
+    const hasESP32 = await this.checkESP32Core();
+    
+    if (!hasESP32) {
+      console.log('📱 ESP32 core não encontrado. Instalando...');
+      
+      try {
+        await execAsync('node setup-esp32-core.js', { 
+          cwd: this.backendDir,
+          timeout: 600000 // 10 minutos timeout para download do ESP32
+        });
+        console.log('✅ ESP32 core instalado.');
+      } catch (error) {
+        console.log('⚠️ Falha na instalação automática do ESP32 core');
+        console.log('💡 Execute manualmente: npm run install-esp32');
+        console.log('   Erro:', error.message);
+      }
+    }
+    
+    // Verificar e instalar bibliotecas necessárias
+    await this.autoSetupLibraries();
+  }
+  
+  async autoSetupLibraries() {
+    console.log('📚 Verificando bibliotecas dos sensores...');
+    
+    try {
+      // Executar instalação de bibliotecas silenciosamente
+      await execAsync('node setup-libraries.js', { 
+        cwd: this.backendDir,
+        timeout: 300000 // 5 minutos timeout
+      });
+      console.log('✅ Bibliotecas verificadas e instaladas.');
+    } catch (error) {
+      console.log('⚠️ Algumas bibliotecas podem não ter sido instaladas');
+      console.log('💡 Execute manualmente: npm run install-libraries');
+    }
+  }
+  
+  async validateAndFixConfigs() {
+    console.log('🔍 Validando arquivos de configuração...');
+    
+    const configFiles = [
+      {
+        path: path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml'),
+        type: 'yaml'
+      },
+      {
+        path: path.join(this.backendDir, 'arduino-cli', 'config', 'arduino-cli.yaml'),
+        type: 'json'
+      }
+    ];
+    
+    for (const configFile of configFiles) {
+      if (fs.existsSync(configFile.path)) {
+        try {
+          const content = fs.readFileSync(configFile.path, 'utf-8');
+          
+          // Verificar se há caminhos absolutos hardcoded
+          if (content.includes('C:\\Users\\') || content.includes('C:/Users/')) {
+            console.log(`⚠️ Detectado caminho hardcoded em: ${configFile.path}`);
+            console.log('🔧 Corrigindo configuração...');
+            
+            if (configFile.type === 'yaml') {
+              // Corrigir YAML
+              const yamlConfig = `board_manager:
+    additional_urls:
+        - https://espressif.github.io/arduino-esp32/package_esp32_index.json
+        - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+
+directories:
+    user: config/user
+    data: config/data
+    downloads: config/downloads
+
+library:
+    enable_unsafe_install: false
+
+daemon:
+    port: "50051"
+
+logging:
+    level: warn
+
+sketch:
+    always_export_binaries: false
+
+build_cache:
+    compilations_before_purge: 10
+    ttl: 720h0m0s
+`;
+              fs.writeFileSync(configFile.path, yamlConfig, 'utf-8');
+            } else {
+              // Corrigir JSON
+              const jsonConfig = {
+                board_manager: {
+                  additional_urls: [
+                    'https://espressif.github.io/arduino-esp32/package_esp32_index.json',
+                    'https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json'
+                  ]
+                },
+                daemon: { port: '50051' },
+                directories: {
+                  data: 'data',
+                  downloads: 'downloads',
+                  user: 'user'
+                },
+                library: { enable_unsafe_install: false },
+                logging: { level: 'info', format: 'text' },
+                metrics: { enabled: false },
+                sketch: { always_export_binaries: false }
+              };
+              fs.writeFileSync(configFile.path, JSON.stringify(jsonConfig, null, 2), 'utf-8');
+            }
+            
+            console.log(`✅ Configuração corrigida: ${configFile.path}`);
+          }
+        } catch (error) {
+          console.log(`⚠️ Erro ao validar ${configFile.path}: ${error.message}`);
+        }
+      }
+    }
+    
+    // Garantir que diretórios necessários existam
+    const requiredDirs = [
+      path.join(this.backendDir, 'arduino-cli', 'config', 'data'),
+      path.join(this.backendDir, 'arduino-cli', 'config', 'downloads'),
+      path.join(this.backendDir, 'arduino-cli', 'config', 'user'),
+      path.join(this.backendDir, 'arduino-cli', 'config', 'user', 'libraries')
+    ];
+    
+    for (const dir of requiredDirs) {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`📁 Diretório criado: ${path.relative(this.backendDir, dir)}`);
+      }
+    }
+    
+    console.log('✅ Validação de configuração concluída.');
   }
 
   async autoInstallEsp32Cores() {
