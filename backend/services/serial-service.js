@@ -6,6 +6,7 @@
 const WebSocket = require('ws');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
+const appConfig = require('../config');
 
 class SerialService {
   constructor(arduinoService = null) {
@@ -17,8 +18,9 @@ class SerialService {
   /**
    * Inicia servidor WebSocket
    */
-  startWebSocketServer(port = 8080) {
-    this.wsServer = new WebSocket.Server({ port });
+  startWebSocketServer(port = null) {
+    const wsPort = port || appConfig.getNetworkConfig().wsPort;
+    this.wsServer = new WebSocket.Server({ port: wsPort });
     
     this.wsServer.on('connection', (ws) => {
       console.log('🔌 Nova conexão WebSocket estabelecida');
@@ -83,7 +85,7 @@ class SerialService {
       this.sendAvailablePorts(ws);
     });
 
-    console.log(`🌐 Servidor WebSocket iniciado na porta ${port}`);
+    console.log(`🌐 Servidor WebSocket iniciado na porta ${wsPort}`);
   }
 
   /**

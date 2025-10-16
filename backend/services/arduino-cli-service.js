@@ -7,6 +7,7 @@ const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
 const path = require('path');
 const fs = require('fs');
+const { SerialPort } = require('serialport');
 
 const execAsync = promisify(exec);
 
@@ -22,7 +23,8 @@ class ArduinoCLIService {
 
     const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
     this.cliPath = path.join(__dirname, '..', 'arduino-cli', executable);
-    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'arduino-cli.yaml');
+    // USAR O ARQUIVO DE CONFIGURAÇÃO PRINCIPAL (onde os cores estão instalados)
+    this.configPath = path.join(__dirname, '..', 'arduino-cli', 'arduino-cli.yaml');
 
     // GARANTIR que o Arduino CLI use APENAS configurações locais
     process.env.ARDUINO_CONFIG_FILE = this.configPath;
@@ -329,6 +331,116 @@ class ArduinoCLIService {
   }
 
   /**
+   * Verifica se uma porta é uma ESP32 baseado em VID/PID
+   */
+  isESP32Port(vid, pid) {
+    if (!vid) return false;
+    
+    const vidUpper = vid.toUpperCase();
+    const pidUpper = pid ? pid.toUpperCase() : '';
+    
+    // VIDs conhecidos de ESP32
+    const esp32VIDs = [
+      '0X303A',  // Espressif oficial
+      '0X10C4',  // CP210x (usado em muitas ESP32)
+      '0X1A86',  // CH340 (comum em clones ESP32)
+      '0X0403'   // FTDI (algumas ESP32 DevKit)
+    ];
+    
+    // PIDs específicos de ESP32
+    const esp32PIDs = {
+      '0X303A': ['0X1001', '0X0002'],  // ESP32-S2, ESP32-C3
+      '0X10C4': ['0XEA60'],            // CP2102 (comum em ESP32)
+      '0X1A86': ['0X7523', '0X5523']   // CH340G/C (clones ESP32)
+    };
+    
+    // Verificar VID
+    if (!esp32VIDs.includes(vidUpper)) {
+      return false;
+    }
+    
+    // Se for VID oficial da Espressif, é ESP32 com certeza
+    if (vidUpper === '0X303A') {
+      return true;
+    }
+    
+    // Para outros VIDs, verificar PID se disponível
+    if (pidUpper && esp32PIDs[vidUpper]) {
+      return esp32PIDs[vidUpper].includes(pidUpper);
+    }
+    
+    // Se não tem PID mas tem VID comum de ESP32, considerar como possível
+    return true;
+  }
+
+  /**
+   * Lista portas e identifica ESP32 automaticamente
+   */
+  async listPortsWithESP32Detection() {
+    try {
+      console.log('🔍 Listando portas com detecção de ESP32...');
+      const result = await this.listPorts();
+      
+      if (result.error || !result.ports) {
+        return result;
+      }
+
+      // Enriquecer informações das portas
+      const portsEnriched = result.ports.map(port => {
+        const isESP32 = this.isESP32Port(port.vid, port.pid);
+        const manufacturer = this.getManufacturerFromVID(port.vid);
+        
+        return {
+          ...port,
+          isESP32: isESP32,
+          deviceType: isESP32 ? 'ESP32' : 'Other',
+          manufacturerDetailed: manufacturer,
+          description: this.getPortDescription(port, isESP32, manufacturer)
+        };
+      });
+
+      // Ordenar: ESP32 primeiro
+      portsEnriched.sort((a, b) => {
+        if (a.isESP32 && !b.isESP32) return -1;
+        if (!a.isESP32 && b.isESP32) return 1;
+        return a.address.localeCompare(b.address);
+      });
+
+      const esp32Count = portsEnriched.filter(p => p.isESP32).length;
+      console.log(`✅ Encontradas ${portsEnriched.length} portas (${esp32Count} ESP32)`);
+      
+      return { 
+        ports: portsEnriched, 
+        error: null,
+        esp32Count: esp32Count
+      };
+      
+    } catch (error) {
+      console.error('❌ Erro ao detectar ESP32:', error.message);
+      return { ports: [], error: error.message, esp32Count: 0 };
+    }
+  }
+
+  /**
+   * Gera descrição amigável da porta
+   */
+  getPortDescription(port, isESP32, manufacturer) {
+    if (isESP32) {
+      if (manufacturer.includes('Espressif')) {
+        return `🎯 ESP32 Official (${port.address})`;
+      } else if (manufacturer.includes('CH340')) {
+        return `🎯 ESP32 DevKit (CH340) - ${port.address}`;
+      } else if (manufacturer.includes('CP210')) {
+        return `🎯 ESP32 DevKit (CP2102) - ${port.address}`;
+      } else {
+        return `🎯 ESP32 (${manufacturer}) - ${port.address}`;
+      }
+    }
+    
+    return `${port.protocolLabel} - ${port.address}`;
+  }
+
+  /**
    * Valida e limpa o código antes da compilação
    */
   validateAndCleanCode(code) {
@@ -396,11 +508,15 @@ class ArduinoCLIService {
       // Escrever código no arquivo
       fs.writeFileSync(sketchFile, cleanCode, 'utf8');
 
+      // Obter caminho das bibliotecas
+      const librariesPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
+      
       // Comando de compilação com build-path alternativo
-      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" "${sketchDir}"`;
+      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" --libraries "${librariesPath}" "${sketchDir}"`;
       
       console.log(`🔨 Compilando para ${board}...`);
       console.log(`📁 Usando build path: ${buildDir}`);
+      console.log(`📚 Usando bibliotecas: ${librariesPath}`);
       const result = await this.executeCommand(compileCommand, {
         timeout: options.timeout || 60000
       });
@@ -458,8 +574,11 @@ class ArduinoCLIService {
       // Escrever código no arquivo
       fs.writeFileSync(sketchFile, cleanCode, 'utf8');
 
+      // Obter caminho das bibliotecas
+      const librariesPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
+      
       // Comando de compilação com saída em diretório específico
-      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" "${sketchDir}"`;
+      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" --libraries "${librariesPath}" "${sketchDir}"`;
       
       console.log(`🔨 Compilando com saída para ${board}...`);
       const result = await this.executeCommand(compileCommand, {
@@ -521,6 +640,79 @@ class ArduinoCLIService {
   }
 
   /**
+   * Tenta colocar ESP32 em modo boot usando sinais DTR/RTS
+   * Sequência: DTR=LOW, RTS=HIGH → delay → DTR=HIGH, RTS=LOW
+   * Equivale a: EN=LOW (reset), IO0=LOW (boot) → EN=HIGH (run in boot mode)
+   */
+  async resetESP32ToBootMode(port) {
+    return new Promise((resolve, reject) => {
+      console.log(`🔄 Abrindo porta ${port} para reset...`);
+      
+      const serialPort = new SerialPort({
+        path: port,
+        baudRate: 115200,
+        autoOpen: false
+      });
+
+      serialPort.open((err) => {
+        if (err) {
+          return reject(new Error(`Não foi possível abrir porta: ${err.message}`));
+        }
+
+        console.log('📡 Porta aberta, enviando sequência de reset...');
+
+        // Sequência de reset para modo boot
+        // DTR controla EN (reset), RTS controla IO0 (boot)
+        
+        // Passo 1: EN=LOW (reset), IO0=LOW (boot mode)
+        serialPort.set({ dtr: false, rts: true }, (err) => {
+          if (err) {
+            serialPort.close();
+            return reject(new Error(`Erro ao setar DTR/RTS: ${err.message}`));
+          }
+
+          console.log('📍 Passo 1: EN=LOW, IO0=LOW (entrando em reset + boot)');
+
+          // Aguardar 100ms
+          setTimeout(() => {
+            // Passo 2: EN=HIGH (sair do reset mantendo IO0=LOW)
+            serialPort.set({ dtr: true, rts: true }, (err) => {
+              if (err) {
+                serialPort.close();
+                return reject(new Error(`Erro ao liberar reset: ${err.message}`));
+              }
+
+              console.log('📍 Passo 2: EN=HIGH, IO0=LOW (ESP32 inicia em modo boot)');
+
+              // Aguardar 50ms
+              setTimeout(() => {
+                // Passo 3: Liberar IO0
+                serialPort.set({ dtr: true, rts: false }, (err) => {
+                  if (err) {
+                    serialPort.close();
+                    return reject(new Error(`Erro ao liberar IO0: ${err.message}`));
+                  }
+
+                  console.log('📍 Passo 3: IO0=HIGH (modo boot ativo)');
+
+                  // Fechar porta
+                  serialPort.close((err) => {
+                    if (err) {
+                      console.log(`⚠️ Aviso ao fechar porta: ${err.message}`);
+                    }
+                    console.log('✅ Sequência de reset completa');
+                    resolve();
+                  });
+                });
+              }, 50);
+            });
+          }, 100);
+        });
+      });
+    });
+  }
+
+  /**
    * Upload DIRETO e SIMPLES para ESP32 - SEM ESTRATÉGIAS MÚLTIPLAS
    * Suporta apenas: ESP32 Dev Module e ESP32 Wrover via cabo
    */
@@ -544,7 +736,7 @@ class ArduinoCLIService {
       fs.writeFileSync(sketchFile, cleanCode, 'utf8');
       
       // 3. Verificar porta
-      console.log(`� Verificando porta ${port}...`);
+      console.log(`📡 Verificando porta ${port}...`);
       const portsResult = await this.listPorts();
       const portExists = portsResult.ports?.some(p => p.address === port);
       if (!portExists) {
@@ -552,15 +744,51 @@ class ArduinoCLIService {
         throw new Error(`Porta ${port} não encontrada. Disponíveis: ${available}`);
       }
 
+      // 3.5. Tentar reset automático da ESP32 (DTR/RTS)
+      console.log(`🔄 Tentando reset automático da ESP32 em ${port}...`);
+      try {
+        await this.resetESP32ToBootMode(port);
+        console.log('✅ Reset automático enviado - ESP32 deve estar em modo boot');
+        if (onProgress) {
+          onProgress({
+            type: 'upload_info',
+            message: '🔄 Reset automático enviado para ESP32',
+            timestamp: Date.now()
+          });
+        }
+      } catch (resetError) {
+        console.log(`⚠️ Reset automático falhou: ${resetError.message}`);
+        console.log('💡 Se o upload falhar, use o modo manual (botões BOOT + EN)');
+        if (onProgress) {
+          onProgress({
+            type: 'upload_warning',
+            message: '⚠️ Reset automático não funcionou - modo manual pode ser necessário',
+            timestamp: Date.now()
+          });
+        }
+      }
+
       // 4. Upload com sistema de fallback: Windows primeiro, depois macOS
       console.log(`🚀 Upload ESP32 para ${port} (tentativa múltipla)...`);
       
+      // Obter caminho das bibliotecas
+      const librariesPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
+      
       // Primeira tentativa: configurações Windows (padrão que funcionava)
-      let uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --build-property "upload.speed=115200"`;
+      let uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --libraries "${librariesPath}" --build-property "upload.speed=115200"`;
       console.log(`🔧 Primeira tentativa (Windows config): ${uploadCommand}`);
+      
+      // Variável para detectar wrong boot mode
+      let wrongBootModeDetected = false;
       
       // Progress callback com instruções específicas para macOS
       const handleProgress = (line) => {
+        // Detectar wrong boot mode
+        if (line.includes('Wrong boot mode detected') || line.includes('0x13')) {
+          wrongBootModeDetected = true;
+          console.log('⚠️ Wrong boot mode detectado (0x13) - ESP32 está em execução normal');
+        }
+        
         if (onProgress && (
           line.includes('Connecting') || 
           line.includes('Uploading') ||
@@ -610,7 +838,7 @@ class ArduinoCLIService {
         console.log(`⚠️ Primeira tentativa falhou no macOS, tentando configurações otimizadas...`);
         
         // Segunda tentativa: configurações macOS
-        uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --build-property "upload.speed=9600" --build-property "upload.resetmethod=no_reset"`;
+        uploadCommand = `compile --fqbn ${board} --upload --port ${port} --verify "${sketchDir}" --libraries "${librariesPath}" --build-property "upload.speed=9600" --build-property "upload.resetmethod=no_reset"`;
         console.log(`🔄 Tentativa ${attemptNumber} (macOS otimizado): ${uploadCommand}`);
         
         // Callback específico para macOS
@@ -672,6 +900,18 @@ class ArduinoCLIService {
         
         // Mostrar erro da tentativa mais relevante
         const finalError = result.error;
+        
+        // Detectar Wrong Boot Mode (0x13)
+        if (wrongBootModeDetected || finalError.includes('Wrong boot mode') || finalError.includes('0x13')) {
+          errorMessage = 'ESP32 está em modo de execução (0x13) - precisa entrar em modo de download';
+          suggestion = '🔄 MODO MANUAL DE BOOT:\n\n' +
+                      '1. Segure o botão BOOT (ou IO0) na ESP32\n' +
+                      '2. Pressione e solte o botão EN (ou RESET)\n' +
+                      '3. Solte o botão BOOT\n' +
+                      '4. Clique em "Upload" novamente\n\n' +
+                      '💡 A ESP32 entrará em modo de download e ficará esperando o código.\n' +
+                      '⚠️ Se sua ESP32 não tem botões, conecte GPIO0 ao GND antes de resetar.';
+        }
         
         if (finalError.includes('Packet content transfer stopped') || finalError.includes('chip stopped responding')) {
           errorMessage = 'ESP32 saiu do modo de programação';
@@ -766,7 +1006,12 @@ class ArduinoCLIService {
       console.log(`🔧 Compilando para ${board}...`);
       console.log(`📁 Build path: ${buildDir}`);
       console.log(`📁 Sketch path: ${sketchDir}`);
-      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" "${sketchDir}"`;
+      
+      // Obter caminho das bibliotecas
+      const librariesPath = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
+      console.log(`📚 Libraries path: ${librariesPath}`);
+      
+      const compileCommand = `compile --fqbn ${board} --build-path "${buildDir}" --libraries "${librariesPath}" "${sketchDir}"`;
       
       const compileResult = await this.executeCommand(compileCommand, {
         timeout: 90000 // 1.5 minutos para compilação

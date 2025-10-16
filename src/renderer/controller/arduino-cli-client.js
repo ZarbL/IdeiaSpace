@@ -7,11 +7,48 @@ class ArduinoCLIClient {
   constructor(baseUrl = 'http://localhost:3001') {
     this.baseUrl = baseUrl;
     this.isConnected = false;
+    this.connectionAttempts = 0;
+    this.maxConnectionAttempts = 10;
     console.log(`🔧 ArduinoCLIClient inicializado com baseUrl: ${this.baseUrl}`);
     
     // Detectar contexto (Electron vs Browser)
     this.isElectron = typeof window !== 'undefined' && window.process && window.process.versions && window.process.versions.electron;
     console.log(`🌐 Contexto detectado: ${this.isElectron ? 'Electron' : 'Browser'}`);
+  }
+
+  /**
+   * Aguarda o backend estar pronto com retry exponencial
+   */
+  async waitForBackend(maxAttempts = 10, initialDelay = 500) {
+    console.log(`⏳ Aguardando backend estar pronto (máx ${maxAttempts} tentativas)...`);
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const delay = initialDelay * Math.pow(1.5, attempt - 1); // Backoff exponencial
+        console.log(`🔄 Tentativa ${attempt}/${maxAttempts} (aguardando ${Math.round(delay)}ms)...`);
+        
+        const response = await fetch(`${this.baseUrl}/ping`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (response.ok) {
+          console.log(`✅ Backend pronto na tentativa ${attempt}!`);
+          this.isConnected = true;
+          return true;
+        }
+      } catch (error) {
+        console.log(`⚠️ Tentativa ${attempt} falhou: ${error.message}`);
+        
+        if (attempt < maxAttempts) {
+          const delay = initialDelay * Math.pow(1.5, attempt - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    console.error(`❌ Backend não respondeu após ${maxAttempts} tentativas`);
+    return false;
   }
 
   /**
@@ -21,6 +58,17 @@ class ArduinoCLIClient {
     try {
       console.log(`🔍 Testando conexão com backend: ${this.baseUrl}`);
       
+      // Se já tentamos muitas vezes, aguardar o backend
+      if (this.connectionAttempts > 3 && !this.isConnected) {
+        console.log('🔄 Muitas tentativas falhadas, aguardando backend...');
+        const ready = await this.waitForBackend();
+        if (!ready) {
+          throw new Error('Backend não está respondendo');
+        }
+      }
+      
+      this.connectionAttempts++;
+      
       // Primeiro, teste de ping rápido
       console.log('📡 Executando ping...');
       const pingResponse = await fetch(`${this.baseUrl}/ping`, {
@@ -28,7 +76,7 @@ class ArduinoCLIClient {
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(3000) // 3 segundos para ping
+        signal: AbortSignal.timeout(5000) // 5 segundos para ping
       });
       
       if (!pingResponse.ok) {

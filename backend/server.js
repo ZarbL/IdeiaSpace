@@ -6,6 +6,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const appConfig = require('./config');
+
 // Auto-setup e Arduino CLI Service
 const AutoSetup = require('./auto-setup');
 const ArduinoCLIService = require('./services/arduino-cli-service');
@@ -16,8 +18,9 @@ const ESP32Monitor = require('./esp32-monitor');
 class BackendServer {
   constructor() {
     this.app = express();
-    this.port = process.env.PORT || 3001;
-    this.wsPort = process.env.WS_PORT || 8080;
+    const networkConfig = appConfig.getNetworkConfig();
+    this.port = networkConfig.httpPort;
+    this.wsPort = networkConfig.wsPort;
     
     this.arduinoService = new ArduinoCLIService();
     this.serialService = new SerialService(this.arduinoService);
@@ -312,17 +315,18 @@ class BackendServer {
       }
     });
 
-    // Listar portas
+    // Listar portas com detecção ESP32
     this.app.get('/api/arduino/ports', async (req, res) => {
       try {
         console.log('🔍 Endpoint /api/arduino/ports chamado');
-        const result = await this.arduinoService.listPorts();
-        console.log('📡 Resultado das portas:', JSON.stringify(result, null, 2));
+        const result = await this.arduinoService.listPortsWithESP32Detection();
+        console.log(`📡 Encontradas ${result.ports?.length || 0} portas (${result.esp32Count || 0} ESP32)`);
         
         // Garantir que sempre retornamos um formato consistente
         const response = {
           ports: result.ports || [],
           error: result.error || null,
+          esp32Count: result.esp32Count || 0,
           timestamp: new Date().toISOString(),
           platform: process.platform
         };
@@ -333,6 +337,7 @@ class BackendServer {
         res.status(500).json({
           ports: [],
           error: error.message,
+          esp32Count: 0,
           timestamp: new Date().toISOString(),
           platform: process.platform
         });
@@ -570,16 +575,24 @@ class BackendServer {
   setupInfoRoutes() {
     // Informações do servidor
     this.app.get('/api/info', (req, res) => {
+      const urls = appConfig.getUrls();
       res.json({
         name: 'IdeiaSpace Backend',
         version: '2.0.0',
         description: 'Backend simplificado para Arduino CLI e comunicação serial',
+        network: {
+          http: urls.http,
+          ws: urls.ws,
+          httpPort: urls.httpPort,
+          wsPort: urls.wsPort
+        },
         endpoints: {
           health: 'GET /health',
           compile: 'POST /api/arduino/compile',
           compile_only: 'POST /api/arduino/compile-only',
           upload: 'POST /api/arduino/upload',
           ports: 'GET /api/arduino/ports',
+          ports_windows: 'GET /api/system/ports/windows',
           boards: 'GET /api/arduino/boards',
           libraries: 'GET /api/arduino/libraries',
           install_library: 'POST /api/arduino/library/install',
@@ -594,7 +607,7 @@ class BackendServer {
         },
         websocket: {
           port: this.wsPort,
-          url: `ws://localhost:${this.wsPort}`
+          url: urls.ws
         },
         improvements: [
           'Upload simplificado e mais confiável',
@@ -603,9 +616,72 @@ class BackendServer {
           'Melhor tratamento de erros',
           'Auto-detecção ESP32 por sistema operacional',
           'Monitor ESP32 automático para macOS',
-          'Diagnóstico avançado de conectividade USB'
+          'Diagnóstico avançado de conectividade USB',
+          'Detecção melhorada de portas COM no Windows',
+          'Configuração centralizada sem hardcoded values'
         ]
       });
+    });
+    
+    // Endpoint específico para detectar portas no Windows
+    this.app.get('/api/system/ports/windows', async (req, res) => {
+      try {
+        const allPorts = await appConfig.detectAllPorts();
+        
+        res.json({
+          success: true,
+          platform: process.platform,
+          count: allPorts.length,
+          ports: allPorts
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          error: error.message
+        });
+      }
+    });
+    
+    // Informações do sistema
+    this.app.get('/api/system/info', (req, res) => {
+      try {
+        const systemInfo = appConfig.getSystemInfo();
+        const arduinoPaths = appConfig.getArduinoCLIPaths();
+        const esp32Config = appConfig.getESP32Config();
+        
+        res.json({
+          success: true,
+          system: systemInfo,
+          arduino: {
+            paths: arduinoPaths,
+            esp32: esp32Config
+          }
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          error: error.message
+        });
+      }
+    });
+    
+    // Endpoint para obter logs do auto-setup em tempo real
+    this.app.get('/api/setup/logs', (req, res) => {
+      try {
+        const AutoSetup = require('./auto-setup');
+        const logs = AutoSetup.getSetupLogs();
+        
+        res.json({
+          success: true,
+          count: logs.length,
+          logs: logs
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          error: error.message
+        });
+      }
     });
   }
 
@@ -718,18 +794,20 @@ class BackendServer {
 
   async testArduinoCLI() {
     try {
-      const result = await this.arduinoService.listPorts();
+      const result = await this.arduinoService.listPortsWithESP32Detection();
       return {
         working: true,
         ports: result.ports || [],
-        count: result.ports ? result.ports.length : 0
+        count: result.ports ? result.ports.length : 0,
+        esp32Count: result.esp32Count || 0
       };
     } catch (error) {
       return {
         working: false,
         error: error.message,
         ports: [],
-        count: 0
+        count: 0,
+        esp32Count: 0
       };
     }
   }

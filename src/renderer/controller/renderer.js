@@ -1,5 +1,35 @@
 const { ipcRenderer } = require('electron');
 
+// ============================================================================
+// CONFIGURAÇÃO DINÂMICA DO BACKEND
+// ============================================================================
+let backendConfig = {
+  http: 'http://localhost:3001',
+  ws: 'ws://localhost:8080',
+  httpPort: 3001,
+  wsPort: 8080
+};
+
+// Função para obter configuração do backend
+async function fetchBackendConfig() {
+  try {
+    const response = await fetch(`${backendConfig.http}/api/info`);
+    const data = await response.json();
+    
+    if (data.network) {
+      backendConfig = {
+        http: data.network.http,
+        ws: data.network.ws,
+        httpPort: data.network.httpPort,
+        wsPort: data.network.wsPort
+      };
+      console.log('✅ Configuração do backend carregada:', backendConfig);
+    }
+  } catch (error) {
+    console.warn('⚠️ Usando configuração padrão do backend:', error.message);
+  }
+}
+
 // Função para garantir que os blocos MPU6050 estejam definidos
 function ensureMPU6050Blocks() {
   console.log('🔧 Verificando e forçando definição dos blocos MPU6050...');
@@ -255,7 +285,7 @@ function initializeGlobalWebSocket() {
     return; // Já conectado
   }
   
-  const wsUrl = 'ws://localhost:8080';
+  const wsUrl = backendConfig.ws;
   console.log(`🌐 Inicializando WebSocket global: ${wsUrl}`);
   
   const ws = new WebSocket(wsUrl);
@@ -337,7 +367,7 @@ let backendState = {
   isStopping: false,
   lastError: null,
   status: null,
-  baseUrl: 'http://localhost:3001'
+  get baseUrl() { return backendConfig.http; }
 };
 
 // Chart data for real-time plotting
@@ -703,12 +733,97 @@ function updateBackendConnectionStatus(isConnected) {
 // BACKEND CONTROL FUNCTIONS
 // ============================================================================
 
+// Polling para buscar logs do backend
+let setupLogPolling = null;
+let lastLogIndex = 0;
+
+async function pollSetupLogs() {
+  try {
+    const response = await fetch(`${backendConfig.http}/api/setup/logs`);
+    const data = await response.json();
+    
+    if (data.success && data.logs) {
+      // Processar apenas logs novos
+      for (let i = lastLogIndex; i < data.logs.length; i++) {
+        const log = data.logs[i];
+        addToSerialConsole(log.message);
+        
+        // Se for log de progresso, atualizar barra
+        if (log.message.includes('[PROGRESS]')) {
+          try {
+            const progressMatch = log.message.match(/\[PROGRESS\]\s*({.*})/);
+            if (progressMatch) {
+              const progressData = JSON.parse(progressMatch[1]);
+              updateProgressBar(progressData);
+            }
+          } catch (e) {
+            console.error('Erro ao parsear progresso:', e);
+          }
+        }
+      }
+      lastLogIndex = data.logs.length;
+    }
+  } catch (error) {
+    // Backend ainda não iniciou ou erro de conexão
+    console.debug('Aguardando backend...', error.message);
+  }
+}
+
+function startSetupLogPolling() {
+  if (setupLogPolling) {
+    return; // Já está rodando
+  }
+  
+  lastLogIndex = 0;
+  setupLogPolling = setInterval(pollSetupLogs, 1000); // Poll a cada 1 segundo
+  console.log('� Iniciado polling de logs do setup');
+}
+
+function stopSetupLogPolling() {
+  if (setupLogPolling) {
+    clearInterval(setupLogPolling);
+    setupLogPolling = null;
+    console.log('🛑 Parado polling de logs do setup');
+  }
+}
+
+function updateProgressBar(progressData) {
+  const { step, progress, message } = progressData;
+  
+  const progressContainer = document.getElementById('core-installation-progress');
+  const progressFill = document.getElementById('core-progress-fill');
+  const progressPercentage = document.getElementById('core-progress-percentage');
+  const progressMessage = document.getElementById('core-progress-message');
+  const progressLabel = document.getElementById('core-progress-label');
+  
+  if (progressContainer && progressFill && progressPercentage && progressMessage) {
+    progressContainer.style.display = 'block';
+    progressFill.style.width = `${progress}%`;
+    progressPercentage.textContent = `${progress}%`;
+    progressMessage.textContent = message;
+    
+    if (step === 'esp32-core') {
+      progressLabel.textContent = 'Instalando ESP32 Core';
+    }
+    
+    if (progress >= 100) {
+      setTimeout(() => {
+        progressContainer.style.display = 'none';
+        stopSetupLogPolling();
+      }, 3000);
+    }
+  }
+}
+
 async function startBackend() {
-  console.log('🚀 Iniciando backend Arduino CLI manualmente...');
+  console.log('�🚀 Iniciando backend Arduino CLI manualmente...');
   
   backendState.isStarting = true;
   updateBackendUI();
   showBackendStartFeedback();
+  
+  // Iniciar polling de logs
+  startSetupLogPolling();
   
   try {
     const { ipcRenderer } = require('electron');
@@ -723,6 +838,9 @@ async function startBackend() {
       backendState.isRunning = true;
       backendState.status = result.status;
       backendState.lastError = null;
+      
+      // Parar polling de logs
+      setTimeout(() => stopSetupLogPolling(), 5000);
       
       // Mostrar mensagem de sucesso específica
       if (result.setupPerformed) {
@@ -747,6 +865,9 @@ async function startBackend() {
       console.error('❌ Erro ao iniciar backend:', result.error);
       backendState.lastError = result.error;
       
+      // Parar polling de logs
+      stopSetupLogPolling();
+      
       // Mensagem de erro mais informativa
       if (result.error.includes('Arduino CLI')) {
         updateBackendFeedback('❌ Erro na configuração do Arduino CLI. Verifique sua conexão de internet.');
@@ -762,6 +883,9 @@ async function startBackend() {
     backendState.lastError = error.message;
     updateBackendFeedback(`❌ Erro de comunicação: ${error.message}`);
     handleManualStartResult({ success: false, error: error.message });
+    
+    // Parar polling de logs
+    stopSetupLogPolling();
   }
   
   backendState.isStarting = false;
@@ -773,6 +897,19 @@ function updateBackendFeedback(message) {
   const backendInfo = document.getElementById('backend-info');
   if (backendInfo) {
     backendInfo.textContent = message;
+    
+    // Atualizar cor baseado no tipo de mensagem
+    if (message.includes('✅') || message.includes('sucesso') || message.includes('pronto')) {
+      backendInfo.style.color = '#28a745';
+    } else if (message.includes('❌') || message.includes('Erro') || message.includes('falhou')) {
+      backendInfo.style.color = '#dc3545';
+    } else if (message.includes('⏳') || message.includes('Instalando') || message.includes('Baixando') || message.includes('Atualizando')) {
+      backendInfo.style.color = '#ffc107';
+    } else if (message.includes('📋') || message.includes('Etapa')) {
+      backendInfo.style.color = '#17a2b8';
+    } else {
+      backendInfo.style.color = '#6c757d';
+    }
   }
 }
 
@@ -963,10 +1100,16 @@ function showBackendStartFeedback() {
   // Mostrar toast informativo
   showToast('🚀 Iniciando backend Arduino CLI...', 'info', 3000);
   
-  // Atualizar console serial
-  addToSerialConsole('🚀 INICIALIZAÇÃO MANUAL DO BACKEND');
+  // Atualizar console serial com separador visual
+  addToSerialConsole('');
+  addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  addToSerialConsole('🚀 INICIALIZAÇÃO DO BACKEND ARDUINO CLI');
+  addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   addToSerialConsole('⏳ Verificando configuração...');
   addToSerialConsole('📦 Instalando dependências se necessário...');
+  addToSerialConsole('');
+  addToSerialConsole('💡 Os logs de instalação aparecerão abaixo:');
+  addToSerialConsole('');
 }
 
 function handleManualStartResult(result) {
@@ -975,10 +1118,14 @@ function handleManualStartResult(result) {
   if (result.success) {
     showToast('✅ Backend iniciado com sucesso!', 'success', 4000);
     
+    addToSerialConsole('');
+    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     addToSerialConsole('✅ BACKEND INICIADO COM SUCESSO!');
-    addToSerialConsole(' Servidor: http://localhost:3001');
-    addToSerialConsole('🔌 WebSocket: ws://localhost:8080');
+    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    addToSerialConsole(` Servidor: ${backendConfig.http}`);
+    addToSerialConsole(`🔌 WebSocket: ${backendConfig.ws}`);
     addToSerialConsole('🎯 Sistema pronto para uso!');
+    addToSerialConsole('');
     
     // Detectar portas após inicialização
     setTimeout(async () => {
@@ -989,9 +1136,13 @@ function handleManualStartResult(result) {
     
   } else {
     showToast('❌ Erro ao iniciar backend', 'error', 5000);
+    addToSerialConsole('');
+    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     addToSerialConsole('❌ ERRO NA INICIALIZAÇÃO');
+    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     addToSerialConsole('🔧 ' + result.error);
     addToSerialConsole('💡 Verifique a configuração e tente novamente');
+    addToSerialConsole('');
   }
 }
 
@@ -1189,7 +1340,7 @@ async function connectToSerialWebSocket(port, baudRate) {
       }
       
       // Criar nova conexão WebSocket
-      const wsUrl = 'ws://localhost:8080';
+      const wsUrl = backendConfig.ws;
       console.log(`🌐 Conectando ao WebSocket: ${wsUrl}`);
       
       const ws = new WebSocket(wsUrl);
@@ -2052,11 +2203,11 @@ function startRealSerialMonitoring(port) {
     serialWebSocket = null;
   }
   
-  addToSerialConsole(`� Conectando ao monitoramento serial na porta ${port}...`);
+  addToSerialConsole(`📡 Conectando ao monitoramento serial na porta ${port}...`);
   
   try {
     // Conectar ao WebSocket do backend para monitoramento serial
-    const wsUrl = `ws://localhost:8080`;
+    const wsUrl = backendConfig.ws;
     serialWebSocket = new WebSocket(wsUrl);
     
     serialWebSocket.onopen = () => {
@@ -2361,6 +2512,34 @@ async function uploadSketch() {
     } else {
       addToSerialConsole('❌ Erro no upload:');
       addToSerialConsole(`   📋 ${result.message || 'Erro desconhecido'}`);
+      
+      // Detectar erro de Wrong Boot Mode (0x13)
+      const errorText = result.error || result.message || '';
+      if (errorText.includes('Wrong boot mode') || errorText.includes('0x13')) {
+        addToSerialConsole('');
+        addToSerialConsole('🔄 PROBLEMA: ESP32 em modo de execução (0x13)');
+        addToSerialConsole('   A ESP32 precisa estar em MODO DE DOWNLOAD');
+        addToSerialConsole('');
+        addToSerialConsole('📋 SOLUÇÃO AUTOMÁTICA:');
+        addToSerialConsole('   ✓ O sistema tentou reset automático via DTR/RTS');
+        if (result.suggestion && result.suggestion.includes('MODO MANUAL')) {
+          addToSerialConsole('   ✗ Reset automático não funcionou (hardware sem DTR/RTS)');
+        }
+        addToSerialConsole('');
+        addToSerialConsole('🔧 MODO MANUAL DE BOOT:');
+        addToSerialConsole('   1️⃣  SEGURE o botão BOOT (ou IO0)');
+        addToSerialConsole('   2️⃣  PRESSIONE e SOLTE o botão EN (ou RESET)');
+        addToSerialConsole('   3️⃣  SOLTE o botão BOOT');
+        addToSerialConsole('   4️⃣  Clique em "Upload" novamente');
+        addToSerialConsole('');
+        addToSerialConsole('💡 TIMING VISUAL:');
+        addToSerialConsole('   BOOT: ████████████████░░░░░░░  (segure → solte depois)');
+        addToSerialConsole('   EN:   ░░░░░░██░░░░░░░░░░░░░░  (pressione rápido)');
+        addToSerialConsole('');
+        addToSerialConsole('🎯 A ESP32 entrará em modo download (LED pode mudar)');
+        addToSerialConsole('');
+        showSerialNotification('❌ ESP32 precisa estar em modo boot! Veja console', 'error');
+      }
       
       // Mostrar detalhes específicos se disponível
       if (result.prerequisiteFailed) {
@@ -2713,47 +2892,31 @@ function updateUploadStatus(status, percent = null) {
 
 // Serial Plotter Functions
 function initializeChart() {
-  console.log('📊 Inicializando gráfico...');
-  
   // Verificar qual aba está ativa primeiro
   const activeTab = document.querySelector('.tab-content.active');
   const serialTab = document.querySelector('.serial-tab-content[data-tab="sensors"]');
-  
-  console.log('📊 Verificando elementos disponíveis:');
-  console.log('- Aba ativa:', activeTab ? activeTab.getAttribute('data-tab') : 'nenhuma');
-  console.log('- Aba serial sensors:', !!serialTab);
   
   let chartElement = null;
   
   // 1. Primeiro tentar na aba sensors do modal principal
   if (activeTab && activeTab.getAttribute('data-tab') === 'sensors') {
     chartElement = document.querySelector('.tab-content[data-tab="sensors"] #sensor-chart');
-    console.log('📊 Canvas na aba sensors principal:', !!chartElement);
   }
   
   // 2. Se não encontrou, tentar na aba serial plotter
   if (!chartElement && serialTab) {
     chartElement = document.getElementById('serial-plotter-chart');
-    console.log('📊 Div no serial plotter:', !!chartElement);
   }
   
   // 3. Fallback: qualquer .serial-chart
   if (!chartElement) {
     chartElement = document.querySelector('.serial-chart');
-    console.log('📊 Fallback .serial-chart:', !!chartElement);
   }
   
   if (!chartElement) {
     console.error('❌ Elemento do gráfico não encontrado');
-    console.log('📊 Elementos disponíveis no DOM:', {
-      'canvas_sensor': !!document.querySelector('#sensor-chart'),
-      'div_serial': !!document.querySelector('#serial-plotter-chart'),
-      'serial_charts': document.querySelectorAll('.serial-chart').length
-    });
     return;
   }
-  
-  console.log('✅ Elemento do gráfico encontrado:', chartElement.tagName, chartElement.id, chartElement.className);
   
   // Se for canvas, usar Canvas API; se for div, criar SVG
   if (chartElement.tagName === 'CANVAS') {
@@ -3152,11 +3315,7 @@ function clearConsole() {
  * Inicializa o Serial Plotter
  */
 function initializePlotter() {
-  console.log('📊 Inicializando Serial Plotter...');
-  
   const canvas = document.getElementById('plotter-chart');
-  const overlay = document.getElementById('plotter-overlay');
-  const valuesPanel = document.getElementById('plotter-values');
   
   if (!canvas) {
     console.error('❌ Canvas do plotter não encontrado');
@@ -3179,12 +3338,6 @@ function initializePlotter() {
   // Inicializar legenda do gráfico
   updateChartLegend();
   
-  // Debug do estado inicial (remover em produção)
-  setTimeout(() => {
-    checkPlotterElements();
-    debugPlotterVisibility();
-  }, 100);
-  
   // Verificar se há dados para mostrar
   if (plotterState.dataBuffer.timestamps.length === 0) {
     showPlotterOverlay(true);
@@ -3195,8 +3348,6 @@ function initializePlotter() {
   
   // Atualizar status
   updatePlotterStatus();
-  
-  console.log('✅ Serial Plotter inicializado');
 }
 
 /**
@@ -4310,61 +4461,37 @@ function updateSensorDisplay(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
 }
 
 function updateChart() {
-  console.log('📈 updateChart() chamada - dados disponíveis:', sensorData.timestamps.length);
-  
-  if (sensorData.timestamps.length === 0) {
-    console.log('📈 Sem dados para atualizar gráfico');
-    return;
-  }
+  if (sensorData.timestamps.length === 0) return;
   
   // Verificar se estamos no Serial Monitor modal primeiro
   const serialModal = document.getElementById('serial-monitor-modal');
   const isSerialModalOpen = serialModal && serialModal.style.display !== 'none';
-  
-  console.log('📈 Estado do modal:', {
-    'serialModalOpen': isSerialModalOpen,
-    'serialModalDisplay': serialModal ? serialModal.style.display : 'não encontrado'
-  });
   
   let chartElement;
   
   if (isSerialModalOpen) {
     // Se o modal serial está aberto, usar o elemento do serial plotter
     chartElement = document.getElementById('serial-plotter-chart');
-    console.log('📈 Modal serial aberto - procurando serial-plotter-chart:', !!chartElement);
   } else {
     // Se não, usar a aba sensors principal
     const activeTab = document.querySelector('.tab-content.active');
-    console.log('📈 Aba ativa principal:', activeTab ? activeTab.getAttribute('data-tab') : 'nenhuma');
     
     if (activeTab && activeTab.getAttribute('data-tab') === 'sensors') {
       chartElement = document.querySelector('.tab-content[data-tab="sensors"] #sensor-chart');
-      console.log('📈 Procurando canvas na aba sensors principal:', !!chartElement);
     }
   }
   
   if (!chartElement) {
     chartElement = document.querySelector('.serial-chart');
-    console.log('📈 Fallback: procurando qualquer .serial-chart:', !!chartElement);
   }
   
   if (!chartElement) {
-    console.warn('⚠️ Elemento do gráfico não encontrado para update');
-    console.log('📈 Elementos disponíveis na aba sensors:', 
-      Array.from(document.querySelectorAll('.tab-content[data-tab="sensors"] *')).map(el => 
-        `${el.tagName}${el.id ? '#' + el.id : ''}${el.className ? '.' + el.className.replace(/\s/g, '.') : ''}`
-      )
-    );
     return;
   }
   
-  console.log('📈 Encontrado elemento:', chartElement.tagName, chartElement.id, chartElement.className);
-  
   if (chartElement.tagName === 'CANVAS') {
-    console.log('📈 Atualizando Canvas');
     updateCanvasChart(chartElement);
   } else {
-    console.log('📈 Atualizando SVG');
     updateSVGChart(chartElement);
   }
   
@@ -5292,6 +5419,76 @@ ipcRenderer.on('execution-result', (event, result) => {
   startButton.disabled = false;
 });
 
+// Listener para logs do backend em tempo real
+ipcRenderer.on('backend-log', (event, logData) => {
+  const { type, message, timestamp } = logData;
+  
+  // Remover quebras de linha extras
+  const cleanMessage = message.trim();
+  
+  if (!cleanMessage) return; // Ignorar mensagens vazias
+  
+  // Não mostrar mensagens de progresso no console (só na barra)
+  if (cleanMessage.includes('[PROGRESS]')) return;
+  
+  // Formatear mensagem com emoji baseado no tipo
+  let formattedMessage = cleanMessage;
+  
+  if (type === 'error' && !cleanMessage.includes('❌') && !cleanMessage.includes('⚠️')) {
+    formattedMessage = '❌ ' + cleanMessage;
+  } else if (type === 'success' && !cleanMessage.includes('✅')) {
+    formattedMessage = '✅ ' + cleanMessage;
+  } else if (type === 'setup' && !cleanMessage.includes('🔧') && !cleanMessage.includes('📋')) {
+    // Para logs de setup, manter formatação original se já tiver emoji
+    formattedMessage = cleanMessage;
+  }
+  
+  // Adicionar ao console serial para o usuário ver o progresso
+  addToSerialConsole(formattedMessage);
+  
+  // Atualizar feedback do backend se a mensagem for relevante
+  if (cleanMessage.includes('ESP32 core') || cleanMessage.includes('Instalando') || 
+      cleanMessage.includes('instalado') || cleanMessage.includes('concluído')) {
+    updateBackendFeedback(formattedMessage);
+  }
+});
+
+// Listener para progresso da instalação de cores
+ipcRenderer.on('core-installation-progress', (event, progressData) => {
+  const { step, progress, message } = progressData;
+  
+  console.log('📊 Progresso de instalação:', progressData);
+  
+  // Mostrar barra de progresso
+  const progressContainer = document.getElementById('core-installation-progress');
+  const progressFill = document.getElementById('core-progress-fill');
+  const progressPercentage = document.getElementById('core-progress-percentage');
+  const progressMessage = document.getElementById('core-progress-message');
+  const progressLabel = document.getElementById('core-progress-label');
+  
+  if (progressContainer && progressFill && progressPercentage && progressMessage) {
+    // Mostrar container
+    progressContainer.style.display = 'block';
+    
+    // Atualizar valores
+    progressFill.style.width = `${progress}%`;
+    progressPercentage.textContent = `${progress}%`;
+    progressMessage.textContent = message;
+    
+    // Atualizar label baseado no step
+    if (step === 'esp32-core') {
+      progressLabel.textContent = 'Instalando ESP32 Core';
+    }
+    
+    // Se completou (100%), esconder após 3 segundos
+    if (progress >= 100) {
+      setTimeout(() => {
+        progressContainer.style.display = 'none';
+      }, 3000);
+    }
+  }
+});
+
 // Gerar código inicial
 generateCode();
 
@@ -5339,8 +5536,11 @@ function ensureSerialPlotterChart() {
 // ============================================================================
 
 // Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   console.log('🎯 Configurando event listeners do Serial Monitor...');
+  
+  // Carregar configuração do backend
+  await fetchBackendConfig();
   
   // ============================================================================
   // APLICAR CORES DOS BLOCOS LOGO NO CARREGAMENTO DA PÁGINA

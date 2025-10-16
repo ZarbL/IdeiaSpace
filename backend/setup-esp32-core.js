@@ -13,15 +13,16 @@ const fs = require('fs');
 const execAsync = promisify(exec);
 
 class ESP32CoreInstaller {
-  constructor() {
+  constructor(logFunction = null) {
     this.backendDir = __dirname;
     this.cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
     this.configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
+    this.log = logFunction || console.log; // Usar função customizada ou console.log
   }
 
   async install() {
-    console.log('🚀 Instalador de ESP32 Core');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    this.log('🚀 Instalador de ESP32 Core');
+    this.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     try {
       // Verificar se Arduino CLI existe
@@ -30,50 +31,50 @@ class ESP32CoreInstaller {
       }
 
       // Verificar se ESP32 já está instalado
-      console.log('🔍 Verificando cores instalados...');
+      this.log('🔍 Verificando cores instalados...');
       const isInstalled = await this.checkESP32Installed();
       
       if (isInstalled) {
-        console.log('✅ ESP32 core já está instalado!');
+        this.log('✅ ESP32 core já está instalado!');
         await this.showInstalledCores();
         return;
       }
 
-      console.log('📥 ESP32 core não encontrado. Iniciando instalação...\n');
+      this.log('📥 ESP32 core não encontrado. Iniciando instalação...\n');
 
       // Atualizar índices
-      console.log('🔄 [1/3] Atualizando índices de pacotes...');
+      this.log('🔄 [1/3] Atualizando índices de pacotes...');
       await this.updateIndex();
-      console.log('✅ Índices atualizados!\n');
+      this.log('✅ Índices atualizados!\n');
 
       // Instalar ESP32 core
-      console.log('📦 [2/3] Instalando ESP32 core (isso pode demorar alguns minutos)...');
-      console.log('⏳ Baixando ferramentas e compiladores ESP32...');
+      this.log('📦 [2/3] Instalando ESP32 core (isso pode demorar alguns minutos)...');
+      this.log('⏳ Baixando ferramentas e compiladores ESP32...');
       await this.installESP32Core();
-      console.log('✅ ESP32 core instalado!\n');
+      this.log('✅ ESP32 core instalado!\n');
 
       // Verificar instalação
-      console.log('🔍 [3/3] Verificando instalação...');
+      this.log('🔍 [3/3] Verificando instalação...');
       const verified = await this.verifyInstallation();
       
       if (verified) {
-        console.log('✅ Verificação completa!\n');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('🎉 ESP32 Core instalado com sucesso!');
-        console.log('📋 Cores disponíveis:');
+        this.log('✅ Verificação completa!\n');
+        this.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        this.log('🎉 ESP32 Core instalado com sucesso!');
+        this.log('📋 Cores disponíveis:');
         await this.showInstalledCores();
-        console.log('\n💡 Agora você pode fazer upload para ESP32!');
+        this.log('\n💡 Agora você pode fazer upload para ESP32!');
       } else {
         throw new Error('Falha na verificação da instalação');
       }
 
     } catch (error) {
-      console.error('\n❌ Erro durante instalação:', error.message);
-      console.error('\n💡 Possíveis soluções:');
-      console.error('   1. Verifique sua conexão com a internet');
-      console.error('   2. Tente novamente (pode ser timeout)');
-      console.error('   3. Execute: npm run backend:setup');
-      process.exit(1);
+      this.log('\n❌ Erro durante instalação: ' + error.message);
+      this.log('\n💡 Possíveis soluções:');
+      this.log('   1. Verifique sua conexão com a internet');
+      this.log('   2. Tente novamente (pode ser timeout)');
+      this.log('   3. Execute: npm run backend:setup');
+      throw error; // Re-lançar erro para auto-setup.js capturar
     }
   }
 
@@ -99,7 +100,7 @@ class ESP32CoreInstaller {
       });
       
       if (stderr && !stderr.includes('Downloading') && !stderr.includes('Downloaded')) {
-        console.log('⚠️ Avisos durante atualização:', stderr);
+        this.log('⚠️ Avisos durante atualização: ' + stderr);
       }
       
       return true;
@@ -112,6 +113,11 @@ class ESP32CoreInstaller {
     const command = `"${this.cliPath}" --config-file "${this.configPath}" core install esp32:esp32`;
     
     try {
+      this.log('    ⬇️  Fazendo download dos pacotes ESP32...');
+      this.log('    ⏱️  Tempo estimado: 3-5 minutos (dependendo da conexão)');
+      this.log('    📦 Tamanho aproximado: 200-300 MB');
+      this.log('');
+      
       // Usar spawn para ver o progresso em tempo real
       const { spawn } = require('child_process');
       
@@ -125,6 +131,8 @@ class ESP32CoreInstaller {
 
         child.on('close', (code) => {
           if (code === 0) {
+            this.log('');
+            this.log('    ✅ Download e instalação concluídos!');
             resolve();
           } else {
             reject(new Error(`Instalação falhou com código ${code}`));
@@ -160,13 +168,13 @@ class ESP32CoreInstaller {
       const lines = stdout.split('\n').filter(line => line.trim());
       lines.forEach(line => {
         if (line.includes('esp32')) {
-          console.log('   📱 ' + line.trim());
+          this.log('   📱 ' + line.trim());
         } else if (line.trim() && !line.includes('ID') && !line.includes('==')) {
-          console.log('   📋 ' + line.trim());
+          this.log('   📋 ' + line.trim());
         }
       });
     } catch (error) {
-      console.log('   ⚠️ Não foi possível listar cores');
+      this.log('   ⚠️ Não foi possível listar cores');
     }
   }
 }

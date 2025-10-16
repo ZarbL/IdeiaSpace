@@ -145,7 +145,8 @@ class PrerequisitesChecker {
     const arduinoCliPath = path.join(this.backendDir, 'arduino-cli');
     const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
     const arduinoCliExePath = path.join(arduinoCliPath, executable);
-    const configPath = path.join(this.backendDir, 'arduino-cli', 'config', 'arduino-cli.yaml');
+    // USAR O ARQUIVO DE CONFIGURAÇÃO PRINCIPAL (onde os cores estão instalados)
+    const configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
     
     if (!fs.existsSync(arduinoCliExePath)) {
       console.log('   ⚠️ Arduino CLI não encontrado, pulando verificação de cores');

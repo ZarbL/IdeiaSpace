@@ -2134,20 +2134,18 @@ g.blocklyBlock[data-type*="dht"] > rect,
    SERIAL MONITOR MODAL STYLES - React Modal Equivalent
    ============================================================================ */
 
-/* Modal Overlay - Fundo escuro com blur */
+/* Modal Overlay - Simples e leve */
 .arduino-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 10000;
   display: none;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
 }
 
 /* Garantir que todos os elementos dentro do modal tenham z-index apropriado */
@@ -2173,7 +2171,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   to { opacity: 1; }
 }
 
-/* Container do Modal - Fundo cinza claro */
+/* Container do Modal - Simples e rápido */
 .arduino-modal-container {
   position: relative;
   width: 95%;
@@ -2183,35 +2181,21 @@ g.blocklyBlock[data-type*="dht"] > rect,
   background: #f8f9fa;
   z-index: 10001;
   overflow: hidden;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border: 2px solid #e9ecef;
+  border: 1px solid #dee2e6;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateY(-50px) scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Header Limpo e Moderno */
+/* Header Limpo e Simples */
 .modal-header-clean {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 30px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-bottom: 2px solid #e9ecef;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .modal-header-left {
@@ -2221,16 +2205,15 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 .modal-icon-modern {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  background: #007bff;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   color: white;
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
 .modal-title-modern h2 {
@@ -2257,28 +2240,22 @@ g.blocklyBlock[data-type*="dht"] > rect,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 20px;
-  font-size: 14px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 13px;
 }
 
 .status-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #dc3545;
-  animation: pulse-dot 2s infinite;
 }
 
 .connection-status.connected .status-dot {
   background: #28a745;
-}
-
-@keyframes pulse-dot {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.5; }
 }
 
 .status-text {
@@ -2593,6 +2570,92 @@ g.blocklyBlock[data-type*="dht"] > rect,
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Barra de Progresso da Instalação de Cores */
+.core-progress-container {
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-label::before {
+  content: '⚙️';
+  animation: spin 2s linear infinite;
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.progress-bar {
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+  border-radius: 12px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
 }
 
 .stats-grid {
@@ -3125,31 +3188,22 @@ g.blocklyBlock[data-type*="dht"] > rect,
    ============================================================================ */
 
 .serial-btn-plotter {
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  background: #3b82f6;
   color: white;
   border: none;
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 8px;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .serial-btn-plotter:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
-
-.serial-btn-plotter:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  background: #2563eb;
 }
 
 /* ============================================================================
@@ -3429,52 +3483,24 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 .plotter-container::before {
-  content: '📊 Real-time Data Visualization';
+  content: '📊 Real-time Data';
   display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-cyan);
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
   text-align: center;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 10px rgba(0, 207, 229, 0.3);
+  margin-bottom: 8px;
 }
 
 .chart-area {
   flex: 1;
-  background: linear-gradient(145deg, var(--bg-secondary), rgba(37, 37, 38, 0.9));
-  border: 3px solid var(--accent-pink);
-  border-radius: 20px;
-  padding: 25px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 16px;
   min-height: 400px;
   position: relative;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1), 0 8px 25px rgba(232, 0, 116, 0.1);
-  backdrop-filter: blur(10px);
   overflow: hidden;
-}
-
-.chart-area::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan), var(--accent-pink));
-}
-
-.chart-area::after {
-  content: '📈 Real-time Sensor Data';
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  color: var(--accent-pink);
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.7;
 }
 
 .chart-svg {
@@ -3504,48 +3530,33 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 .console-container::before {
-  content: '💬 Serial Communication Console';
+  content: '💬 Serial Console';
   display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-pink);
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
   text-align: center;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 10px rgba(232, 0, 116, 0.3);
+  margin-bottom: 8px;
 }
 
 .console-output {
   flex: 1;
-  background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+  background: #1a1a1a;
   color: #00ff41;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  padding: 20px;
-  border-radius: 15px;
-  border: 3px solid var(--accent-cyan);
+  font-size: 13px;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #333;
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
   height: 400px;
   max-height: 400px;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 8px 25px rgba(0, 207, 229, 0.1);
-  position: relative;
-}
-
-.console-output::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-cyan), #00ff41, var(--accent-cyan));
 }
 
 .console-output::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .console-output::-webkit-scrollbar-track {
@@ -3553,8 +3564,8 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 .console-output::-webkit-scrollbar-thumb {
-  background: var(--accent-cyan);
-  border-radius: 4px;
+  background: #555;
+  border-radius: 3px;
 }
 
 .console-input-area {
@@ -3580,34 +3591,29 @@ g.blocklyBlock[data-type*="dht"] > rect,
 
 .send-btn {
   padding: 6px 16px;
-  background: linear-gradient(135deg, var(--accent-pink), #c8005a);
+  background: #007bff;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 500;
   height: 34px;
   font-size: 13px;
 }
 
 .send-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(232, 0, 116, 0.3);
+  background: #0056b3;
 }
 
 /* Code tab styles */
 #code-tab::before {
-  content: '📝 Generated Arduino Code';
+  content: '📝 Arduino Code';
   display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-cyan);
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
   text-align: center;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 10px rgba(0, 207, 229, 0.3);
+  margin-bottom: 12px;
 }
 
 .code-editor {
@@ -4120,71 +4126,49 @@ g.blocklyBlock[data-type*="dht"] > rect,
 .serial-btn-pause,
 .serial-btn-clear,
 .serial-btn-export {
-  background: linear-gradient(135deg, #6c757d, #5a6268);
+  background: #6c757d;
   color: #ffffff;
   border: none;
-  padding: 8px 12px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
   margin: 0 4px;
 }
 
 .serial-btn-test {
-  background: linear-gradient(135deg, #17a2b8, #138496);
+  background: #17a2b8;
 }
 
 .serial-btn-test:hover {
-  background: linear-gradient(135deg, #138496, #117a8b);
-  transform: translateY(-1px);
+  background: #138496;
 }
 
 .serial-btn-pause:hover,
 .serial-btn-clear:hover,
 .serial-btn-export:hover {
-  background: linear-gradient(135deg, #5a6268, #495057);
-  transform: translateY(-1px);
+  background: #5a6268;
 }
 
 /* Serial Retry Button */
 .serial-btn-retry {
-  background: linear-gradient(135deg, #f39c12, #e67e22);
+  background: #f39c12;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-left: 8px;
-  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
-  animation: pulse-warning 2s infinite;
 }
 
 .serial-btn-retry:hover {
-  background: linear-gradient(135deg, #e67e22, #d35400);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
-}
-
-.serial-btn-retry:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
-}
-
-@keyframes pulse-warning {
-  0%, 100% {
-    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
-  }
-  50% {
-    box-shadow: 0 2px 15px rgba(243, 156, 18, 0.5);
-  }
+  background: #e67e22;
 }
 
 /* Estilo específico para o elemento do gráfico do Serial Plotter */
@@ -4290,14 +4274,13 @@ g.blocklyBlock[data-type*="dht"] > rect,
 .serial-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #374151;
-  transition: all 0.2s ease;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .dark-mode .serial-checkbox-label {
@@ -4305,7 +4288,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 .serial-checkbox-label:hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: #e9ecef;
 }
 
 .serial-checkbox-label input[type="checkbox"] {

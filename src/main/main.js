@@ -174,14 +174,37 @@ ipcMain.handle('start-arduino-backend', async () => {
 
     console.log(`✅ Backend iniciado com PID: ${backendProcess.pid} (${serverType})`);
 
+    // Obter todas as janelas para enviar logs
+    const allWindows = BrowserWindow.getAllWindows();
+
     // Log output do backend
     backendProcess.stdout.on('data', (data) => {
-      console.log(`[Backend] ${data.toString()}`);
+      const logText = data.toString();
+      console.log(`[Backend] ${logText}`);
+      
+      // Enviar log para todas as janelas do renderer
+      allWindows.forEach(window => {
+        window.webContents.send('backend-log', {
+          type: 'info',
+          message: logText,
+          timestamp: new Date().toISOString()
+        });
+      });
     });
 
     backendProcess.stderr.on('data', (data) => {
-      console.log(`[Backend Error] ${data.toString()}`);
-      backendStatus.lastError = data.toString();
+      const errorText = data.toString();
+      console.log(`[Backend Error] ${errorText}`);
+      backendStatus.lastError = errorText;
+      
+      // Enviar erro para todas as janelas do renderer
+      allWindows.forEach(window => {
+        window.webContents.send('backend-log', {
+          type: 'error',
+          message: errorText,
+          timestamp: new Date().toISOString()
+        });
+      });
     });
 
     backendProcess.on('close', (code) => {
@@ -271,27 +294,81 @@ async function runAutoSetup(autoSetupPath, backendDir) {
     let output = '';
     let error = '';
     
+    // Obter todas as janelas para enviar logs
+    const allWindows = BrowserWindow.getAllWindows();
+    
     setupProcess.stdout.on('data', (data) => {
       const text = data.toString();
       output += text;
       console.log(`[Setup] ${text.trim()}`);
+      
+      // Enviar log do setup para o frontend
+      allWindows.forEach(window => {
+        // Detectar se é um evento de progresso
+        if (text.includes('[PROGRESS]')) {
+          try {
+            const progressMatch = text.match(/\[PROGRESS\]\s*({.*})/);
+            if (progressMatch) {
+              const progressData = JSON.parse(progressMatch[1]);
+              window.webContents.send('core-installation-progress', progressData);
+            }
+          } catch (e) {
+            console.error('Erro ao parsear progresso:', e);
+          }
+        }
+        
+        window.webContents.send('backend-log', {
+          type: 'setup',
+          message: text,
+          timestamp: new Date().toISOString()
+        });
+      });
     });
 
     setupProcess.stderr.on('data', (data) => {
       const text = data.toString();
       error += text;
       console.error(`[Setup Error] ${text.trim()}`);
+      
+      // Enviar erro do setup para o frontend
+      allWindows.forEach(window => {
+        window.webContents.send('backend-log', {
+          type: 'error',
+          message: text,
+          timestamp: new Date().toISOString()
+        });
+      });
     });
 
     setupProcess.on('close', (code) => {
       if (code === 0) {
         console.log('✅ Auto-setup concluído com sucesso');
+        
+        // Notificar conclusão do setup
+        allWindows.forEach(window => {
+          window.webContents.send('backend-log', {
+            type: 'success',
+            message: '✅ Auto-setup concluído com sucesso\n',
+            timestamp: new Date().toISOString()
+          });
+        });
+        
         resolve({ 
           success: true, 
           output: output.trim()
         });
       } else {
         console.error(`❌ Auto-setup falhou com código: ${code}`);
+        
+        // Notificar falha do setup
+        allWindows.forEach(window => {
+          window.webContents.send('backend-log', {
+            type: 'error',
+            message: `❌ Auto-setup falhou com código: ${code}\n${error.trim() || 'Erro desconhecido'}\n`,
+            timestamp: new Date().toISOString()
+          });
+        });
+        
         resolve({ 
           success: false, 
           error: `Setup falhou (código ${code}): ${error.trim() || 'Erro desconhecido'}`,
