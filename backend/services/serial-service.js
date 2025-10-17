@@ -104,15 +104,16 @@ class SerialService {
         return;
       }
 
-      console.log(`📨 Mensagem WebSocket recebida: ${type}`, payload ? `com payload` : 'sem payload');
+      console.log(`📨 Mensagem WebSocket recebida: ${type}`);
 
-      // Log detalhado para debug de conexões sem payload
+      // Validar payload para conexão
       if (type === 'connect' && (!payload || !payload.port)) {
-        console.error('🔍 [DEBUG] Tentativa de conexão sem payload detectada:');
-        console.error('  - Tipo:', type);
-        console.error('  - Payload:', payload);
-        console.error('  - Dados completos:', JSON.stringify(data, null, 2));
-        console.error('  - Timestamp:', new Date().toISOString());
+        console.error('❌ Tentativa de conexão sem porta especificada');
+        this.sendToClient(ws, {
+          type: 'connection_error',
+          error: 'Porta não especificada'
+        });
+        return;
       }
 
       switch (type) {
@@ -257,12 +258,7 @@ class SerialService {
 
       // Configurar eventos
       serialPort.on('open', () => {
-        console.log(`✅ Porta ${portPath} aberta com sucesso`);
-        console.log(`📡 [DEBUG] Configurações da porta:`);
-        console.log(`  - Porta: ${portPath}`);
-        console.log(`  - Baud Rate: ${baudRate}`);
-        console.log(`  - Parser: ReadlineParser com delimiter \\r\\n`);
-        console.log(`📡 [DEBUG] Aguardando dados da ESP32...`);
+        console.log(`✅ Porta ${portPath} aberta com sucesso (${baudRate} baud)`);
         
         const connection = {
           serialPort: serialPort,
@@ -281,42 +277,18 @@ class SerialService {
           message: 'Conectado com sucesso'
         });
 
-        // Configurar recepção de dados
+        // Configurar recepção de dados - APENAS LINHAS COMPLETAS
         parser.on('data', (data) => {
-          console.log(`📡 [DEBUG] Dados recebidos da porta ${portPath}:`, data);
-          console.log(`📡 [DEBUG] Dados após trim: "${data.trim()}"`);
-          console.log(`📡 [DEBUG] Tamanho dos dados: ${data.length} caracteres`);
-          
+          // Enviar apenas dados limpos e completos (linhas com \r\n)
           this.broadcastToPortClients(portPath, {
             type: 'serial_data',
             port: portPath,
             data: data.trim(),
             timestamp: Date.now()
           });
-          
-          console.log(`📡 [DEBUG] Broadcast realizado para ${connection.clients.size} clientes`);
         });
         
-        // Debug: Adicionar listener para dados brutos também
-        serialPort.on('data', (rawData) => {
-          console.log(`📡 [DEBUG] Dados brutos recebidos: ${rawData.length} bytes`);
-          console.log(`📡 [DEBUG] Dados brutos (string): "${rawData.toString()}"`);
-          console.log(`📡 [DEBUG] Dados brutos (hex): ${rawData.toString('hex')}`);
-          
-          // Enviar dados brutos também, mesmo que não sejam uma linha completa
-          // Isso ajuda a diagnosticar problemas de baud rate
-          const rawString = rawData.toString();
-          if (rawString.length > 0) {
-            this.broadcastToPortClients(portPath, {
-              type: 'serial_data_raw',
-              port: portPath,
-              data: rawString,
-              dataHex: rawData.toString('hex'),
-              timestamp: Date.now(),
-              isRaw: true
-            });
-          }
-        });
+        // NÃO enviar dados brutos - apenas linhas completas processadas pelo parser
       });
 
       serialPort.on('error', (error) => {

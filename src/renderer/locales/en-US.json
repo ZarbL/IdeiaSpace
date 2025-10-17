@@ -197,6 +197,7 @@
   "actions": "Actions",
   "uploadCode": "Upload Code",
   "compileCode": "Compile",
+  "installationLogs": "Installation Logs",
   "ready": "Ready",
   "active": "Active",
   "waitingData": "Waiting for data",

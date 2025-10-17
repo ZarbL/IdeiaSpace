@@ -746,7 +746,12 @@ async function pollSetupLogs() {
       // Processar apenas logs novos
       for (let i = lastLogIndex; i < data.logs.length; i++) {
         const log = data.logs[i];
-        addToSerialConsole(log.message);
+        
+        // NÃO adicionar logs de setup ao console serial - apenas à área de instalação
+        // addToSerialConsole(log.message); // REMOVIDO
+        
+        // Adicionar apenas à área de logs de instalação
+        addToInstallationLogs(log.message);
         
         // Se for log de progresso, atualizar barra
         if (log.message.includes('[PROGRESS]')) {
@@ -815,12 +820,78 @@ function updateProgressBar(progressData) {
   }
 }
 
+// Função para adicionar logs à área de logs de instalação
+function addToInstallationLogs(message) {
+  const logsSection = document.getElementById('installation-logs-section');
+  const logsOutput = document.getElementById('installation-logs-output');
+  
+  if (!logsSection || !logsOutput) {
+    return;
+  }
+  
+  // Mostrar a seção de logs
+  logsSection.style.display = 'block';
+  
+  // Criar timestamp
+  const timestamp = new Date().toLocaleTimeString();
+  
+  // Criar elemento de log
+  const logLine = document.createElement('div');
+  logLine.className = 'installation-log-line';
+  
+  // Determinar classe baseada no conteúdo da mensagem
+  if (message.includes('[PROGRESS]') || message.includes('Baixando') || message.includes('Download')) {
+    logLine.classList.add('progress');
+  } else if (message.includes('✅') || message.includes('sucesso') || message.includes('instalado')) {
+    logLine.classList.add('success');
+  } else if (message.includes('❌') || message.includes('erro') || message.includes('falhou')) {
+    logLine.classList.add('error');
+  } else if (message.includes('⚠️') || message.includes('aviso') || message.includes('atenção')) {
+    logLine.classList.add('warning');
+  } else if (message.includes('🔍') || message.includes('ℹ️') || message.includes('Verificando')) {
+    logLine.classList.add('info');
+  }
+  
+  // Limpar mensagens de progresso JSON para exibição mais limpa
+  let cleanMessage = message;
+  const progressMatch = message.match(/\[PROGRESS\]\s*({.*})/);
+  if (progressMatch) {
+    try {
+      const progressData = JSON.parse(progressMatch[1]);
+      cleanMessage = `[${timestamp}] 📊 ${progressData.message} (${progressData.progress}%)`;
+    } catch (e) {
+      cleanMessage = `[${timestamp}] ${message}`;
+    }
+  } else {
+    cleanMessage = `[${timestamp}] ${message}`;
+  }
+  
+  logLine.textContent = cleanMessage;
+  
+  // Adicionar ao output
+  logsOutput.appendChild(logLine);
+  
+  // Auto-scroll para o final
+  logsOutput.scrollTop = logsOutput.scrollHeight;
+  
+  // Limitar número de linhas (manter apenas as últimas 200)
+  while (logsOutput.children.length > 200) {
+    logsOutput.removeChild(logsOutput.firstChild);
+  }
+}
+
 async function startBackend() {
   console.log('�🚀 Iniciando backend Arduino CLI manualmente...');
   
   backendState.isStarting = true;
   updateBackendUI();
   showBackendStartFeedback();
+  
+  // Limpar logs de instalação anteriores
+  const logsOutput = document.getElementById('installation-logs-output');
+  if (logsOutput) {
+    logsOutput.innerHTML = '';
+  }
   
   // Iniciar polling de logs
   startSetupLogPolling();
@@ -1100,16 +1171,8 @@ function showBackendStartFeedback() {
   // Mostrar toast informativo
   showToast('🚀 Iniciando backend Arduino CLI...', 'info', 3000);
   
-  // Atualizar console serial com separador visual
-  addToSerialConsole('');
-  addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  addToSerialConsole('🚀 INICIALIZAÇÃO DO BACKEND ARDUINO CLI');
-  addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  addToSerialConsole('⏳ Verificando configuração...');
-  addToSerialConsole('📦 Instalando dependências se necessário...');
-  addToSerialConsole('');
-  addToSerialConsole('💡 Os logs de instalação aparecerão abaixo:');
-  addToSerialConsole('');
+  // NÃO adicionar mensagens ao console serial - apenas na área de logs de instalação
+  // O console serial é apenas para dados da porta serial
 }
 
 function handleManualStartResult(result) {
@@ -1118,31 +1181,17 @@ function handleManualStartResult(result) {
   if (result.success) {
     showToast('✅ Backend iniciado com sucesso!', 'success', 4000);
     
-    addToSerialConsole('');
-    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    addToSerialConsole('✅ BACKEND INICIADO COM SUCESSO!');
-    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    addToSerialConsole(` Servidor: ${backendConfig.http}`);
-    addToSerialConsole(`🔌 WebSocket: ${backendConfig.ws}`);
-    addToSerialConsole('🎯 Sistema pronto para uso!');
-    addToSerialConsole('');
+    // NÃO adicionar mensagens ao console serial - apenas na área de logs de instalação
     
     // Detectar portas após inicialização
     setTimeout(async () => {
-      addToSerialConsole('🔍 Detectando portas seriais...');
       await refreshPorts();
       updateConnectionStatus();
     }, 2000);
     
   } else {
     showToast('❌ Erro ao iniciar backend', 'error', 5000);
-    addToSerialConsole('');
-    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    addToSerialConsole('❌ ERRO NA INICIALIZAÇÃO');
-    addToSerialConsole('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    addToSerialConsole('🔧 ' + result.error);
-    addToSerialConsole('💡 Verifique a configuração e tente novamente');
-    addToSerialConsole('');
+    // NÃO adicionar mensagens ao console serial - apenas na área de logs de instalação
   }
 }
 
@@ -1926,23 +1975,21 @@ function detectSensorDataFormat(data) {
  * Adiciona mensagem formatada ao console baseada no tipo de dados
  */
 function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
-  // Console simples e limpo, estilo Arduino IDE
+  // Console simples e limpo, estilo Arduino IDE - APENAS TEXTO PURO
+  
   if (messageType === 'upload') {
-    serialMonitorState.consoleHistory.push(
-      `[${timestamp}] Upload: ${data}`
-    );
+    // Mensagens de upload não vão para o console serial
     return;
   }
   
   if (messageType === 'raw') {
-    serialMonitorState.consoleHistory.push(
-      `[${timestamp}] RAW: ${data}`
-    );
+    // Dados RAW não devem aparecer no console
     return;
   }
   
-  // Formato simples e limpo - apenas timestamp e dados
-  serialMonitorState.consoleHistory.push(`${timestamp} - ${data}`);
+  // Formato simples - apenas os dados recebidos, sem timestamp
+  // Arduino IDE mostra apenas os dados puros
+  serialMonitorState.consoleHistory.push(data);
 }
 
 function disconnectSerial() {
@@ -2203,7 +2250,7 @@ function startRealSerialMonitoring(port) {
     serialWebSocket = null;
   }
   
-  addToSerialConsole(`📡 Conectando ao monitoramento serial na porta ${port}...`);
+  // NÃO adicionar mensagens de status ao console - apenas dados da porta serial
   
   try {
     // Conectar ao WebSocket do backend para monitoramento serial
@@ -2216,8 +2263,7 @@ function startRealSerialMonitoring(port) {
       const selectedBaudRate = baudRateSelect ? parseInt(baudRateSelect.value) : 9600;
       
       console.log(`🔌 Conectado ao WebSocket serial - usando baud rate: ${selectedBaudRate}`);
-      addToSerialConsole('✅ Conectado ao monitor serial');
-      addToSerialConsole(`⚡ Baud Rate: ${selectedBaudRate}`);
+      // NÃO adicionar mensagens ao console - apenas dados da porta serial
       
       // Enviar comando para conectar à porta
       serialWebSocket.send(JSON.stringify({
@@ -2243,20 +2289,18 @@ function startRealSerialMonitoring(port) {
     serialWebSocket.onclose = () => {
       console.log('🔌 Conexão WebSocket fechada');
       serialMonitoringActive = false;
-      if (serialWebSocket) {
-        addToSerialConsole('⚠️ Conexão serial perdida');
-      }
+      // NÃO adicionar mensagens ao console
     };
     
     serialWebSocket.onerror = (error) => {
       console.error('❌ Erro WebSocket:', error);
-      addToSerialConsole('❌ Erro na conexão serial');
+      // NÃO adicionar mensagens ao console
       serialMonitoringActive = false;
     };
     
   } catch (error) {
     console.error('❌ Erro ao conectar WebSocket:', error);
-    addToSerialConsole('❌ Erro ao conectar ao monitor serial');
+    // NÃO adicionar mensagens ao console
   }
 }
 
@@ -2267,7 +2311,7 @@ function stopSerialMonitoring() {
     serialWebSocket = null;
   }
   serialMonitoringActive = false;
-  addToSerialConsole('🛑 Monitoramento serial parado');
+  // NÃO adicionar mensagens ao console - apenas dados da porta serial
 }
 
 async function uploadSketch() {
@@ -3164,42 +3208,8 @@ function updateConsoleTab() {
         emptyPlaceholder.style.display = 'none';
       }
       
-      // Atualizar conteúdo
-      if (element.tagName === 'PRE' || element.classList.contains('code-display')) {
-        element.textContent = consoleText;
-      } else {
-        // Para divs de console, usar innerHTML formatado
-        const formattedText = consoleText
-          .split('\n')
-          .map(line => {
-            if (line.startsWith('[') && line.includes(']')) {
-              // Linha com timestamp
-              const timestampEnd = line.indexOf(']') + 1;
-              const timestamp = line.substring(0, timestampEnd);
-              const content = line.substring(timestampEnd).trim();
-              
-              if (content.startsWith('>')) {
-                // Comando enviado
-                return `<div class="console-line sent"><span class="timestamp">${timestamp}</span><span class="command">${content}</span></div>`;
-              } else if (content.includes('🤖') || content.includes('Solicitando')) {
-                // Mensagem do sistema
-                return `<div class="console-line system"><span class="timestamp">${timestamp}</span><span class="message">${content}</span></div>`;
-              } else if (content.includes('<span class="sensor-')) {
-                // Dados de sensor formatados com HTML
-                return `<div class="console-line sensor-data-line"><span class="timestamp">${timestamp}</span> ${content}</div>`;
-              } else {
-                // Resposta recebida normal
-                return `<div class="console-line received"><span class="timestamp">${timestamp}</span><span class="response">${content}</span></div>`;
-              }
-            } else {
-              // Linha sem formato especial
-              return `<div class="console-line">${line}</div>`;
-            }
-          })
-          .join('');
-        
-        element.innerHTML = formattedText;
-      }
+      // Console simples - texto puro, igual ao Arduino IDE
+      element.textContent = consoleText;
       
       // Auto-scroll para o final - sempre forçar quando há novos dados
       requestAnimationFrame(() => {
