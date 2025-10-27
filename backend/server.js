@@ -931,6 +931,14 @@ class BackendServer {
         this.stop();
       });
 
+      // Limpeza de memória periódica (a cada 10 minutos)
+      setInterval(() => {
+        if (global.gc) {
+          global.gc();
+          console.log('🧹 Garbage collection executado');
+        }
+      }, 600000); // 10 minutos
+
     } catch (error) {
       console.error('❌ Erro ao iniciar servidor:', error.message);
       process.exit(1);

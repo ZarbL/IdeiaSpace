@@ -665,6 +665,15 @@
       <block type="logic_compare"></block>
       <block type="logic_operation"></block>
       <block type="logic_boolean"></block>
+      <sep></sep>
+      <label text="Controle de Fluxo"></label>
+      <block type="controls_switch"></block>
+      <block type="controls_case"></block>
+      <block type="controls_default"></block>
+      <sep gap="8"></sep>
+      <block type="controls_break"></block>
+      <block type="controls_continue"></block>
+      <block type="controls_return"></block>
     </category>
     <category name="Controle" colour="#00cfe5" data-translate-name="CAT_CONTROL">
       <block type="arduino_setup"></block>
@@ -688,27 +697,10 @@
       <block type="math_pi"></block>
     </category>
     <category name="Calculadora" colour="#FF6B35" data-translate-name="CAT_CALCULATOR">
-      <block type="math_number"><field name="NUM">0</field></block>
-      <block type="math_number"><field name="NUM">1</field></block>
-      <block type="math_number"><field name="NUM">10</field></block>
-      <sep></sep>
-      <block type="math_arithmetic">
-        <value name="A">
-          <shadow type="math_number"><field name="NUM">1</field></shadow>
-        </value>
-        <value name="B">
-          <shadow type="math_number"><field name="NUM">1</field></shadow>
-        </value>
-      </block>
-      <block type="math_single">
-        <value name="NUM">
-          <shadow type="math_number"><field name="NUM">9</field></shadow>
-        </value>
-      </block>
-      <sep></sep>
-      <block type="find_operator"></block>
-      <block type="perform_operations"></block>
-      <block type="print_result"></block>
+      <block type="serial_available"></block>
+      <block type="read_input_numbers"></block>
+      <block type="find_logical_operator"></block>
+      <block type="separate_numbers"></block>
     </category>
     <category name="Texto" colour="#4CAF50" data-translate-name="CAT_TEXT">
       <block type="text"></block>
@@ -770,6 +762,12 @@
       </block>
     </category>
     <category name="LED" colour="#FFD700" data-translate-name="CAT_LED">
+      <block type="led_define">
+        <value name="VALUE">
+          <shadow type="math_number"><field name="NUM">26</field></shadow>
+        </value>
+      </block>
+      <sep></sep>
       <block type="pin_mode_block">
         <value name="PIN">
           <shadow type="math_number"><field name="NUM">13</field></shadow>

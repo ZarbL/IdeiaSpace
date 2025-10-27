@@ -492,7 +492,7 @@ async function openSerialMonitorModal() {
           updateBackendUI();
         }
       }
-    }, 3000); // Verificar a cada 3 segundos
+    }, 5000); // Verificar a cada 5 segundos (otimizado de 3s)
     
     // Prevent body scrolling - preservar overflow original se for 'hidden'
     if (modal._originalBodyOverflow === 'hidden') {
@@ -780,8 +780,8 @@ function startSetupLogPolling() {
   }
   
   lastLogIndex = 0;
-  setupLogPolling = setInterval(pollSetupLogs, 1000); // Poll a cada 1 segundo
-  console.log('� Iniciado polling de logs do setup');
+  setupLogPolling = setInterval(pollSetupLogs, 2000); // Poll a cada 2 segundos (otimizado)
+  console.log('📡 Iniciado polling de logs do setup (otimizado)');
 }
 
 function stopSetupLogPolling() {
@@ -7046,33 +7046,23 @@ if (originalParseAndUpdateSensorData) {
 }
 
 // ============================================================================
-// APLICAÇÃO GARANTIDA DE CORES - MÚLTIPLOS TIMEOUTS PARA GARANTIR FUNCIONAMENTO
+// APLICAÇÃO DE CORES - OTIMIZADO PARA ECONOMIA DE MEMÓRIA
 // ============================================================================
 
-// Aplicar cores em diferentes momentos para garantir que funcionem
-console.log('🎨 Configurando aplicação garantida de cores...');
+// Aplicar cores apenas uma vez após carregamento completo
+console.log('🎨 Configurando aplicação de cores (otimizado)...');
 
-// Aplicação imediata (sincrona)
 if (typeof window !== 'undefined') {
   // Aguardar carregamento completo da janela
   window.addEventListener('load', () => {
     console.log('🎨 Aplicando cores no evento window.load...');
     setTimeout(() => {
-      if (typeof Blockly !== 'undefined' && Blockly.Blocks) {
-        forceCorrectBlockColors();
-      }
-    }, 100);
-  });
-  
-  // Aplicações com timeouts progressivos
-  [500, 1000, 2000, 3000].forEach(delay => {
-    setTimeout(() => {
       if (typeof Blockly !== 'undefined' && Blockly.Blocks && typeof forceCorrectBlockColors === 'function') {
-        console.log(`🎨 Aplicando cores (timeout ${delay}ms)...`);
         forceCorrectBlockColors();
+        console.log('✅ Cores aplicadas com sucesso');
       }
-    }, delay);
+    }, 500); // Apenas 1 timeout de 500ms ao invés de 4 (500, 1000, 2000, 3000)
   });
 }
 
-console.log('✅ Sistema de cores configurado com múltiplos pontos de aplicação');
+console.log('✅ Sistema de cores configurado (otimizado para memória)');

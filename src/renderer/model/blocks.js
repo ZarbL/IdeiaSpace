@@ -100,6 +100,180 @@ Blockly.Blocks['digital_read'] = {
   }
 };
 
+// ============================================================================
+// SWITCH/CASE BLOCKS - Blocos de estrutura Switch/Case (Versão Modular Web)
+// ============================================================================
+
+/**
+ * Block for switch statement - Modular version like Web.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_switch'] = {
+  init: function() {
+    this.appendValueInput('SWITCH_VALUE')
+        .setCheck(['Number', 'String', 'Boolean'])
+        .appendField('switch (');
+    this.appendDummyInput()
+        .appendField(')');
+    this.appendStatementInput('DO')
+        .appendField('casos:')
+        .setCheck(['controls_case', 'controls_default']);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#5C81A6");
+    this.setTooltip('Estrutura switch - adicione blocos case e default dentro');
+    this.setHelpUrl('');
+    this.setInputsInline(true);
+  }
+};
+
+/**
+ * Block for case statement - Individual case block.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_case'] = {
+  init: function() {
+    this.appendValueInput('CASE_VALUE')
+        .setCheck(['Number', 'String'])
+        .appendField('case (');
+    this.appendDummyInput()
+        .appendField(') :');
+    this.appendStatementInput('DO');
+    this.appendDummyInput()
+        .appendField('break;');
+    this.setPreviousStatement(true, ['controls_case', 'controls_default']);
+    this.setNextStatement(true, ['controls_case', 'controls_default']);
+    this.setColour("#5C81A6");
+    this.setTooltip('Case individual - especifique o valor e adicione código');
+    this.setHelpUrl('');
+    this.setInputsInline(true);
+  }
+};
+
+/**
+ * Block for default case statement.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_default'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('default :');
+    this.appendStatementInput('DO');
+    this.setPreviousStatement(true, ['controls_case', 'controls_default']);
+    this.setColour("#5C81A6");
+    this.setTooltip('Caso padrão - executado quando nenhum case corresponde');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for return statement.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_return'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('return;');
+    this.setPreviousStatement(true, null);
+    this.setColour("#5C81A6");
+    this.setTooltip('Retorna da função atual (sem valor)');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for break statement.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_break'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(' break;');
+    this.setPreviousStatement(true, null);
+    this.setColour("#5C81A6");
+    this.setTooltip('Interrompe a execução de um loop ou switch');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for continue statement.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['controls_continue'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(' continue;');
+    this.setPreviousStatement(true, null);
+    this.setColour("#5C81A6");
+    this.setTooltip('Pula para a próxima iteração do loop');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for Serial.available().
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['serial_available'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Serial.available()');
+    this.setOutput(true, 'Number');
+    this.setColour("#FF6B35");
+    this.setTooltip('Retorna o número de bytes disponíveis para leitura na porta serial');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for reading input numbers from Serial.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['read_input_numbers'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Ler números de entrada');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FF6B35");
+    this.setTooltip('Lê entrada da porta serial, remove espaços e retorna se vazio');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for finding logical operator in input.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['find_logical_operator'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Encontrar Operador Lógico');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FF6B35");
+    this.setTooltip('Procura por operadores matemáticos (+, -, *, /) na string de entrada');
+    this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for separating numbers from input.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['separate_numbers'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Separar Números');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FF6B35");
+    this.setTooltip('Separa os dois números da string de entrada usando a posição do operador');
+    this.setHelpUrl('');
+  }
+};
+
 /**
  * Block for variable declaration with type.
  * @this {Blockly.Block}
@@ -1568,17 +1742,36 @@ Blockly.Blocks['pin_mode_block'] = {
 };
 
 /**
- * Block for LED PIN reference.
+ * Block for LED PIN reference - Editable.
  * @this {Blockly.Block}
  */
 Blockly.Blocks['led_builtin_block'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField('LED PIN');
-    this.setOutput(true, null);
-    this.setColour(45);
-    this.setTooltip('Referência ao pino LED');
+        .appendField(new Blockly.FieldTextInput('LED_PIN'), 'PIN_NAME');
+    this.setOutput(true, 'Number');
+    this.setColour("#FFD700");
+    this.setTooltip('Referência a uma constante de pino - editável');
     this.setHelpUrl('');
+  }
+};
+
+/**
+ * Block for #define directive - Define constants.
+ * @this {Blockly.Block}
+ */
+Blockly.Blocks['led_define'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .setCheck('Number')
+        .appendField('#define')
+        .appendField(new Blockly.FieldTextInput('LED_VERDE'), 'CONSTANT_NAME');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FFD700");
+    this.setTooltip('Define uma constante usando #define - ex: #define LED_VERDE 26');
+    this.setHelpUrl('');
+    this.setInputsInline(true);
   }
 };
 
@@ -1592,7 +1785,7 @@ Blockly.Blocks['led_builtin_setup'] = {
         .appendField('🔧 Configurar LED PIN como saída');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFD700");
     this.setTooltip('Configura o LED PIN (LED_PIN) como OUTPUT');
     this.setHelpUrl('');
   }
@@ -1616,7 +1809,7 @@ Blockly.Blocks['led_digital_write'] = {
         .appendField(');');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFD700");
     this.setTooltip('Escreve HIGH ou LOW em um pino digital');
     this.setHelpUrl('');
   }
@@ -1638,7 +1831,7 @@ Blockly.Blocks['led_analog_write'] = {
         .appendField(');');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFD700");
     this.setTooltip('Escreve um valor PWM (0-255) em um pino analógico');
     this.setHelpUrl('');
   }
@@ -1660,7 +1853,7 @@ Blockly.Blocks['led_blink'] = {
         .appendField('ms');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFD700");
     this.setTooltip('Faz um LED piscar uma vez com delay especificado');
     this.setHelpUrl('');
   }
@@ -1688,7 +1881,7 @@ Blockly.Blocks['led_fade'] = {
         .appendField('ms');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour("#FFD700");
     this.setTooltip('Cria um efeito fade no LED do valor inicial ao final');
     this.setHelpUrl('');
   }

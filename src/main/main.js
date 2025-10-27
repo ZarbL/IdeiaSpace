@@ -62,10 +62,14 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, '../renderer/view/index.html'));
 
-  // Otimização de memória: limpar cache periodicamente
+  // Otimização de memória: limpar cache periodicamente (a cada 10 minutos ao invés de 5)
   setInterval(() => {
     mainWindow.webContents.session.clearCache();
-  }, 300000); // 5 minutos
+    // Forçar garbage collection se disponível
+    if (global.gc) {
+      global.gc();
+    }
+  }, 600000); // 10 minutos - reduz uso de CPU
 
   // Open the DevTools only in development mode
   // mainWindow.webContents.openDevTools();

@@ -744,6 +744,145 @@ Blockly.Cpp['digital_read'] = function(block) {
   return [`digitalRead(${pin})`, Blockly.Cpp.ORDER_ATOMIC];
 };
 
+// ============================================================================
+// SWITCH/CASE GENERATORS - Geradores para estruturas Switch/Case (Versão Modular)
+// ============================================================================
+
+/**
+ * C++ code generator for switch statement - Modular version.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_switch'] = function(block) {
+  const switchValue = Blockly.Cpp.valueToCode(block, 'SWITCH_VALUE', 
+      Blockly.Cpp.ORDER_NONE) || '0';
+  
+  let casesCode = Blockly.Cpp.statementToCode(block, 'DO');
+  
+  // Se não houver cases, adicionar um comentário
+  if (!casesCode.trim()) {
+    casesCode = '  // Adicione blocos case e default aqui\n';
+  }
+  
+  const code = 'switch (' + switchValue + ') {\n' + casesCode + '}\n';
+  return code;
+};
+
+/**
+ * C++ code generator for case statement.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_case'] = function(block) {
+  const caseValue = Blockly.Cpp.valueToCode(block, 'CASE_VALUE', 
+      Blockly.Cpp.ORDER_NONE) || '0';
+  
+  let caseCode = Blockly.Cpp.statementToCode(block, 'DO');
+  
+  let code = 'case ' + caseValue + ':\n';
+  if (caseCode) {
+    code += Blockly.Cpp.prefixLines(caseCode, '  ');
+  }
+  code += '  break;\n';
+  
+  return code;
+};
+
+/**
+ * C++ code generator for default case statement.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_default'] = function(block) {
+  let defaultCode = Blockly.Cpp.statementToCode(block, 'DO');
+  
+  let code = 'default:\n';
+  if (defaultCode) {
+    code += Blockly.Cpp.prefixLines(defaultCode, '  ');
+  }
+  code += '  break;\n';
+  
+  return code;
+};
+
+/**
+ * C++ code generator for return statement.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_return'] = function(block) {
+  return 'return;\n';
+};
+
+/**
+ * C++ code generator for break statement.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_break'] = function(block) {
+  return 'break;\n';
+};
+
+/**
+ * C++ code generator for continue statement.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['controls_continue'] = function(block) {
+  return 'continue;\n';
+};
+
+/**
+ * C++ code generator for Serial.available().
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {Array} Generated C++ code with order of operations.
+ */
+Blockly.Cpp['serial_available'] = function(block) {
+  var code = 'Serial.available()';
+  return [code, Blockly.Cpp.ORDER_FUNCTION_CALL];
+};
+
+/**
+ * C++ code generator for reading input numbers from Serial.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['read_input_numbers'] = function(block) {
+  var code = 'String input = Serial.readStringUntil(\'\\n\');\n';
+  code += '  input.trim();\n';
+  code += '  if (input.length() == 0) return;\n';
+  return code;
+};
+
+/**
+ * C++ code generator for finding logical operator.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['find_logical_operator'] = function(block) {
+  var code = 'int opIndex = -1;\n';
+  code += '  char ops[] = {\'+\', \'-\', \'*\', \'/\'};\n';
+  code += '  for (int i = 0; i < 4; i++) {\n';
+  code += '    opIndex = input.indexOf(ops[i]);\n';
+  code += '    if (opIndex != -1) {\n';
+  code += '      op = ops[i];\n';
+  code += '      break;\n';
+  code += '    }\n';
+  code += '  }\n';
+  return code;
+};
+
+/**
+ * C++ code generator for separating numbers.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['separate_numbers'] = function(block) {
+  var code = 'num1 = input.substring(0, opIndex).toFloat();\n';
+  code += '  num2 = input.substring(opIndex + 1).toFloat();\n';
+  return code;
+};
+
 /**
  * C++ code generator for variable declaration block.
  * @param {!Blockly.Block} block Block to generate the code from.
@@ -1730,13 +1869,29 @@ Blockly.Cpp['pin_mode_block'] = function(block) {
 };
 
 /**
- * C++ code generator for LED PIN reference.
+ * C++ code generator for LED PIN reference - Editable.
  * @param {!Blockly.Block} block Block to generate the code from.
  * @return {array} Generated C++ code with order.
  */
 Blockly.Cpp['led_builtin_block'] = function(block) {
-  var code = 'LED_PIN';
-  return [code, Blockly.Cpp.ORDER_ATOMIC];
+  var pinName = block.getFieldValue('PIN_NAME') || 'LED_PIN';
+  return [pinName, Blockly.Cpp.ORDER_ATOMIC];
+};
+
+/**
+ * C++ code generator for #define directive.
+ * @param {!Blockly.Block} block Block to generate the code from.
+ * @return {string} Generated C++ code.
+ */
+Blockly.Cpp['led_define'] = function(block) {
+  var constantName = block.getFieldValue('CONSTANT_NAME') || 'LED_PIN';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ATOMIC) || '13';
+  
+  // Adiciona o define nas definições globais
+  Blockly.Cpp.definitions_['define_' + constantName] = '#define ' + constantName + ' ' + value;
+  
+  // Não gera código inline, pois o #define vai no topo
+  return '';
 };
 
 /**
