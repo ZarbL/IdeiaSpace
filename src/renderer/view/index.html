@@ -134,9 +134,9 @@
       
       <header class="modal-header-clean">
         <div class="modal-header-left">
-          <div class="modal-icon-modern">⚡</div>
+          <img src="../../assets/logo-light.png" id="modalLogoImg" class="modal-logo" alt="IdeiaSpace Logo">
           <div class="modal-title-modern">
-            <h2 data-translate-key="arduinoModalTitle">Arduino Development Environment</h2>
+            <h2 data-translate-key="arduinoModalTitle">IdeiaSpace</h2>
             <span class="modal-subtitle-modern" data-translate-key="arduinoModalSubtitle">Compile, Upload & Monitor</span>
           </div>
         </div>
@@ -170,49 +170,55 @@
         </button>
       </nav>
 
+      <!-- Barra de Status e Controles Fixos -->
+      <div class="modal-status-bar">
+        <div class="status-bar-left">
+          <!-- Backend Status -->
+          <div class="status-bar-item">
+            <div class="connection-indicator compact" id="backend-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text" data-translate-key="backendOffline">Backend Offline</span>
+            </div>
+          </div>
+          
+          <!-- WebSocket Status -->
+          <div class="status-bar-item">
+            <div class="connection-indicator compact" id="ws-status-indicator">
+              <span class="indicator-dot offline"></span>
+              <span class="indicator-text">WebSocket Offline</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="status-bar-right">
+          <!-- Backend Controls -->
+          <button id="start-backend-btn" class="status-bar-btn start">
+            <span class="btn-icon">🚀</span>
+            <span class="btn-text" data-translate-key="startBackend">Iniciar Missão</span>
+          </button>
+          <button id="stop-backend-btn" class="status-bar-btn stop" disabled>
+            <span class="btn-icon">🛑</span>
+            <span class="btn-text" data-translate-key="stopBackend">Abordar Missão</sspan>
+          </button>
+        </div>
+      </div>
+
       <main class="modal-main-content">
         
         <aside class="modal-sidebar">
           <div class="sidebar-section">
-            <h4 class="sidebar-title">🔌 <span data-translate-key="connectionStatus">Conexão</span></h4>
+            <h4 class="sidebar-title">🔌 <span data-translate-key="connectionStatus">Conexão Serial</span></h4>
             
-            <!-- Backend Status -->
-            <div class="connection-indicator" id="backend-status-indicator">
-              <span class="indicator-dot offline"></span>
-              <span class="indicator-text" data-translate-key="backendOffline">Backend Offline</span>
-            </div>
-            
-            <!-- Backend Controls -->
-            <div class="form-group">
-              <div class="backend-controls">
-                <button id="start-backend-btn" class="backend-btn start">
-                  <span class="btn-icon">🚀</span>
-                  <span class="btn-text" data-translate-key="startBackend">Iniciar Backend</span>
-                </button>
-                <button id="stop-backend-btn" class="backend-btn stop" disabled>
-                  <span class="btn-icon">🛑</span>
-                  <span class="btn-text" data-translate-key="stopBackend">Parar Backend</span>
-                </button>
+            <!-- Barra de progresso para instalação de cores -->
+            <div id="core-installation-progress" class="core-progress-container" style="display: none;">
+              <div class="progress-info">
+                <span class="progress-label" id="core-progress-label">Instalando ESP32 Core...</span>
+                <span class="progress-percentage" id="core-progress-percentage">0%</span>
               </div>
-              <small class="form-help" id="backend-info" data-translate-key="backendOffline">Backend Arduino CLI não iniciado</small>
-              
-              <!-- Barra de progresso para instalação de cores -->
-              <div id="core-installation-progress" class="core-progress-container" style="display: none;">
-                <div class="progress-info">
-                  <span class="progress-label" id="core-progress-label">Instalando ESP32 Core...</span>
-                  <span class="progress-percentage" id="core-progress-percentage">0%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-bar-fill" id="core-progress-fill" style="width: 0%"></div>
-                </div>
-                <small class="progress-message" id="core-progress-message">Preparando instalação...</small>
+              <div class="progress-bar">
+                <div class="progress-bar-fill" id="core-progress-fill" style="width: 0%"></div>
               </div>
-            </div>
-
-            <!-- WebSocket Status -->
-            <div class="connection-indicator" id="ws-status-indicator">
-              <span class="indicator-dot offline"></span>
-              <span class="indicator-text">WebSocket Offline</span>
+              <small class="progress-message" id="core-progress-message">Preparando instalação...</small>
             </div>
 
             <div class="form-group">
@@ -228,33 +234,25 @@
 
             <div class="form-group">
               <label class="form-label" data-translate-key="baudRate">Baud Rate</label>
-              <div class="input-with-button">
-                <select id="baud-rate-select" class="form-select">
-                  <option value="300">300</option>
-                  <option value="600">600</option>
-                  <option value="1200">1200</option>
-                  <option value="2400">2400</option>
-                  <option value="4800">4800</option>
-                  <option value="9600">9600</option>
-                  <option value="14400">14400</option>
-                  <option value="19200">19200</option>
-                  <option value="28800">28800</option>
-                  <option value="38400">38400</option>
-                  <option value="57600">57600</option>
-                  <option value="115200" selected>115200</option>
-                  <option value="230400">230400</option>
-                  <option value="460800">460800</option>
-                  <option value="921600">921600</option>
-                </select>
-                <button id="reconnect-serial" class="refresh-btn" title="Reconectar com novo baud rate">🔄</button>
-              </div>
-              <small class="form-help">Velocidade de comunicação serial (115200 é padrão para ESP32)</small>
+              <select id="baud-rate-select" class="form-select">
+                <option value="300">300</option>
+                <option value="600">600</option>
+                <option value="1200">1200</option>
+                <option value="2400">2400</option>
+                <option value="4800">4800</option>
+                <option value="9600">9600</option>
+                <option value="14400">14400</option>
+                <option value="19200">19200</option>
+                <option value="28800">28800</option>
+                <option value="38400">38400</option>
+                <option value="57600">57600</option>
+                <option value="115200" selected>115200</option>
+                <option value="230400">230400</option>
+                <option value="460800">460800</option>
+                <option value="921600">921600</option>
+              </select>
+              <small class="form-help">Velocidade de comunicação serial (115200 é padrão para ESP32) - Atualização automática em tempo real</small>
             </div>
-
-            <button id="connect-btn" class="connect-button" disabled>
-              <span class="btn-icon">🚀</span>
-              <span class="btn-text" data-translate-key="connectButton">Conectar</span>
-            </button>
           </div>
 
           <div class="sidebar-section">
@@ -287,10 +285,10 @@
                   <div class="form-group">
                     <label class="form-label" data-translate-key="boardType">Tipo de Placa</label>
                     <select id="board-select" class="form-select">
-                      <option value="esp32:esp32:esp32">🚀 ESP32 Dev Module (Padrão - 921600 bps)</option>
-                      <option value="esp32:esp32:esp32wrover">📡 ESP32 WROVER (PSRAM - 460800 bps)</option>
+                      <option value="esp32:esp32:esp32" data-translate-key="educationalSatellite">Satélite Educacional</option>
+                      <option value="esp32:esp32:esp32wrover" data-translate-key="esp32Wrover">📡 ESP32 WROVER (PSRAM - 460800 bps)</option>
                     </select>
-                    <small class="form-help" id="board-help">ESP32 Dev Module: Velocidade alta, ideal para a maioria dos projetos</small>
+                    <small class="form-help" id="board-help" data-translate-key="boardHelp">ESP32 Dev Module: Velocidade alta, ideal para a maioria dos projetos</small>
                   </div>
                   <div class="form-group">
                     <label class="form-label" data-translate-key="uploadPort">Porta de Upload</label>
@@ -308,9 +306,9 @@
                     <span class="btn-icon">📤</span>
                     <span data-translate-key="uploadCode">Upload Código</span>
                   </button>
-                  <button id="compile-code" class="btn-secondary">
-                    <span class="btn-icon">⚙️</span>
-                    <span data-translate-key="compileCode">Compilar</span>
+                  <button id="compile-code" class="btn-secondary" disabled>
+                    <span class="btn-icon">📖</span>
+                    <span data-translate-key="readCode">Ler Código</span>
                   </button>
                 </div>
               </div>
@@ -501,13 +499,13 @@
                 <h4 class="serial-upload-controls-title">📤 Upload e Deploy</h4>
                 
                 <div class="serial-form-group">
-                  <label class="serial-form-label">🔧 Placa de Destino:</label>
+                  <label class="serial-form-label" data-translate-key="targetBoard">🔧 Placa de Destino:</label>
                   <select id="board-select-serial" class="serial-form-control">
-                    <option value="esp32:esp32:esp32">🚀 ESP32 Dev Module (Padrão - Auto-reset)</option>
-                    <option value="esp32:esp32:esp32wrover">📡 ESP32 WROVER (PSRAM + Upload conservativo)</option>
-                    <option value="esp32:esp32:esp32:PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200">🐌 ESP32 Modo Estável (Upload lento mas confiável)</option>
+                    <option value="esp32:esp32:esp32" data-translate-key="esp32DevModule">🚀 ESP32 Dev Module (Padrão - Auto-reset)</option>
+                    <option value="esp32:esp32:esp32wrover" data-translate-key="esp32WroverConservative">📡 ESP32 WROVER (PSRAM + Upload conservativo)</option>
+                    <option value="esp32:esp32:esp32:PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200" data-translate-key="esp32StableMode">🐌 ESP32 Modo Estável (Upload lento mas confiável)</option>
                   </select>
-                  <small class="serial-form-help" id="board-help-serial">
+                  <small class="serial-form-help" id="board-help-serial" data-translate-key="boardHelpSerial">
                     💡 <strong>ESP32 Dev Module</strong>: Melhor para a maioria dos casos, upload rápido<br>
                     📡 <strong>ESP32 WROVER</strong>: Possui PSRAM, usa upload mais conservativo<br>
                     🐌 <strong>Modo Estável</strong>: Use se tiver problemas de "Packet content transfer stopped"
@@ -591,10 +589,32 @@
             <div class="serial-console-panel">
               <div class="serial-console-header">
                 <h3 class="serial-console-title">🖥️ Console Serial</h3>
-                <div class="serial-console-actions">
-                  <button id="open-plotter" class="serial-btn-plotter">📊</button>
-                  <button id="clear-console" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
-                  <button id="copy-console" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
+                <div class="serial-console-controls">
+                  <div class="console-baud-rate-group">
+                    <label class="console-baud-label" data-translate-key="baudRate">Baud Rate:</label>
+                    <select id="console-baud-rate" class="console-baud-select">
+                      <option value="300">300</option>
+                      <option value="600">600</option>
+                      <option value="1200">1200</option>
+                      <option value="2400">2400</option>
+                      <option value="4800">4800</option>
+                      <option value="9600">9600</option>
+                      <option value="14400">14400</option>
+                      <option value="19200">19200</option>
+                      <option value="28800">28800</option>
+                      <option value="38400">38400</option>
+                      <option value="57600">57600</option>
+                      <option value="115200" selected>115200</option>
+                      <option value="230400">230400</option>
+                      <option value="460800">460800</option>
+                      <option value="921600">921600</option>
+                    </select>
+                  </div>
+                  <div class="serial-console-actions">
+                    <button id="open-plotter" class="serial-btn-plotter">📊</button>
+                    <button id="clear-console" class="serial-btn-clear" data-translate-key="clear">🗑️ Limpar</button>
+                    <button id="copy-console" class="serial-btn-copy" data-translate-key="copy">📋 Copiar</button>
+                  </div>
                 </div>
               </div>
               
@@ -943,13 +963,20 @@
       const darkModeToggle = document.getElementById('darkModeToggle');
       const body = document.body;
       const logoImg = document.getElementById('logoImg');
+      const modalLogoImg = document.getElementById('modalLogoImg');
 
       // Função para trocar logo baseado no tema
       function updateLogo() {
         if (body.classList.contains('dark-mode')) {
           logoImg.src = '../../assets/logo-dark.png'; // Logo para modo escuro
+          if (modalLogoImg) {
+            modalLogoImg.src = '../../assets/logo-dark.png'; // Logo do modal para modo escuro
+          }
         } else {
           logoImg.src = '../../assets/logo-light.png'; // Logo para modo claro
+          if (modalLogoImg) {
+            modalLogoImg.src = '../../assets/logo-light.png'; // Logo do modal para modo claro
+          }
         }
       }
 

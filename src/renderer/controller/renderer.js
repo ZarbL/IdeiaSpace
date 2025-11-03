@@ -1327,83 +1327,6 @@ function updateRefreshButton() {
 }
 
 // Connection Management
-function connectSerial() {
-  console.log('🔌 Conectando porta serial...');
-  
-  const portSelect = document.getElementById('port-select');
-  const baudRateSelect = document.getElementById('baud-rate-select');
-  
-  if (!portSelect || !baudRateSelect) {
-    showSerialNotification('❌ Elementos de seleção não encontrados!', 'error');
-    return;
-  }
-  
-  const port = portSelect.value;
-  const baudRate = baudRateSelect.value || '115200';
-  
-  if (!port) {
-    showSerialNotification('⚠️ Selecione uma porta primeiro!', 'warning');
-    return;
-  }
-  
-  // Verificar se o backend está rodando
-  if (!backendState.isRunning) {
-    showSerialNotification('❌ Backend não está rodando! Inicie o backend primeiro.', 'error');
-    return;
-  }
-  
-  // Atualizar UI para mostrar conectando
-  const connectBtn = document.getElementById('connect-btn');
-  if (connectBtn) {
-    connectBtn.disabled = true;
-    connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Conectando...</span>';
-  }
-  
-  // Estabelecer conexão WebSocket para comunicação serial
-  connectToSerialWebSocket(port, baudRate)
-    .then(() => {
-      serialMonitorState.isConnected = true;
-      serialMonitorState.selectedPort = port;
-      serialMonitorState.baudRate = baudRate;
-      
-      updateConnectionStatus();
-      showSerialNotification(`✅ Conectado à porta ${port} (${baudRate} baud)`, 'success');
-      
-      // Automaticamente mudar para aba console para ver os dados
-      switchTab('console');
-      
-      // Forçar scroll inicial do console para o final
-      setTimeout(() => {
-        const consoleElements = [
-          document.getElementById('console-output'),
-          document.getElementById('arduino-console')
-        ].filter(el => el);
-        
-        consoleElements.forEach(element => {
-          if (element) {
-            element.scrollTop = element.scrollHeight;
-          }
-        });
-      }, 100);
-      
-      // Enviar comando para ler dados existentes na ESP32
-      setTimeout(() => {
-        requestESP32Data();
-      }, 1000);
-      
-    })
-    .catch(error => {
-      console.error('❌ Erro ao conectar:', error.message);
-      showSerialNotification(`❌ Erro ao conectar: ${error.message}`, 'error');
-      
-      // Restaurar botão
-      if (connectBtn) {
-        connectBtn.disabled = false;
-        connectBtn.innerHTML = '<span class="btn-icon">🚀</span><span class="btn-text">Conectar</span>';
-      }
-    });
-}
-
 /**
  * Estabelece conexão WebSocket para comunicação serial
  */
@@ -1644,7 +1567,7 @@ function requestESP32Data() {
   });
   
   // Mostrar mensagem no console
-  serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] 🤖 Solicitando dados da ESP32...`);
+  serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] 🤖 Solicitando dados da ESP32...\n`);
   updateConsoleTab();
 }
 
@@ -2041,7 +1964,9 @@ function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
   
   // Formato simples - apenas os dados recebidos, sem timestamp
   // Arduino IDE mostra apenas os dados puros
-  serialMonitorState.consoleHistory.push(data);
+  // Adicionar quebra de linha apenas se não terminar com \n
+  const dataWithNewline = data.endsWith('\n') ? data : data + '\n';
+  serialMonitorState.consoleHistory.push(dataWithNewline);
 }
 
 function disconnectSerial() {
@@ -2083,18 +2008,18 @@ function disconnectSerial() {
   updateConnectionStatus();
   showSerialNotification('🔌 Desconectado da porta serial', 'info');
   
-  // Restaurar botão conectar
-  const connectBtn = document.getElementById('connect-btn');
-  if (connectBtn) {
-    connectBtn.disabled = false;
-    connectBtn.innerHTML = '<span class="btn-icon">🚀</span><span class="btn-text">Conectar</span>';
+  // Restaurar botão "Ler Código"
+  const readCodeBtn = document.getElementById('compile-code');
+  if (readCodeBtn) {
+    readCodeBtn.disabled = !backendState.isRunning;
+    readCodeBtn.innerHTML = '<span class="btn-icon">�</span><span>Ler Código</span>';
   }
 }
 
 function updateConnectionStatus() {
   const statusDiv = document.querySelector('.status-indicator');
-  const connectBtn = document.getElementById('connect-btn');
   const disconnectBtn = document.getElementById('disconnect-btn');
+  const readCodeBtn = document.getElementById('compile-code');
   
   if (statusDiv) {
     if (serialMonitorState.isConnected) {
@@ -2104,6 +2029,11 @@ function updateConnectionStatus() {
       statusDiv.className = 'status-indicator status-disconnected';
       statusDiv.innerHTML = '<div class="status-dot"></div>Desconectado';
     }
+  }
+  
+  // Habilitar/desabilitar botão "Ler Código" baseado no backend
+  if (readCodeBtn) {
+    readCodeBtn.disabled = !backendState.isRunning;
   }
   
   // Update connection badge in header
@@ -2126,35 +2056,7 @@ function updateConnectionStatus() {
     }
   }
   
-  // Update connection buttons
-  if (connectBtn) {
-    console.log(`🔍 Status do backend: isRunning=${backendState.isRunning}, isStarting=${backendState.isStarting}, isStopping=${backendState.isStopping}`);
-    console.log(`🔍 Porta selecionada: ${serialMonitorState.selectedPort}`);
-    
-    // Desabilitar botão se: conectado OU backend não está rodando OU backend está iniciando/parando OU nenhuma porta selecionada
-    const noPortSelected = !serialMonitorState.selectedPort || serialMonitorState.selectedPort === '';
-    connectBtn.disabled = serialMonitorState.isConnected || 
-                          (!backendState.isRunning && !backendState.isStarting) || 
-                          backendState.isStopping || 
-                          noPortSelected;
-    
-    if (backendState.isStarting) {
-      connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Iniciando Backend...</span>';
-    } else if (backendState.isStopping) {
-      connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Parando Backend...</span>';
-    } else if (!backendState.isRunning) {
-      connectBtn.innerHTML = '<span class="btn-icon">⚠️</span><span class="btn-text">Backend Offline</span>';
-    } else if (noPortSelected) {
-      connectBtn.innerHTML = '<span class="btn-icon">📍</span><span class="btn-text">Selecione uma Porta</span>';
-    } else if (serialMonitorState.isConnected) {
-      connectBtn.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Conectado</span>';
-    } else {
-      connectBtn.innerHTML = '<span class="btn-icon">🚀</span><span class="btn-text">Conectar</span>';
-    }
-    
-    console.log(`🎯 Botão conectar atualizado: ${connectBtn.innerHTML}`);
-  }
-  
+  // Update disconnect button
   if (disconnectBtn) disconnectBtn.disabled = !serialMonitorState.isConnected;
   
   // Update upload tab buttons based on connection status
@@ -2232,6 +2134,95 @@ function compileSketch() {
   }
 }
 
+/**
+ * Lê o código da ESP32 sem necessidade de upload
+ * Apenas valida se o backend está rodando
+ */
+function readESP32Code() {
+  console.log('📖 Lendo código da ESP32...');
+  
+  // Verificar se o backend está rodando
+  if (!backendState.isRunning) {
+    showSerialNotification('❌ Backend não está rodando! Inicie o backend primeiro.', 'error');
+    return;
+  }
+  
+  const portSelect = document.getElementById('port-select');
+  const baudRateSelect = document.getElementById('baud-rate-select');
+  
+  if (!portSelect || !baudRateSelect) {
+    showSerialNotification('❌ Elementos de seleção não encontrados!', 'error');
+    return;
+  }
+  
+  const port = portSelect.value;
+  const baudRate = baudRateSelect.value || '115200';
+  
+  if (!port) {
+    showSerialNotification('⚠️ Selecione uma porta primeiro!', 'warning');
+    return;
+  }
+  
+  // Atualizar UI para mostrar lendo
+  const readBtn = document.getElementById('compile-code');
+  if (readBtn) {
+    readBtn.disabled = true;
+    readBtn.innerHTML = '<span class="btn-icon">⏳</span><span>Lendo...</span>';
+  }
+  
+  // Estabelecer conexão WebSocket para comunicação serial
+  connectToSerialWebSocket(port, baudRate)
+    .then(() => {
+      serialMonitorState.isConnected = true;
+      serialMonitorState.selectedPort = port;
+      serialMonitorState.baudRate = baudRate;
+      
+      updateConnectionStatus();
+      showSerialNotification(`✅ Conectado à porta ${port} (${baudRate} baud) - Lendo código...`, 'success');
+      
+      // Automaticamente mudar para aba console para ver os dados
+      switchTab('console');
+      
+      // Forçar scroll inicial do console para o final
+      setTimeout(() => {
+        const consoleElements = [
+          document.getElementById('console-output'),
+          document.getElementById('arduino-console')
+        ].filter(el => el);
+        
+        consoleElements.forEach(element => {
+          if (element) {
+            element.scrollTop = element.scrollHeight;
+          }
+        });
+      }, 100);
+      
+      // Enviar comando para ler dados existentes na ESP32
+      setTimeout(() => {
+        requestESP32Data();
+      }, 1000);
+      
+      // Restaurar botão após 2 segundos
+      setTimeout(() => {
+        if (readBtn) {
+          readBtn.disabled = false;
+          readBtn.innerHTML = '<span class="btn-icon">📖</span><span>Ler Código</span>';
+        }
+      }, 2000);
+      
+    })
+    .catch(error => {
+      console.error('❌ Erro ao conectar:', error.message);
+      showSerialNotification(`❌ Erro ao conectar: ${error.message}`, 'error');
+      
+      // Restaurar botão
+      if (readBtn) {
+        readBtn.disabled = false;
+        readBtn.innerHTML = '<span class="btn-icon">📖</span><span>Ler Código</span>';
+      }
+    });
+}
+
 // Função para pegar o código do modal
 function getModalCode() {
   const codeBox = document.querySelector('.code-box.example-code');
@@ -2279,7 +2270,7 @@ function clearSerialConsole() {
 // Função para adicionar texto ao console serial
 function addToSerialConsole(text) {
   const timestamp = new Date().toLocaleTimeString();
-  const formattedText = `[${timestamp}] ${text}`;
+  const formattedText = `[${timestamp}] ${text}\n`;
   
   console.log('🗨️ Adicionando ao console:', formattedText);
   
@@ -3503,7 +3494,7 @@ function sendSerialCommand(command = null, showInConsole = true) {
   
   // Adicionar ao histórico do console apenas se solicitado
   if (showInConsole) {
-    serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] > ${command}`);
+    serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] > ${command}\n`);
     updateConsoleTab();
   }
   
@@ -4669,7 +4660,7 @@ function startDataSimulation() {
     
     // Add to console if tab is active
     if (serialMonitorState.currentTab === 'console') {
-      serialMonitorState.consoleHistory.push(`Data: AX=${accelX.toFixed(2)} AY=${accelY.toFixed(2)} AZ=${accelZ.toFixed(2)}`);
+      serialMonitorState.consoleHistory.push(`Data: AX=${accelX.toFixed(2)} AY=${accelY.toFixed(2)} AZ=${accelZ.toFixed(2)}\n`);
       if (serialMonitorState.consoleHistory.length > 50) {
         serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-50);
       }
@@ -5929,47 +5920,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   });
   
-  // Connection buttons
-  const connectBtn = document.getElementById('connect-btn');
-  if (connectBtn) {
-    connectBtn.addEventListener('click', connectSerial);
-  }
-  
+  // Disconnect button
   const disconnectBtn = document.getElementById('disconnect-btn');
   if (disconnectBtn) {
     disconnectBtn.addEventListener('click', disconnectSerial);
   }
   
-  // Reconnect button for baud rate changes
-  const reconnectBtn = document.getElementById('reconnect-serial');
-  if (reconnectBtn) {
-    reconnectBtn.addEventListener('click', function() {
-      console.log('🔄 Reconectando com novo baud rate...');
-      
-      if (!serialMonitorState.isConnected) {
-        showSerialNotification('⚠️ Não há conexão ativa para reconectar!', 'warning');
-        return;
-      }
-      
-      const currentPort = serialMonitorState.selectedPort;
-      if (!currentPort) {
-        showSerialNotification('❌ Porta não identificada para reconexão!', 'error');
-        return;
-      }
-      
-      // Primeiro desconectar
-      disconnectSerial();
-      
-      // Aguardar um pouco e reconectar
-      setTimeout(() => {
-        const portSelect = document.getElementById('port-select');
-        if (portSelect) {
-          portSelect.value = currentPort;
-        }
-        connectSerial();
-      }, 1000);
-    });
-  }
+  // Botão conectar removido - não é mais necessário
+  // A leitura do código agora é feita pelo botão "compile-code"
   
   // Backend control buttons
   const startBackendBtn = document.getElementById('start-backend-btn');
@@ -6175,6 +6133,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     compileBtn.addEventListener('click', compileSketch);
   }
   
+  // Botão para ler código da ESP32 (antigo compile-code)
+  const readCodeBtn = document.getElementById('compile-code');
+  if (readCodeBtn) {
+    console.log('🔧 Adicionando event listener para compile-code (Ler Código)');
+    readCodeBtn.addEventListener('click', readESP32Code);
+  }
+  
   const uploadBtn = document.getElementById('upload-btn');
   if (uploadBtn) {
     console.log('🔧 Adicionando event listener para upload-btn');
@@ -6184,47 +6149,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
 
-  // Botão de reconexão serial com novo baud rate
-  const reconnectSerialBtn = document.getElementById('reconnect-serial');
-  if (reconnectSerialBtn) {
-    reconnectSerialBtn.addEventListener('click', async function() {
-      console.log('🔄 Botão reconectar clicado');
-      
-      // Verificar se já está conectado
-      if (!serialMonitorState.isConnected || !serialMonitorState.websocket) {
-        showSerialNotification('⚠️ Não há conexão ativa. Use o botão "Conectar" primeiro.', 'warning');
-        return;
-      }
-      
-      const baudRateSelect = document.getElementById('baud-rate-select');
-      const newBaudRate = baudRateSelect ? parseInt(baudRateSelect.value) : 115200;
-      const currentPort = serialMonitorState.selectedPort;
-      
-      console.log(`🔄 Solicitando troca de baud rate: ${serialMonitorState.baudRate} → ${newBaudRate}`);
-      
-      if (newBaudRate === parseInt(serialMonitorState.baudRate)) {
-        showSerialNotification('⚠️ Baud rate já está configurado para ' + newBaudRate, 'warning');
-        return;
-      }
-      
-      try {
-        // Enviar mensagem para trocar baud rate SEM desconectar
-        serialMonitorState.websocket.send(JSON.stringify({
-          type: 'change_baudrate',
-          payload: {
-            port: currentPort,
-            baudRate: newBaudRate
-          }
-        }));
-        
-        showSerialNotification(`🔄 Trocando baud rate para ${newBaudRate}...`, 'info');
-        
-      } catch (error) {
-        console.error('❌ Erro ao trocar baud rate:', error);
-        showSerialNotification('❌ Erro ao trocar baud rate: ' + error.message, 'error');
-      }
-    });
-  }
+  // Botão de reconexão serial - REMOVIDO
+  // A troca de baud rate agora é automática via event listeners dos dropdowns
   
   const uploadBtnMain = document.getElementById('upload-code');
   if (uploadBtnMain) {
@@ -6321,6 +6247,94 @@ document.addEventListener('DOMContentLoaded', async function() {
         mainBaudRateSelect.value = this.value;
       });
     }
+  }
+  
+  // Console Baud Rate selector (novo dropdown na aba Console)
+  const consoleBaudRate = document.getElementById('console-baud-rate');
+  const mainBaudRateSelect = document.getElementById('baud-rate-select');
+  
+  if (consoleBaudRate) {
+    consoleBaudRate.addEventListener('change', function() {
+      const newBaudRate = parseInt(this.value);
+      serialMonitorState.baudRate = newBaudRate;
+      
+      console.log(`⚡ Baud rate atualizado no console: ${newBaudRate}`);
+      
+      // Sincronizar com o seletor principal
+      if (mainBaudRateSelect) {
+        mainBaudRateSelect.value = this.value;
+      }
+      
+      // Se estiver conectado, reconectar com novo baud rate
+      if (serialMonitorState.isConnected && serialMonitorState.websocket) {
+        console.log('🔄 Atualizando baud rate em tempo real...');
+        
+        // Enviar comando para atualizar baud rate via WebSocket
+        try {
+          serialMonitorState.websocket.send(JSON.stringify({
+            type: 'change_baudrate',
+            payload: {
+              port: serialMonitorState.selectedPort,
+              baudRate: newBaudRate
+            }
+          }));
+          
+          showSerialNotification(`⚡ Baud rate atualizado para ${newBaudRate}`, 'success');
+        } catch (error) {
+          console.error('❌ Erro ao atualizar baud rate:', error);
+          showSerialNotification(`❌ Erro ao atualizar baud rate: ${error.message}`, 'error');
+        }
+      } else {
+        showSerialNotification(`⚡ Baud rate definido para ${newBaudRate} (será aplicado na próxima conexão)`, 'info');
+      }
+    });
+    
+    // Sincronizar com seletor principal quando ele mudar
+    if (mainBaudRateSelect) {
+      mainBaudRateSelect.addEventListener('change', function() {
+        consoleBaudRate.value = this.value;
+        serialMonitorState.baudRate = parseInt(this.value);
+      });
+    }
+  }
+  
+  // Sidebar Baud Rate selector (atualização automática em tempo real)
+  const sidebarBaudRateSelect = document.getElementById('baud-rate-select');
+  if (sidebarBaudRateSelect) {
+    sidebarBaudRateSelect.addEventListener('change', function() {
+      const newBaudRate = parseInt(this.value);
+      serialMonitorState.baudRate = newBaudRate;
+      
+      console.log(`⚡ Baud rate do sidebar atualizado: ${newBaudRate}`);
+      
+      // Sincronizar com o dropdown do console se existir
+      const consoleBaudRate = document.getElementById('console-baud-rate');
+      if (consoleBaudRate) {
+        consoleBaudRate.value = this.value;
+      }
+      
+      // Se estiver conectado, atualizar em tempo real
+      if (serialMonitorState.isConnected && serialMonitorState.websocket) {
+        console.log('🔄 Atualizando baud rate em tempo real via sidebar...');
+        
+        try {
+          serialMonitorState.websocket.send(JSON.stringify({
+            type: 'change_baudrate',
+            payload: {
+              port: serialMonitorState.selectedPort,
+              baudRate: newBaudRate
+            }
+          }));
+          
+          showSerialNotification(`⚡ Baud rate atualizado para ${newBaudRate}`, 'success');
+        } catch (error) {
+          console.error('❌ Erro ao atualizar baud rate:', error);
+          showSerialNotification(`❌ Erro ao atualizar baud rate: ${error.message}`, 'error');
+        }
+      } else {
+        showSerialNotification(`⚡ Baud rate definido para ${newBaudRate} (será aplicado na próxima conexão)`, 'info');
+      }
+    });
   }
   
   // Clear console buttons (múltiplos IDs para compatibilidade)
