@@ -1453,10 +1453,8 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       // Adicionar ao console com horário
       addFormattedConsoleMessage(receivedData, timeString);
       
-      // Manter apenas últimas 500 mensagens
-      if (serialMonitorState.consoleHistory.length > 500) {
-        serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-500);
-      }
+      // Console ilimitado - sem restrição de mensagens
+      // O usuário pode limpar manualmente se necessário
       
       // Sempre atualizar console para garantir auto-scroll
       updateConsoleTab();
@@ -1486,10 +1484,7 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       // Adicionar mensagem de upload ao console com estilo diferenciado
       addFormattedConsoleMessage(uploadData, uploadTimestamp, 'upload');
       
-      // Manter apenas últimas 500 mensagens
-      if (serialMonitorState.consoleHistory.length > 500) {
-        serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-500);
-      }
+      // Console ilimitado - sem restrição de mensagens
       
       // Atualizar console SEMPRE para mensagens de upload
       updateConsoleTab();
@@ -4650,9 +4645,7 @@ function startDataSimulation() {
     // Add to console if tab is active
     if (serialMonitorState.currentTab === 'console') {
       serialMonitorState.consoleHistory.push(`Data: AX=${accelX.toFixed(2)} AY=${accelY.toFixed(2)} AZ=${accelZ.toFixed(2)}\n`);
-      if (serialMonitorState.consoleHistory.length > 50) {
-        serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-50);
-      }
+      // Console ilimitado - sem restrição de mensagens
       updateConsoleTab();
     }
     
