@@ -288,32 +288,44 @@ class SerialService {
           message: 'Conectado com sucesso'
         });
 
-        // NOVO: Configurar recepção de dados BRUTOS (todos os bytes)
-        // Isso garante que mesmo com baud rate incorreto, os dados aparecem
+        // Buffer para acumular dados recebidos
+        let dataBuffer = '';
+        
+        // Configurar recepção de dados com buffer para linhas completas
         serialPort.on('data', (buffer) => {
-          // Converter buffer para string, mantendo TODOS os caracteres
-          // Mesmo caracteres especiais/garbage quando baud está errado
+          // Converter buffer para string
           const rawData = buffer.toString('utf8');
           
-          this.broadcastToPortClients(portPath, {
-            type: 'serial_data',
-            port: portPath,
-            data: rawData,
-            timestamp: Date.now(),
-            raw: true  // Indica que são dados brutos
-          });
-        });
-        
-        // Parser de linhas ainda disponível se necessário
-        parser.on('data', (data) => {
-          // Enviar linhas completas separadamente se necessário
-          this.broadcastToPortClients(portPath, {
-            type: 'serial_line',
-            port: portPath,
-            data: data.trim(),
-            timestamp: Date.now(),
-            raw: false  // Indica que é linha processada
-          });
+          // Adicionar ao buffer acumulado
+          dataBuffer += rawData;
+          
+          // Processar linhas completas (terminadas com \n ou \r\n)
+          let lineEnd;
+          while ((lineEnd = dataBuffer.indexOf('\n')) !== -1) {
+            // Extrair linha completa
+            const line = dataBuffer.substring(0, lineEnd).trim();
+            
+            // Remover linha do buffer
+            dataBuffer = dataBuffer.substring(lineEnd + 1);
+            
+            // Enviar linha completa se não estiver vazia
+            if (line.length > 0) {
+              const timestamp = new Date();
+              const timeString = timestamp.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+              });
+              
+              this.broadcastToPortClients(portPath, {
+                type: 'serial_data',
+                port: portPath,
+                data: line,
+                timestamp: timestamp.toISOString(),
+                timeString: timeString
+              });
+            }
+          }
         });
       });
 

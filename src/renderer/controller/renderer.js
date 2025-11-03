@@ -1442,12 +1442,16 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
     case 'serial_data':
       // Dados recebidos da ESP32
       const receivedData = data.data;
-      const timestamp = new Date(data.timestamp).toLocaleTimeString();
+      const timeString = data.timeString || new Date(data.timestamp).toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit', 
+        second: '2-digit'
+      });
       
-      console.log(`📡 Dados ESP32 recebidos: ${receivedData}`);
+      console.log(`📡 [${timeString}] Dados ESP32 recebidos: ${receivedData}`);
       
-      // Adicionar ao console (mostrar todos os dados, incluindo caracteres especiais)
-      addFormattedConsoleMessage(receivedData, timestamp);
+      // Adicionar ao console com horário
+      addFormattedConsoleMessage(receivedData, timeString);
       
       // Manter apenas últimas 500 mensagens
       if (serialMonitorState.consoleHistory.length > 500) {
@@ -1465,20 +1469,6 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       ensureSerialPlotterChart();
       
       // Atualizar badge de contador de mensagens
-      updateConsoleMessageCount();
-      break;
-      
-    case 'serial_data_raw':
-      // Dados brutos da ESP32 (podem estar incompletos ou ilegíveis)
-      const rawData = data.data;
-      const rawTimestamp = new Date(data.timestamp).toLocaleTimeString();
-      const hexData = data.dataHex;
-      
-      console.log(`📡 Dados brutos ESP32: "${rawData}" (hex: ${hexData})`);
-      
-      // Não adicionar dados RAW ao console - eles são fragmentados e confusos
-      // O processamento dos dados completos será feito em 'serial_data'
-      
       updateConsoleMessageCount();
       break;
       
@@ -1950,7 +1940,7 @@ function detectSensorDataFormat(data) {
  * Adiciona mensagem formatada ao console baseada no tipo de dados
  */
 function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
-  // Console simples e limpo, estilo Arduino IDE - APENAS TEXTO PURO
+  // Console com timestamp para melhor rastreabilidade
   
   if (messageType === 'upload') {
     // Mensagens de upload não vão para o console serial
@@ -1962,11 +1952,10 @@ function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
     return;
   }
   
-  // Formato simples - apenas os dados recebidos, sem timestamp
-  // Arduino IDE mostra apenas os dados puros
-  // Adicionar quebra de linha apenas se não terminar com \n
-  const dataWithNewline = data.endsWith('\n') ? data : data + '\n';
-  serialMonitorState.consoleHistory.push(dataWithNewline);
+  // Formato com timestamp: [HH:MM:SS] dados
+  // Linhas completas já vêm processadas do backend
+  const formattedMessage = `[${timestamp}] ${data}\n`;
+  serialMonitorState.consoleHistory.push(formattedMessage);
 }
 
 function disconnectSerial() {
