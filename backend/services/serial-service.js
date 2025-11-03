@@ -264,40 +264,40 @@ class SerialService {
         autoOpen: false
       });
 
-      // Parser para ler linhas (usado secundariamente)
-      const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-
-      // Configurar eventos
-      serialPort.on('open', () => {
-        console.log(`✅ Porta ${portPath} aberta com sucesso (${baudRate} baud)`);
-        
-        const connection = {
-          serialPort: serialPort,
-          parser: parser,
-          clients: new Set([ws]),
-          baudRate: baudRate
-        };
-        
-        this.connections.set(portPath, connection);
-
-        // Notificar cliente
-        this.sendToClient(ws, {
-          type: 'connected',
-          port: portPath,
-          baudRate: baudRate,
-          message: 'Conectado com sucesso'
-        });
-
-        // Buffer para acumular dados recebidos
-        let dataBuffer = '';
-        
-        // Configurar recepção de dados com buffer para linhas completas
-        serialPort.on('data', (buffer) => {
+      // Buffer para acumular dados recebidos (declarar fora dos callbacks)
+      let dataBuffer = '';
+      
+      // Configurar recepção de dados ANTES de abrir a porta
+      // Isso evita race conditions e event listener leaks
+      const handleData = (buffer) => {
+        try {
           // Converter buffer para string
           const rawData = buffer.toString('utf8');
           
           // Adicionar ao buffer acumulado
           dataBuffer += rawData;
+          
+          // Proteção contra buffer overflow: limitar tamanho máximo do buffer
+          // Se não houver \n e o buffer estiver muito grande, forçar quebra
+          if (dataBuffer.length > 10000 && dataBuffer.indexOf('\n') === -1) {
+            console.warn(`⚠️ Buffer muito grande sem quebra de linha (${dataBuffer.length} bytes) - forçando envio`);
+            const timestamp = new Date();
+            const timeString = timestamp.toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit' 
+            });
+            
+            this.broadcastToPortClients(portPath, {
+              type: 'serial_data',
+              port: portPath,
+              data: dataBuffer.trim(),
+              timestamp: timestamp.toISOString(),
+              timeString: timeString
+            });
+            dataBuffer = '';
+            return;
+          }
           
           // Processar linhas completas (terminadas com \n ou \r\n)
           let lineEnd;
@@ -326,6 +326,36 @@ class SerialService {
               });
             }
           }
+        } catch (error) {
+          console.error(`❌ Erro ao processar dados da porta ${portPath}:`, error.message);
+          console.error(`📊 Stack trace:`, error.stack);
+          // Resetar buffer em caso de erro para evitar travamento
+          dataBuffer = '';
+        }
+      };
+      
+      // Registrar handler de dados
+      serialPort.on('data', handleData);
+
+      // Configurar evento de abertura
+      serialPort.on('open', () => {
+        console.log(`✅ Porta ${portPath} aberta com sucesso (${baudRate} baud)`);
+        
+        const connection = {
+          serialPort: serialPort,
+          clients: new Set([ws]),
+          baudRate: baudRate,
+          dataHandler: handleData  // Guardar referência para limpeza
+        };
+        
+        this.connections.set(portPath, connection);
+
+        // Notificar cliente
+        this.sendToClient(ws, {
+          type: 'connected',
+          port: portPath,
+          baudRate: baudRate,
+          message: 'Conectado com sucesso'
         });
       });
 
@@ -338,6 +368,8 @@ class SerialService {
           error: error.message
         });
 
+        // Limpar listeners e conexão
+        serialPort.removeListener('data', handleData);
         this.connections.delete(portPath);
       });
 
@@ -350,6 +382,8 @@ class SerialService {
           message: 'Conexão fechada'
         });
 
+        // Limpar listeners e conexão
+        serialPort.removeListener('data', handleData);
         this.connections.delete(portPath);
       });
 
@@ -387,6 +421,10 @@ class SerialService {
     // Se não há mais clientes, fechar porta
     if (connection.clients.size === 0) {
       try {
+        // Remover event listeners antes de fechar
+        if (connection.dataHandler) {
+          connection.serialPort.removeListener('data', connection.dataHandler);
+        }
         connection.serialPort.close();
         this.connections.delete(portPath);
         console.log(`🔌 Porta ${portPath} fechada - sem clientes`);

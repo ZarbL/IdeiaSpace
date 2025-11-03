@@ -1382,14 +1382,22 @@ async function connectToSerialWebSocket(port, baudRate) {
         reject(new Error('Erro na conexão WebSocket'));
       };
       
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         console.log('🔌 WebSocket desconectado');
+        console.log(`📊 Código de fechamento: ${event.code}, Razão: ${event.reason || 'não especificada'}`);
+        console.log(`📊 Fechamento limpo: ${event.wasClean ? 'Sim' : 'Não'}`);
+        
         serialMonitorState.websocket = null;
         serialMonitorState.isConnected = false;
         updateConnectionStatus();
         
         // Parar simulação de dados se estiver rodando
         stopDataSimulation();
+        
+        // Se não foi um fechamento limpo, pode ter sido um erro
+        if (!event.wasClean) {
+          console.warn('⚠️ WebSocket fechou de forma não limpa - pode haver problema de conexão');
+        }
       };
       
     } catch (error) {
@@ -2248,6 +2256,7 @@ function switchToConsoleTab() {
 // Função para limpar o console serial
 function clearSerialConsole() {
   serialMonitorState.consoleHistory = [];
+  serialMonitorState.lastRenderedIndex = 0;
   updateConsoleTab();
 }
 
@@ -3437,25 +3446,43 @@ function updateConsoleTab() {
   const consoleElements = [consoleOutput, arduinoConsole].filter(el => el);
   
   if (consoleElements.length > 0 && serialMonitorState.consoleHistory.length > 0) {
-    const consoleText = serialMonitorState.consoleHistory.join('');
+    // OTIMIZAÇÃO: Usar append incremental em vez de reescrever tudo
+    // Verificar quantas mensagens já foram renderizadas
+    if (!serialMonitorState.lastRenderedIndex) {
+      serialMonitorState.lastRenderedIndex = 0;
+    }
     
-    consoleElements.forEach(element => {
-      // Console simples - texto puro com caracteres especiais visíveis
-      // Usar textContent para preservar todos os caracteres, incluindo caracteres especiais
-      element.textContent = consoleText;
+    // Renderizar apenas novas mensagens
+    const newMessages = serialMonitorState.consoleHistory.slice(serialMonitorState.lastRenderedIndex);
+    
+    if (newMessages.length > 0) {
+      consoleElements.forEach(element => {
+        // Se o console foi limpo, resetar conteúdo
+        if (serialMonitorState.lastRenderedIndex === 0) {
+          element.textContent = '';
+        }
+        
+        // Adicionar apenas novas mensagens
+        const newText = newMessages.join('');
+        element.textContent += newText;
+        
+        // Auto-scroll para o final
+        if (serialMonitorState.autoScrollEnabled) {
+          requestAnimationFrame(() => {
+            element.scrollTop = element.scrollHeight;
+          });
+        }
+      });
       
-      // Auto-scroll para o final
-      if (serialMonitorState.autoScrollEnabled) {
-        requestAnimationFrame(() => {
-          element.scrollTop = element.scrollHeight;
-        });
-      }
-    });
+      // Atualizar índice de renderização
+      serialMonitorState.lastRenderedIndex = serialMonitorState.consoleHistory.length;
+    }
   } else if (consoleElements.length > 0) {
     // Console vazio
     consoleElements.forEach(element => {
       element.textContent = '';
     });
+    serialMonitorState.lastRenderedIndex = 0;
   }
 }
 
