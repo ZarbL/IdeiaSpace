@@ -227,12 +227,20 @@ ipcMain.handle('start-arduino-backend', async () => {
       backendProcess = null;
     });
 
-    // Aguardar um pouco para o backend inicializar
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Aguardar o backend estar completamente pronto (melhorado!)
+    console.log('⏳ Aguardando backend estar completamente pronto...');
+    const backendReady = await waitForBackendReady();
+    
+    if (!backendReady) {
+      console.warn('⚠️ Backend demorou para ficar pronto, mas processo iniciou');
+    } else {
+      console.log('✅ Backend confirmado pronto!');
+    }
     
     return { 
       success: true, 
       status: backendStatus,
+      ready: backendReady,
       message: `Backend iniciado com sucesso! (${serverType === 'minimal' ? 'modo mínimo' : 'modo completo'})`,
       autoSetupExecuted: needsSetup,
       setupPerformed: setupPerformed,
@@ -250,6 +258,78 @@ ipcMain.handle('start-arduino-backend', async () => {
     return { success: false, error: error.message };
   }
 });
+
+// Função para aguardar backend estar pronto
+async function waitForBackendReady(maxAttempts = 30, delayMs = 1000) {
+  console.log(`⏳ Aguardando backend estar pronto (máx ${maxAttempts} tentativas, ${delayMs}ms cada)...`);
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const http = require('http');
+      
+      const checkReady = () => {
+        return new Promise((resolve, reject) => {
+          // Forçar uso de IPv4 (127.0.0.1) em vez de localhost (que pode resolver para ::1 IPv6)
+          const options = {
+            hostname: '127.0.0.1',
+            port: 3001,
+            path: '/health',
+            timeout: 2000,
+            family: 4 // Forçar IPv4
+          };
+          
+          const req = http.get(options, (res) => {
+            let data = '';
+            
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+              try {
+                const healthData = JSON.parse(data);
+                console.log(`🏥 Health check tentativa ${attempt}: status="${healthData.status}", ready=${healthData.ready}`);
+                
+                if (healthData.status === 'ready' && healthData.ready === true) {
+                  resolve(true);
+                } else {
+                  resolve(false);
+                }
+              } catch (parseError) {
+                reject(new Error('Resposta inválida do health check'));
+              }
+            });
+          });
+          
+          req.on('error', (err) => {
+            reject(err);
+          });
+          
+          req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Timeout no health check'));
+          });
+        });
+      };
+      
+      const isReady = await checkReady();
+      
+      if (isReady) {
+        console.log(`✅ Backend pronto na tentativa ${attempt}!`);
+        return true;
+      }
+      
+      console.log(`⏳ Backend ainda não pronto (tentativa ${attempt}/${maxAttempts}), aguardando ${delayMs}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      
+    } catch (error) {
+      console.log(`⚠️ Erro no health check tentativa ${attempt}: ${error.message}`);
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+  
+  console.warn(`⚠️ Backend não ficou pronto após ${maxAttempts} tentativas`);
+  return false;
+}
 
 // Função auxiliar para verificar se o setup é necessário
 async function checkIfSetupNeeded(backendDir) {

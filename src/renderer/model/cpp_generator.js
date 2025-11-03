@@ -576,7 +576,10 @@ Blockly.Cpp['text_print'] = function(block) {
  * @return {array} Generated C++ code and the operator order.
  */
 Blockly.Cpp['text'] = function(block) {
-  var code = '"' + block.getFieldValue('TEXT') + '"';
+  var textValue = block.getFieldValue('TEXT');
+  
+  // Se estiver gerando código para um case value, usa aspas simples, senão aspas duplas
+  var code = Blockly.Cpp.isGeneratingCaseValue ? "'" + textValue + "'" : '"' + textValue + '"';
   return [code, Blockly.Cpp.ORDER_ATOMIC];
 };
 
@@ -774,8 +777,11 @@ Blockly.Cpp['controls_switch'] = function(block) {
  * @return {string} Generated C++ code.
  */
 Blockly.Cpp['controls_case'] = function(block) {
+  // Marcar que estamos gerando código para um case value
+  Blockly.Cpp.isGeneratingCaseValue = true;
   const caseValue = Blockly.Cpp.valueToCode(block, 'CASE_VALUE', 
       Blockly.Cpp.ORDER_NONE) || '0';
+  Blockly.Cpp.isGeneratingCaseValue = false;
   
   let caseCode = Blockly.Cpp.statementToCode(block, 'DO');
   
@@ -919,7 +925,7 @@ Blockly.Cpp['variable_declaration'] = function(block) {
  */
 Blockly.Cpp['int_declaration'] = function(block) {
   var varName = block.getFieldValue('VAR_NAME');
-  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '0';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT);
   
   // Validar nome da variável
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
@@ -927,8 +933,12 @@ Blockly.Cpp['int_declaration'] = function(block) {
     varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
   }
   
-  // Generate inline code where the block is positioned for educational purposes
-  return 'int ' + varName + ' = ' + value + ';\n';
+  // Se houver valor, gera com atribuição, senão apenas a declaração
+  if (value) {
+    return 'int ' + varName + ' = ' + value + ';\n';
+  } else {
+    return 'int ' + varName + ';\n';
+  }
 };
 
 /**
@@ -973,7 +983,7 @@ Blockly.Cpp['int_variable_set'] = function(block) {
  */
 Blockly.Cpp['float_declaration'] = function(block) {
   var varName = block.getFieldValue('VAR_NAME');
-  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '0.0';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT);
   
   // Validar nome da variável
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
@@ -981,8 +991,12 @@ Blockly.Cpp['float_declaration'] = function(block) {
     varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
   }
   
-  // Generate inline code where the block is positioned for educational purposes
-  return 'float ' + varName + ' = ' + value + ';\n';
+  // Se houver valor, gera com atribuição, senão apenas a declaração
+  if (value) {
+    return 'float ' + varName + ' = ' + value + ';\n';
+  } else {
+    return 'float ' + varName + ';\n';
+  }
 };
 
 /**
@@ -992,7 +1006,7 @@ Blockly.Cpp['float_declaration'] = function(block) {
  */
 Blockly.Cpp['bool_declaration'] = function(block) {
   var varName = block.getFieldValue('VAR_NAME');
-  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || 'false';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT);
   
   // Validar nome da variável
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
@@ -1000,8 +1014,12 @@ Blockly.Cpp['bool_declaration'] = function(block) {
     varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
   }
   
-  // Generate inline code where the block is positioned for educational purposes
-  return 'bool ' + varName + ' = ' + value + ';\n';
+  // Se houver valor, gera com atribuição, senão apenas a declaração
+  if (value) {
+    return 'bool ' + varName + ' = ' + value + ';\n';
+  } else {
+    return 'bool ' + varName + ';\n';
+  }
 };
 
 /**
@@ -1011,7 +1029,7 @@ Blockly.Cpp['bool_declaration'] = function(block) {
  */
 Blockly.Cpp['string_declaration'] = function(block) {
   var varName = block.getFieldValue('VAR_NAME');
-  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || '""';
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT);
   
   // Validar nome da variável
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
@@ -1019,8 +1037,12 @@ Blockly.Cpp['string_declaration'] = function(block) {
     varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
   }
   
-  // Generate inline code where the block is positioned for educational purposes
-  return 'String ' + varName + ' = ' + value + ';\n';
+  // Se houver valor, gera com atribuição, senão apenas a declaração
+  if (value) {
+    return 'String ' + varName + ' = ' + value + ';\n';
+  } else {
+    return 'String ' + varName + ';\n';
+  }
 };
 
 // Gerador de código para o bloco MPU6050
@@ -2057,7 +2079,7 @@ Blockly.Cpp['print_result'] = function(block) {
  */
 Blockly.Cpp['char_declaration'] = function(block) {
   var varName = block.getFieldValue('VAR_NAME') || 'minhaVariavel';
-  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT) || "'A'";
+  var value = Blockly.Cpp.valueToCode(block, 'VALUE', Blockly.Cpp.ORDER_ASSIGNMENT);
   
   // Validar nome da variável
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varName)) {
@@ -2065,5 +2087,10 @@ Blockly.Cpp['char_declaration'] = function(block) {
     varName = 'var_' + varName.replace(/[^a-zA-Z0-9_]/g, '_');
   }
   
-  return 'char ' + varName + ' = ' + value + ';\n';
+  // Se houver valor, gera com atribuição, senão apenas a declaração
+  if (value) {
+    return 'char ' + varName + ' = ' + value + ';\n';
+  } else {
+    return 'char ' + varName + ';\n';
+  }
 };

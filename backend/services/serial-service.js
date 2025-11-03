@@ -81,8 +81,8 @@ class SerialService {
         console.error('❌ Erro na conexão WebSocket:', error.message);
       });
 
-      // Enviar lista de portas disponíveis ao conectar
-      this.sendAvailablePorts(ws);
+      // Não enviar lista de portas automaticamente - apenas quando solicitado
+      // Isso evita que a lista de portas apareça no serial monitor durante leitura de dados
     });
 
     console.log(`🌐 Servidor WebSocket iniciado na porta ${wsPort}`);
@@ -153,6 +153,17 @@ class SerialService {
             return;
           }
           await this.sendDataToPort(payload.port, payload.data);
+          break;
+
+        case 'change_baudrate':
+          if (!payload || !payload.port || !payload.baudRate) {
+            this.sendToClient(ws, {
+              type: 'error',
+              message: 'Porta ou baud rate não especificados'
+            });
+            return;
+          }
+          await this.changeBaudRate(ws, payload.port, payload.baudRate);
           break;
 
         case 'ping':
@@ -253,7 +264,7 @@ class SerialService {
         autoOpen: false
       });
 
-      // Parser para ler linhas
+      // Parser para ler linhas (usado secundariamente)
       const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
       // Configurar eventos
@@ -277,18 +288,33 @@ class SerialService {
           message: 'Conectado com sucesso'
         });
 
-        // Configurar recepção de dados - APENAS LINHAS COMPLETAS
-        parser.on('data', (data) => {
-          // Enviar apenas dados limpos e completos (linhas com \r\n)
+        // NOVO: Configurar recepção de dados BRUTOS (todos os bytes)
+        // Isso garante que mesmo com baud rate incorreto, os dados aparecem
+        serialPort.on('data', (buffer) => {
+          // Converter buffer para string, mantendo TODOS os caracteres
+          // Mesmo caracteres especiais/garbage quando baud está errado
+          const rawData = buffer.toString('utf8');
+          
           this.broadcastToPortClients(portPath, {
             type: 'serial_data',
             port: portPath,
-            data: data.trim(),
-            timestamp: Date.now()
+            data: rawData,
+            timestamp: Date.now(),
+            raw: true  // Indica que são dados brutos
           });
         });
         
-        // NÃO enviar dados brutos - apenas linhas completas processadas pelo parser
+        // Parser de linhas ainda disponível se necessário
+        parser.on('data', (data) => {
+          // Enviar linhas completas separadamente se necessário
+          this.broadcastToPortClients(portPath, {
+            type: 'serial_line',
+            port: portPath,
+            data: data.trim(),
+            timestamp: Date.now(),
+            raw: false  // Indica que é linha processada
+          });
+        });
       });
 
       serialPort.on('error', (error) => {
@@ -362,6 +388,64 @@ class SerialService {
       port: portPath,
       message: 'Desconectado'
     });
+  }
+
+  /**
+   * Troca baud rate em tempo real
+   */
+  async changeBaudRate(ws, portPath, newBaudRate) {
+    try {
+      const connection = this.connections.get(portPath);
+      
+      if (!connection) {
+        this.sendToClient(ws, {
+          type: 'error',
+          message: `Porta ${portPath} não está conectada`
+        });
+        return;
+      }
+
+      console.log(`🔄 Trocando baud rate da porta ${portPath}: ${connection.baudRate} → ${newBaudRate}`);
+
+      const oldBaudRate = connection.baudRate;
+      
+      // Atualizar baud rate do serialPort
+      connection.serialPort.update({ baudRate: parseInt(newBaudRate) }, (err) => {
+        if (err) {
+          console.error(`❌ Erro ao trocar baud rate: ${err.message}`);
+          this.sendToClient(ws, {
+            type: 'baudrate_error',
+            port: portPath,
+            error: err.message,
+            oldBaudRate: oldBaudRate,
+            newBaudRate: newBaudRate
+          });
+          return;
+        }
+
+        // Atualizar no objeto de conexão
+        connection.baudRate = newBaudRate;
+
+        console.log(`✅ Baud rate alterado com sucesso: ${newBaudRate}`);
+
+        // Notificar TODOS os clientes conectados nesta porta
+        this.broadcastToPortClients(portPath, {
+          type: 'baudrate_changed',
+          port: portPath,
+          oldBaudRate: oldBaudRate,
+          newBaudRate: newBaudRate,
+          message: `Baud rate alterado para ${newBaudRate}`
+        });
+      });
+
+    } catch (error) {
+      console.error(`❌ Erro ao trocar baud rate:`, error.message);
+      this.sendToClient(ws, {
+        type: 'baudrate_error',
+        port: portPath,
+        error: error.message
+      });
+    }
   }
 
   /**

@@ -132,6 +132,36 @@ class ArduinoCLIClient {
       console.log(`🌐 User Agent: ${navigator.userAgent}`);
       console.log(`🔧 Contexto: ${this.isElectron ? 'Electron' : 'Browser'}`);
       
+      // NOVO: Primeiro verificar se backend está pronto via health check
+      console.log('🏥 Verificando se backend está pronto...');
+      try {
+        const healthResponse = await fetch(`${this.baseUrl}/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (healthResponse.ok) {
+          const healthData = await healthResponse.json();
+          console.log('🏥 Health check resultado:', healthData);
+          
+          // Se backend ainda está inicializando, esperar um pouco
+          if (healthData.status === 'initializing' || !healthData.ready) {
+            if (retryCount < maxRetries) {
+              console.log('⏳ Backend inicializando, aguardando 2 segundos...');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              return this.listPorts(retryCount + 1);
+            } else {
+              throw new Error('Backend não ficou pronto após ' + maxRetries + ' tentativas');
+            }
+          }
+          
+          console.log('✅ Backend pronto, prosseguindo com listagem de portas...');
+        }
+      } catch (healthError) {
+        console.warn('⚠️ Health check falhou:', healthError.message);
+        // Continuar mesmo assim, pois pode ser versão antiga do backend
+      }
+      
       // Primeiro, verificar se a conexão está funcionando
       if (!this.isConnected) {
         console.log('🔗 Conexão não verificada, testando primeiro...');

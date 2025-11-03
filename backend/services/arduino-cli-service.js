@@ -31,16 +31,16 @@ class ArduinoCLIService {
     process.env.ARDUINO_DATA_DIR = path.join(__dirname, '..', 'arduino-cli', 'config', 'data');
     process.env.ARDUINO_LIBRARY_DIR = path.join(__dirname, '..', 'arduino-cli', 'config', 'user', 'libraries');
 
+    // Logs apenas na primeira inicialização
     console.log(`🔍 Procurando Arduino CLI em: ${this.cliPath}`);
     console.log(`🔧 Configuração: ${this.configPath}`);
-    console.log(`📚 Bibliotecas: ${process.env.ARDUINO_LIBRARY_DIR}`);
     
     if (!fs.existsSync(this.cliPath)) {
       throw new Error(`❌ Arduino CLI não encontrado em ${this.cliPath}.\n💡 Execute: npm run install-cli`);
     }
 
     this.isInitialized = true;
-    console.log('🚀 Arduino CLI Service inicializado com configuração local');
+    console.log('✅ Arduino CLI Service inicializado');
   }
 
   /**
@@ -217,7 +217,8 @@ class ArduinoCLIService {
    */
   async listPorts() {
     try {
-      console.log('🔍 Listando portas seriais disponíveis...');
+      // Log reduzido - apenas em debug
+      // console.log('🔍 Listando portas seriais disponíveis...');
       const result = await this.executeCommand('board list --format json --discovery-timeout 5s');
       
       if (!result.success) {
@@ -235,7 +236,8 @@ class ArduinoCLIService {
         const data = JSON.parse(result.output.trim());
         const detectedPorts = data.detected_ports || [];
         
-        console.log(`📡 Encontradas ${detectedPorts.length} portas`);
+        // Log reduzido
+        // console.log(`📡 Encontradas ${detectedPorts.length} portas`);
         
         const ports = detectedPorts.map(portData => {
           const port = portData.port || {};
@@ -251,7 +253,8 @@ class ArduinoCLIService {
           };
         });
 
-        console.log('✅ Portas processadas com sucesso:', ports.map(p => p.address).join(', '));
+        // Log simplificado
+        console.log(`✅ ${detectedPorts.length} porta(s) detectada(s)`);
         return { ports, error: null };
         
       } catch (parseError) {
@@ -378,7 +381,8 @@ class ArduinoCLIService {
    */
   async listPortsWithESP32Detection() {
     try {
-      console.log('🔍 Listando portas com detecção de ESP32...');
+      // Log reduzido
+      // console.log('🔍 Listando portas com detecção de ESP32...');
       const result = await this.listPorts();
       
       if (result.error || !result.ports) {

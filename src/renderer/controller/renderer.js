@@ -276,7 +276,8 @@ let serialMonitorState = {
     gyroY: true,
     gyroZ: true
   },
-  autoScrollEnabled: true // Controle para auto-scroll do console
+  autoScrollEnabled: true, // Controle para auto-scroll do console
+  lastBaudWarning: null // Timestamp do último aviso de baud incorreto
 };
 
 // Inicializar conexão WebSocket global para receber mensagens de upload
@@ -601,8 +602,9 @@ function switchTab(tabName) {
 }
 
 // Port Management
-async function refreshPorts() {
-  console.log('🔍 Atualizando lista de portas...');
+async function refreshPorts(retryCount = 0) {
+  const maxRetries = 3;
+  console.log(`🔍 Atualizando lista de portas... (tentativa ${retryCount + 1}/${maxRetries + 1})`);
   
   // Mostrar loading nos seletores
   const portSelectors = [
@@ -612,7 +614,7 @@ async function refreshPorts() {
   
   portSelectors.forEach(selector => {
     if (selector) {
-      selector.innerHTML = '<option value="">🔄 Carregando portas...</option>';
+      selector.innerHTML = `<option value="">🔄 Carregando portas${retryCount > 0 ? ` (tentativa ${retryCount + 1})` : ''}...</option>`;
       selector.disabled = true;
     }
   });
@@ -629,6 +631,32 @@ async function refreshPorts() {
       window.arduinoCLI = new ArduinoCLIClient();
     }
     
+    // Primeiro verificar se o backend está pronto
+    console.log('🏥 Verificando se backend está pronto...');
+    const healthCheck = await fetch(`${window.arduinoCLI.baseUrl}/health`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(3000)
+    });
+    
+    if (!healthCheck.ok) {
+      throw new Error('Backend não está respondendo');
+    }
+    
+    const healthData = await healthCheck.json();
+    console.log('🏥 Health check:', healthData);
+    
+    // Se backend ainda está inicializando, esperar um pouco
+    if (healthData.status === 'initializing' || !healthData.ready) {
+      if (retryCount < maxRetries) {
+        console.log('⏳ Backend ainda inicializando, aguardando 2 segundos...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return refreshPorts(retryCount + 1);
+      } else {
+        throw new Error('Backend não ficou pronto após várias tentativas');
+      }
+    }
+    
+    console.log('✅ Backend pronto, buscando portas...');
     const portsResult = await window.arduinoCLI.listPorts();
     
     if (portsResult.error) {
@@ -1449,6 +1477,29 @@ async function connectToSerialWebSocket(port, baudRate) {
 }
 
 /**
+ * Detecta se o baud rate está incorreto baseado em caracteres especiais
+ */
+function detectIncorrectBaudRate(data) {
+  if (!data || data.length === 0) return false;
+  
+  // Contar caracteres não imprimíveis e especiais
+  let specialChars = 0;
+  let totalChars = data.length;
+  
+  for (let i = 0; i < data.length; i++) {
+    const code = data.charCodeAt(i);
+    // Caracteres fora do range ASCII imprimível (exceto \n, \r, \t)
+    if ((code < 32 || code > 126) && code !== 10 && code !== 13 && code !== 9) {
+      specialChars++;
+    }
+  }
+  
+  // Se mais de 30% dos caracteres são especiais, provavelmente baud errado
+  const specialRatio = specialChars / totalChars;
+  return specialRatio > 0.3;
+}
+
+/**
  * Processa mensagens do WebSocket
  */
 function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConnection = null) {
@@ -1468,13 +1519,43 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
         rejectConnection(new Error(data.error));
       }
       break;
+    
+    case 'baudrate_changed':
+      console.log(`🔄 Baud rate alterado: ${data.oldBaudRate} → ${data.newBaudRate}`);
+      serialMonitorState.baudRate = data.newBaudRate;
+      showSerialNotification(`🔄 Baud rate alterado para ${data.newBaudRate}`, 'info');
+      // Atualizar seletor visual
+      const baudSelect = document.getElementById('baud-rate-select');
+      if (baudSelect) {
+        baudSelect.value = data.newBaudRate;
+      }
+      break;
+    
+    case 'baudrate_error':
+      console.error(`❌ Erro ao trocar baud rate: ${data.error}`);
+      showSerialNotification(`❌ Erro ao trocar baud rate: ${data.error}`, 'error');
+      break;
       
     case 'serial_data':
-      // Dados recebidos da ESP32 (linhas completas)
+      // Dados recebidos da ESP32 (agora inclui dados brutos mesmo com baud incorreto)
       const receivedData = data.data;
       const timestamp = new Date(data.timestamp).toLocaleTimeString();
       
       console.log(`📡 Dados ESP32 recebidos: ${receivedData}`);
+      
+      // Detectar se baud rate pode estar incorreto (muitos caracteres especiais)
+      if (detectIncorrectBaudRate(receivedData)) {
+        // Mostrar aviso visual uma vez a cada 5 segundos
+        if (!serialMonitorState.lastBaudWarning || 
+            Date.now() - serialMonitorState.lastBaudWarning > 5000) {
+          showSerialNotification(
+            '⚠️ Caracteres inválidos detectados! O baud rate pode estar incorreto. ' +
+            'Tente trocar usando o botão 🔄 ao lado do seletor de baud rate.',
+            'warning'
+          );
+          serialMonitorState.lastBaudWarning = Date.now();
+        }
+      }
       
       // Adicionar ao console com formatação inteligente
       addFormattedConsoleMessage(receivedData, timestamp);
@@ -1542,6 +1623,9 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
         console.log('🔄 Mudando para aba console durante upload');
         switchTab('console');
       }
+      
+      // Atualizar barra de progresso do upload
+      updateUploadProgressBar(uploadData);
       break;
       
     case 'disconnected':
@@ -1550,7 +1634,9 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       updateConnectionStatus();
       break;
       
+    case 'ports':
     case 'ports_list':
+      // Lista de portas - ignorar silenciosamente, não mostrar no serial monitor
       console.log('📋 Lista de portas atualizada:', data.ports);
       break;
       
@@ -2364,6 +2450,13 @@ async function uploadSketch() {
   // Limpar console antes de iniciar
   clearSerialConsole();
   
+  // Resetar e mostrar barra de progresso
+  resetUploadProgressBar();
+  const progressContainer = document.getElementById('upload-progress');
+  if (progressContainer) {
+    progressContainer.style.display = 'block';
+  }
+  
   // Desabilitar botões
   const uploadBtnModal = document.getElementById('upload-btn');
   const uploadBtnMain = document.getElementById('upload-code');
@@ -2543,6 +2636,17 @@ async function uploadSketch() {
       addToSerialConsole('📡 Iniciando monitoramento serial...');
       
       updateProgress(100);
+      
+      // Completar barra de progresso
+      const progressFill = document.getElementById('upload-progress-fill');
+      const progressText = document.getElementById('upload-progress-text');
+      if (progressFill && progressText) {
+        progressFill.style.width = '100%';
+        progressText.textContent = '100% - Concluído!';
+        progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end');
+        progressFill.classList.add('progress-complete');
+      }
+      
       showSerialNotification('✅ Upload concluído com sucesso!', 'success');
       
       // Limpar dados de erro anterior
@@ -2697,6 +2801,11 @@ function reEnableUploadButtons(modalBtn, mainBtn) {
     mainBtn.disabled = false;
     mainBtn.innerHTML = '<span class="btn-icon">📤</span><span>Upload Código</span>';
   }
+  
+  // Ocultar barra de progresso após 2 segundos
+  setTimeout(() => {
+    resetUploadProgressBar();
+  }, 2000);
 }
 
 // Função para detectar bibliotecas necessárias no código
@@ -2905,9 +3014,101 @@ function updateProgress(percent, status = '') {
   }
 }
 
+/**
+ * Atualiza a barra de progresso minimalista do upload
+ * Extrai percentual de mensagens como "Writing at 0x00010000... (25%)"
+ */
+function updateUploadProgressBar(message) {
+  const progressContainer = document.getElementById('upload-progress');
+  const progressFill = document.getElementById('upload-progress-fill');
+  const progressText = document.getElementById('upload-progress-text');
+  
+  if (!progressContainer || !progressFill || !progressText) {
+    return;
+  }
+  
+  // Mostrar container no primeiro progresso
+  if (progressContainer.style.display === 'none') {
+    progressContainer.style.display = 'block';
+  }
+  
+  // Extrair percentual do texto - Arduino CLI mostra formato: "Writing at 0x... (XX%)"
+  const percentMatch = message.match(/\((\d+)%\)/);
+  
+  if (percentMatch) {
+    const percent = parseInt(percentMatch[1]);
+    
+    // Atualizar largura da barra
+    progressFill.style.width = `${percent}%`;
+    progressText.textContent = `${percent}%`;
+    
+    // Remover classes de estado anteriores
+    progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
+    
+    // Adicionar classe baseada no progresso
+    if (percent < 25) {
+      progressFill.classList.add('progress-start');
+    } else if (percent < 75) {
+      progressFill.classList.add('progress-middle');
+    } else if (percent < 100) {
+      progressFill.classList.add('progress-end');
+    } else {
+      progressFill.classList.add('progress-complete');
+      // Ocultar após 2 segundos quando completar
+      setTimeout(() => {
+        if (progressContainer) {
+          progressContainer.style.display = 'none';
+          progressFill.style.width = '0%';
+          progressText.textContent = '0%';
+        }
+      }, 2000);
+    }
+  }
+  
+  // Detectar outras mensagens chave para atualizar progresso
+  if (message.includes('Compiling sketch') || message.includes('Compilando')) {
+    progressFill.style.width = '10%';
+    progressText.textContent = '10% - Compilando...';
+    progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
+    progressFill.classList.add('progress-start');
+  } else if (message.includes('Linking') || message.includes('Vinculando')) {
+    progressFill.style.width = '15%';
+    progressText.textContent = '15% - Linkando...';
+  } else if (message.includes('Connecting') || message.includes('Conectando')) {
+    progressFill.style.width = '20%';
+    progressText.textContent = '20% - Conectando...';
+  } else if (message.includes('Uploading') && !percentMatch) {
+    progressFill.style.width = '25%';
+    progressText.textContent = '25% - Iniciando upload...';
+  }
+}
+
+/**
+ * Reseta a barra de progresso do upload
+ */
+function resetUploadProgressBar() {
+  const progressContainer = document.getElementById('upload-progress');
+  const progressFill = document.getElementById('upload-progress-fill');
+  const progressText = document.getElementById('upload-progress-text');
+  
+  if (progressContainer) {
+    progressContainer.style.display = 'none';
+  }
+  
+  if (progressFill) {
+    progressFill.style.width = '0%';
+    progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
+  }
+  
+  if (progressText) {
+    progressText.textContent = '0%';
+  }
+}
+
 // Função para resetar interface de upload
 function resetUploadInterface() {
   updateProgress(0, '');
+  resetUploadProgressBar(); // Resetar também a nova barra
   
   const uploadBtnModal = document.getElementById('upload-btn');
   const uploadBtnMain = document.getElementById('upload-code');
@@ -5938,28 +6139,42 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Botão de reconexão serial com novo baud rate
   const reconnectSerialBtn = document.getElementById('reconnect-serial');
   if (reconnectSerialBtn) {
-    reconnectSerialBtn.addEventListener('click', function() {
-      const portSelect = document.getElementById('port-select');
-      const selectedPort = portSelect ? portSelect.value : null;
+    reconnectSerialBtn.addEventListener('click', async function() {
+      console.log('🔄 Botão reconectar clicado');
       
-      if (!selectedPort) {
-        addToSerialConsole('❌ Nenhuma porta selecionada para reconexão');
+      // Verificar se já está conectado
+      if (!serialMonitorState.isConnected || !serialMonitorState.websocket) {
+        showSerialNotification('⚠️ Não há conexão ativa. Use o botão "Conectar" primeiro.', 'warning');
         return;
       }
       
-      addToSerialConsole('🔄 Reconectando com novo baud rate...');
+      const baudRateSelect = document.getElementById('baud-rate-select');
+      const newBaudRate = baudRateSelect ? parseInt(baudRateSelect.value) : 115200;
+      const currentPort = serialMonitorState.selectedPort;
       
-      // Desconectar conexão atual se existir
-      if (serialWebSocket) {
-        serialWebSocket.close();
-        serialWebSocket = null;
-        serialMonitoringActive = false;
+      console.log(`🔄 Solicitando troca de baud rate: ${serialMonitorState.baudRate} → ${newBaudRate}`);
+      
+      if (newBaudRate === parseInt(serialMonitorState.baudRate)) {
+        showSerialNotification('⚠️ Baud rate já está configurado para ' + newBaudRate, 'warning');
+        return;
       }
       
-      // Reconectar com novo baud rate
-      setTimeout(() => {
-        startRealSerialMonitoring(selectedPort);
-      }, 500);
+      try {
+        // Enviar mensagem para trocar baud rate SEM desconectar
+        serialMonitorState.websocket.send(JSON.stringify({
+          type: 'change_baudrate',
+          payload: {
+            port: currentPort,
+            baudRate: newBaudRate
+          }
+        }));
+        
+        showSerialNotification(`🔄 Trocando baud rate para ${newBaudRate}...`, 'info');
+        
+      } catch (error) {
+        console.error('❌ Erro ao trocar baud rate:', error);
+        showSerialNotification('❌ Erro ao trocar baud rate: ' + error.message, 'error');
+      }
     });
   }
   

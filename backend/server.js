@@ -28,6 +28,11 @@ class BackendServer {
     this.esp32Monitor = null; // Será inicializado conforme necessário
     this.isMonitoringESP32 = false;
     
+    // Estado de inicialização
+    this.isReady = false;
+    this.cachedPorts = null;
+    this.lastPortRefresh = null;
+    
     this.setupMiddleware();
     this.setupRoutes();
   }
@@ -80,15 +85,19 @@ class BackendServer {
     // Health check endpoint mais detalhado  
     this.app.get('/health', (req, res) => {
       res.json({
-        status: 'healthy',
+        status: this.isReady ? 'ready' : 'initializing',
+        ready: this.isReady,
         timestamp: new Date().toISOString(),
         platform: process.platform,
         arch: process.arch,
         node_version: process.version,
         uptime: process.uptime(),
         arduino_cli: {
-          available: this.arduinoService ? true : false
-        }
+          available: this.arduinoService ? true : false,
+          initialized: this.arduinoService ? this.arduinoService.isInitialized : false
+        },
+        ports_cached: this.cachedPorts !== null,
+        last_port_refresh: this.lastPortRefresh
       });
     });
 
@@ -315,10 +324,25 @@ class BackendServer {
       }
     });
 
-    // Listar portas com detecção ESP32
+    // Listar portas com detecção ESP32 + CACHE
     this.app.get('/api/arduino/ports', async (req, res) => {
       try {
         console.log('🔍 Endpoint /api/arduino/ports chamado');
+        
+        // Se temos cache recente (menos de 10 segundos), retornar imediatamente
+        // Aumentado de 3s para 10s para evitar requisições duplicadas
+        const now = Date.now();
+        if (this.cachedPorts && this.lastPortRefresh && (now - this.lastPortRefresh < 10000)) {
+          console.log('⚡ Retornando portas do cache (rápido)');
+          return res.json({
+            ...this.cachedPorts,
+            cached: true,
+            cacheAge: Math.round((now - this.lastPortRefresh) / 1000)
+          });
+        }
+        
+        // Buscar portas
+        console.log('🔄 Cache expirado ou inexistente, buscando portas...');
         const result = await this.arduinoService.listPortsWithESP32Detection();
         console.log(`📡 Encontradas ${result.ports?.length || 0} portas (${result.esp32Count || 0} ESP32)`);
         
@@ -328,8 +352,13 @@ class BackendServer {
           error: result.error || null,
           esp32Count: result.esp32Count || 0,
           timestamp: new Date().toISOString(),
-          platform: process.platform
+          platform: process.platform,
+          cached: false
         };
+        
+        // Atualizar cache
+        this.cachedPorts = response;
+        this.lastPortRefresh = now;
         
         res.json(response);
       } catch (error) {
@@ -339,7 +368,8 @@ class BackendServer {
           error: error.message,
           esp32Count: 0,
           timestamp: new Date().toISOString(),
-          platform: process.platform
+          platform: process.platform,
+          cached: false
         });
       }
     });
@@ -892,6 +922,40 @@ class BackendServer {
       console.log('🌐 Inicializando Serial WebSocket Service...');
       this.serialService.startWebSocketServer(this.wsPort);
       
+      // PRÉ-CARREGAR PORTAS SERIAIS (melhoria crítica para Windows!)
+      console.log('📡 Pré-carregando lista de portas seriais...');
+      try {
+        const result = await this.arduinoService.listPortsWithESP32Detection();
+        this.cachedPorts = {
+          ports: result.ports || [],
+          error: result.error || null,
+          esp32Count: result.esp32Count || 0,
+          timestamp: new Date().toISOString(),
+          platform: process.platform,
+          cached: false
+        };
+        this.lastPortRefresh = Date.now();
+        console.log(`✅ Portas pré-carregadas: ${result.ports?.length || 0} porta(s) encontrada(s)`);
+        if (result.esp32Count > 0) {
+          console.log(`   🎯 ${result.esp32Count} porta(s) ESP32 detectada(s)!`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Não foi possível pré-carregar portas:', error.message);
+        this.cachedPorts = {
+          ports: [],
+          error: error.message,
+          esp32Count: 0,
+          timestamp: new Date().toISOString(),
+          platform: process.platform,
+          cached: false
+        };
+        this.lastPortRefresh = Date.now();
+      }
+      
+      // Marcar backend como pronto
+      this.isReady = true;
+      console.log('✅ Backend totalmente inicializado e pronto!');
+      
       // Auto-detecção e setup ESP32 (especialmente para macOS)
       console.log('🔍 Executando auto-detecção ESP32...');
       await this.autoDetectAndSetupESP32();
@@ -903,13 +967,14 @@ class BackendServer {
         console.log('');
         console.log(`📡 Servidor HTTP: http://localhost:${this.port}`);
         console.log(`🔌 WebSocket Serial: ws://localhost:${this.wsPort}`);
+        console.log(`✅ Status: PRONTO (portas pré-carregadas)`);
         console.log(`📋 Health Check: http://localhost:${this.port}/health`);
         console.log(`📖 Info: http://localhost:${this.port}/api/info`);
         console.log('');
         console.log('🎯 Endpoints principais:');
         console.log(`   POST /api/arduino/compile - Compilar código`);
         console.log(`   POST /api/arduino/upload - Upload para placa (com verificações)`);
-        console.log(`   GET  /api/arduino/ports - Listar portas`);
+        console.log(`   GET  /api/arduino/ports - Listar portas (CACHE ATIVO)`);
         console.log(`   GET  /api/arduino/boards - Listar placas`);
         console.log('');
         console.log('✨ Melhorias v2.0:');
@@ -917,6 +982,8 @@ class BackendServer {
         console.log('   • Verificação automática de pré-requisitos ESP32');
         console.log('   • Compilação otimizada');
         console.log('   • Melhor tratamento de erros');
+        console.log('   • ⚡ Portas pré-carregadas com cache de 10s');
+        console.log('   • 🔄 Usuário controla refresh via botão');
         console.log('');
       });
 
@@ -931,6 +998,10 @@ class BackendServer {
         this.stop();
       });
 
+      // REMOVIDO: Atualização automática de cache
+      // Usuário deve clicar em "Refresh" manualmente para atualizar portas
+      // Isso evita loops infinitos e economiza recursos
+      
       // Limpeza de memória periódica (a cada 10 minutos)
       setInterval(() => {
         if (global.gc) {

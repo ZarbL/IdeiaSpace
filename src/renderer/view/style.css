@@ -1,11 +1,3 @@
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background-color: #1e1e1e; /* Cor do VS Code como padrão */
-  color: #cccccc; /* Texto padrão do VS Code */
-  overflow: hidden;
-}
-
 :root {
   /* Tema claro do VS Code */
   --bg-primary: #ffffff;
@@ -38,8 +30,13 @@ body {
 }
 
 body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  font-weight: 400;
+  line-height: 1.5;
+  overflow: hidden;
 }
 
 .header {
@@ -589,7 +586,7 @@ button#generate-btn:hover {
   color: #95a5a6;
 }
 
-/* Animações */
+/* Animações Globais */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -604,6 +601,23 @@ button#generate-btn:hover {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+@keyframes pulse-box-shadow {
+  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+@keyframes pulse-opacity {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-scale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 /* Tooltips */
@@ -832,11 +846,7 @@ textarea:focus {
   box-shadow: 0 2px 10px rgba(232, 0, 116, 0.2);
 }
 
-/* Melhorar tipografia */
-body {
-  font-weight: 400;
-  line-height: 1.5;
-}
+/* Estilo de tipografia já consolidado no seletor body principal */
 
 .dark-mode-toggle {
   background-color: transparent;
@@ -1062,7 +1072,8 @@ body {
   font-size: 18px;
 }
 
-.modal-body {
+/* Modal body para modal de variáveis */
+.modal-content .modal-body {
   padding: 25px;
 }
 
@@ -1098,15 +1109,20 @@ body {
   justify-content: flex-end;
 }
 
+/* Botões primários e secundários - Estilo base */
 .btn-primary,
 .btn-secondary {
-  padding: 10px 20px;
+  padding: 12px 20px;
   border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-primary {
@@ -1140,19 +1156,7 @@ body {
 
 .btn-primary.variable-create:not(:disabled) {
   background: linear-gradient(135deg, #28a745, #20c997);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
-  }
+  animation: pulse-box-shadow 2s infinite;
 }
 
 .btn-secondary {
@@ -1928,6 +1932,134 @@ body {
   transition: all 0.3s ease !important;
 }
 
+/* BLOCO PINMODE - Verde Limão (Igual aos blocos LED) */
+.blocklyBlock[data-type="pin_mode_block"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Forçar cor verde limão em TODOS os elementos SVG do bloco pin_mode */
+.blocklyBlock[data-type="pin_mode_block"] .blocklyPath,
+.blocklyBlock[data-type="pin_mode_block"] path,
+.blocklyBlock[data-type="pin_mode_block"] rect {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* Cor verde limão específica para toolbox/flyout */
+.blocklyFlyout .blocklyBlock[data-type="pin_mode_block"] .blocklyPath,
+.blocklyFlyout .blocklyBlock[data-type="pin_mode_block"] path,
+.blocklyFlyout .blocklyBlock[data-type="pin_mode_block"] rect {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* SOBRESCREVER qualquer cor padrão do Blockly para pin_mode_block */
+g.blocklyBlock[data-type="pin_mode_block"] > path,
+g.blocklyBlock[data-type="pin_mode_block"] > rect,
+.blocklyBlockBackground[data-type="pin_mode_block"],
+.blocklyPath[data-type="pin_mode_block"] {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* Regra final catch-all para elementos pin_mode_block */
+*[data-type="pin_mode_block"] {
+  background-color: #32CD32 !important;
+  fill: #32CD32 !important;
+}
+
+/* BLOCOS LED - Verde Limão Vibrante (#32CD32) */
+.blocklyBlock[data-type="led_builtin_block"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_define"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_builtin_setup"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_digital_write"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_analog_write"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_blink"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blocklyBlock[data-type="led_fade"] {
+  border: 2px solid #32CD32 !important;
+  background: linear-gradient(135deg, #32CD32 0%, #28A428 100%) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 10px rgba(50, 205, 50, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Forçar cor verde limão em TODOS os elementos SVG dos blocos LED */
+.blocklyBlock[data-type*="led_"] .blocklyPath,
+.blocklyBlock[data-type*="led_"] path,
+.blocklyBlock[data-type*="led_"] rect {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* Cor verde limão específica para toolbox/flyout dos blocos LED */
+.blocklyFlyout .blocklyBlock[data-type*="led_"] .blocklyPath,
+.blocklyFlyout .blocklyBlock[data-type*="led_"] path,
+.blocklyFlyout .blocklyBlock[data-type*="led_"] rect {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* SOBRESCREVER qualquer cor padrão do Blockly para blocos LED */
+g.blocklyBlock[data-type*="led_"] > path,
+g.blocklyBlock[data-type*="led_"] > rect,
+.blocklyBlockBackground[data-type*="led_"],
+.blocklyPath[data-type*="led_"] {
+  fill: #32CD32 !important;
+  stroke: #28A428 !important;
+}
+
+/* Regra final catch-all para elementos LED */
+*[data-type*="led_"] {
+  background-color: #32CD32 !important;
+  fill: #32CD32 !important;
+}
+
 /* EFEITOS HOVER UNIVERSAIS */
 .blocklyBlock:hover {
   transform: translateY(-2px) scale(1.02) !important;
@@ -2166,11 +2298,6 @@ g.blocklyBlock[data-type*="dht"] > rect,
   display: flex;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* Container do Modal - Simples e rápido */
 .arduino-modal-container {
   position: relative;
@@ -2390,12 +2517,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
 
 .indicator-dot.warning {
   background: #ffc107;
-  animation: pulse 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
+  animation: pulse-opacity 1.5s ease-in-out infinite alternate;
 }
 
 .indicator-text {
@@ -2404,8 +2526,9 @@ g.blocklyBlock[data-type*="dht"] > rect,
   font-size: 14px;
 }
 
+/* Form groups - estilo base */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .form-label {
@@ -2756,48 +2879,26 @@ g.blocklyBlock[data-type*="dht"] > rect,
   gap: 15px;
 }
 
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+/* Variante azul para botões primários em contextos específicos */
+.action-buttons .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
+.action-buttons .btn-primary:hover {
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.btn-primary:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-secondary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+/* Variante branca para botões secundários em contextos específicos */
+.action-buttons .btn-secondary {
   background: white;
   color: #495057;
   border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.btn-secondary:hover {
+.action-buttons .btn-secondary:hover {
   border-color: #007bff;
   color: #007bff;
+  background: white;
 }
 
 .chart-container {
@@ -2842,13 +2943,17 @@ g.blocklyBlock[data-type*="dht"] > rect,
 .console-output {
   flex: 1;
   padding: 15px;
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
+  color: #00ff41;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 14px;
   overflow-y: auto;
   background: #1a1a1a;
   height: 100%;
   max-height: 350px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border-radius: 4px;
+  border: 1px solid #333;
 }
 
 .console-input {
@@ -3097,8 +3202,8 @@ g.blocklyBlock[data-type*="dht"] > rect,
   transform: scale(0.95);
 }
 
-/* Modal body layout */
-.modal-body {
+/* Modal body layout - Para Serial Monitor Modal */
+.arduino-modal-container .modal-body {
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -3607,8 +3712,8 @@ g.blocklyBlock[data-type*="dht"] > rect,
   margin-bottom: 20px;
 }
 
-/* Console styles */
-.console-container {
+/* Console styles - Container alternativo para Serial Tab */
+.serial-tab-content .console-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -3616,7 +3721,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   max-height: 500px;
 }
 
-.console-container::before {
+.serial-tab-content .console-container::before {
   content: '💬 Serial Console';
   display: block;
   font-size: 16px;
@@ -3626,18 +3731,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   margin-bottom: 8px;
 }
 
-.console-output {
-  flex: 1;
-  background: #1a1a1a;
-  color: #00ff41;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  padding: 12px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+.serial-tab-content .console-output {
   height: 400px;
   max-height: 400px;
 }
@@ -3776,10 +3870,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   font-size: 20px;
 }
 
-.form-group {
-  margin-bottom: 15px;
-}
-
+/* Form group label específico para conexão */
 .form-group label {
   display: block;
   margin-bottom: 5px;
@@ -3881,7 +3972,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   height: 8px;
   border-radius: 50%;
   background-color: currentColor;
-  animation: pulse 2s infinite;
+  animation: pulse-opacity 2s infinite;
 }
 
 /* Data display section */
@@ -4089,10 +4180,8 @@ g.blocklyBlock[data-type*="dht"] > rect,
   animation: none;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+.tab-badge.has-updates {
+  animation: pulse-scale 1s ease-in-out infinite;
 }
 
 /* Estilo para input de comando ativo */
@@ -4113,7 +4202,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
 }
 
 @media (max-width: 900px) {
-  .modal-body {
+  .arduino-modal-container .modal-body {
     flex-direction: column;
   }
   
@@ -4933,4 +5022,107 @@ body:not(.dark-mode) .sensor-message {
   .sensor-info {
     font-size: 12px;
   }
+}
+
+/* ========================================
+   BARRA DE PROGRESSO DO UPLOAD
+   ======================================== */
+.serial-upload-progress {
+  margin: 12px 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.serial-progress-bar {
+  position: relative;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 6px;
+}
+
+.serial-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 11px;
+  transition: width 0.4s ease, background 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+}
+
+/* Animação de shimmer na barra */
+.serial-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Mudança de cores baseada no progresso */
+.serial-progress-fill.progress-start {
+  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.6);
+}
+
+.serial-progress-fill.progress-middle {
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.6);
+}
+
+.serial-progress-fill.progress-end {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+}
+
+.serial-progress-fill.progress-complete {
+  background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.6);
+}
+
+.serial-progress-text {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary, #2c3e50);
+  opacity: 0.9;
+}
+
+/* Dark mode */
+body.dark-mode .serial-upload-progress {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  border-color: rgba(102, 126, 234, 0.4);
+}
+
+body.dark-mode .serial-progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .serial-progress-text {
+  color: rgba(255, 255, 255, 0.9);
 }

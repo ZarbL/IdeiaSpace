@@ -308,14 +308,14 @@ Blockly.Blocks['int_declaration'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("int")
-        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
-        .appendField("=");
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.appendValueInput("VALUE")
-        .setCheck("Number");
+        .setCheck("Number")
+        .appendField("=");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#AF916D");
-    this.setTooltip("Declara uma variável inteira no estilo Arduino: int nome = valor;");
+    this.setTooltip("Declara uma variável inteira no estilo Arduino: int nome; ou int nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -363,14 +363,14 @@ Blockly.Blocks['float_declaration'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("float")
-        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
-        .appendField("=");
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.appendValueInput("VALUE")
-        .setCheck("Number");
+        .setCheck("Number")
+        .appendField("=");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#AF916D");
-    this.setTooltip("Declara uma variável de ponto flutuante no estilo Arduino: float nome = valor;");
+    this.setTooltip("Declara uma variável de ponto flutuante no estilo Arduino: float nome; ou float nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -383,14 +383,14 @@ Blockly.Blocks['bool_declaration'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("bool")
-        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
-        .appendField("=");
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.appendValueInput("VALUE")
-        .setCheck("Boolean");
+        .setCheck("Boolean")
+        .appendField("=");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#AF916D");
-    this.setTooltip("Declara uma variável booleana no estilo Arduino: bool nome = valor;");
+    this.setTooltip("Declara uma variável booleana no estilo Arduino: bool nome; ou bool nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -403,14 +403,14 @@ Blockly.Blocks['string_declaration'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("String")
-        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
-        .appendField("=");
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.appendValueInput("VALUE")
-        .setCheck("String");
+        .setCheck("String")
+        .appendField("=");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#AF916D");
-    this.setTooltip("Declara uma variável String no estilo Arduino: String nome = valor;");
+    this.setTooltip("Declara uma variável String no estilo Arduino: String nome; ou String nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -423,14 +423,14 @@ Blockly.Blocks['char_declaration'] = {
   init: function() {
     this.appendDummyInput()
         .appendField("char")
-        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME")
-        .appendField("=");
+        .appendField(new Blockly.FieldTextInput("minhaVariavel"), "VAR_NAME");
     this.appendValueInput("VALUE")
-        .setCheck(["String", "Number"]); // char pode aceitar tanto caractere quanto código ASCII
+        .setCheck(["String", "Number"])
+        .appendField("="); // char pode aceitar tanto caractere quanto código ASCII
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour("#AF916D");
-    this.setTooltip("Declara uma variável char no estilo Arduino: char nome = valor;");
+    this.setTooltip("Declara uma variável char no estilo Arduino: char nome; ou char nome = valor;");
     this.setHelpUrl("");
   }
 };
@@ -1735,7 +1735,7 @@ Blockly.Blocks['pin_mode_block'] = {
         .appendField(');');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(45);
+    this.setColour('#32CD32'); // Verde Limão vibrante - igual aos blocos LED
     this.setTooltip('Define o modo de um pino (OUTPUT, INPUT, INPUT_PULLUP)');
     this.setHelpUrl('');
   }
@@ -1750,7 +1750,7 @@ Blockly.Blocks['led_builtin_block'] = {
     this.appendDummyInput()
         .appendField(new Blockly.FieldTextInput('LED_PIN'), 'PIN_NAME');
     this.setOutput(true, 'Number');
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Referência a uma constante de pino - editável');
     this.setHelpUrl('');
   }
@@ -1768,7 +1768,7 @@ Blockly.Blocks['led_define'] = {
         .appendField(new Blockly.FieldTextInput('LED_VERDE'), 'CONSTANT_NAME');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Define uma constante usando #define - ex: #define LED_VERDE 26');
     this.setHelpUrl('');
     this.setInputsInline(true);
@@ -1785,7 +1785,7 @@ Blockly.Blocks['led_builtin_setup'] = {
         .appendField('🔧 Configurar LED PIN como saída');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Configura o LED PIN (LED_PIN) como OUTPUT');
     this.setHelpUrl('');
   }
@@ -1809,7 +1809,7 @@ Blockly.Blocks['led_digital_write'] = {
         .appendField(');');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Escreve HIGH ou LOW em um pino digital');
     this.setHelpUrl('');
   }
@@ -1831,7 +1831,7 @@ Blockly.Blocks['led_analog_write'] = {
         .appendField(');');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Escreve um valor PWM (0-255) em um pino analógico');
     this.setHelpUrl('');
   }
@@ -1853,7 +1853,7 @@ Blockly.Blocks['led_blink'] = {
         .appendField('ms');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Faz um LED piscar uma vez com delay especificado');
     this.setHelpUrl('');
   }
@@ -1881,7 +1881,7 @@ Blockly.Blocks['led_fade'] = {
         .appendField('ms');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour("#FFD700");
+    this.setColour("#32CD32"); // Verde Limão vibrante
     this.setTooltip('Cria um efeito fade no LED do valor inicial ao final');
     this.setHelpUrl('');
   }
