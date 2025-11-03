@@ -2901,6 +2901,126 @@ g.blocklyBlock[data-type*="dht"] > rect,
   background: white;
 }
 
+/* Upload Progress Container in Upload Tab */
+.upload-progress-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.dark-mode .upload-progress-container {
+  background: linear-gradient(135deg, #2d2d30 0%, #252526 100%);
+  border-color: #3e3e42;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.progress-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.dark-mode .progress-label {
+  color: #cccccc;
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.dark-mode .progress-percentage {
+  color: #4db8ff;
+}
+
+.progress-bar-modern {
+  width: 100%;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.dark-mode .progress-bar-modern {
+  background: #1e1e1e;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar-fill-modern {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #007bff 0%, #0056b3 100%);
+  border-radius: 10px;
+  transition: width 0.4s ease, background 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill-modern::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress states with different colors */
+.progress-bar-fill-modern.progress-compiling {
+  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+}
+
+.progress-bar-fill-modern.progress-uploading {
+  background: linear-gradient(90deg, #007bff 0%, #0056b3 100%);
+}
+
+.progress-bar-fill-modern.progress-complete {
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.progress-bar-fill-modern.progress-error {
+  background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+}
+
 .chart-container {
   height: 400px;
   min-height: 300px;
@@ -2930,39 +3050,176 @@ g.blocklyBlock[data-type*="dht"] > rect,
   border: 1px solid #404040;
 }
 
+/* Console Container - Simplified */
 .console-container {
-  background: #212529;
-  border-radius: 12px;
-  overflow: hidden;
-  height: 400px;
-  max-height: 400px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  max-height: 500px;
 }
 
+/* Console Controls */
+.console-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.dark-mode .console-controls {
+  background: #2d2d30;
+  border-color: #3e3e42;
+}
+
+.console-baud-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.console-baud-control label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  margin: 0;
+}
+
+.dark-mode .console-baud-control label {
+  color: #cccccc;
+}
+
+.console-baud-select {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  color: #495057;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.dark-mode .console-baud-select {
+  background: #1e1e1e;
+  color: #cccccc;
+  border-color: #555555;
+}
+
+.console-baud-btn {
+  padding: 6px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.console-baud-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.console-clear-btn {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.console-clear-btn:hover {
+  background: #c82333;
+}
+
+/* Console Output - Simplified */
 .console-output {
   flex: 1;
-  padding: 15px;
-  color: #00ff41;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  overflow-y: auto;
+  padding: 12px;
   background: #1a1a1a;
-  height: 100%;
-  max-height: 350px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #333;
+  overflow-y: auto;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #00ff00;
+  min-height: 300px;
+  max-height: 400px;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
+.dark-mode .console-output {
+  background: #0d0d0d;
+  border-color: #1a1a1a;
+}
+
+/* Scrollbar styling for console */
+.console-output::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.console-output::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.console-output::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.console-output::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Console Input - Simplified */
 .console-input {
   display: flex;
-  padding: 8px;
-  background: #343a40;
   gap: 8px;
-  height: 50px;
-  max-height: 50px;
+}
+
+.console-input-field {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #495057;
+}
+
+.dark-mode .console-input-field {
+  background: #1e1e1e;
+  color: #cccccc;
+  border-color: #555555;
+}
+
+.console-send-btn {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.console-send-btn:hover {
+  background: #218838;
 }
 
 /* Área de Logs de Instalação */

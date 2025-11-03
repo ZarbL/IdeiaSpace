@@ -276,8 +276,7 @@ let serialMonitorState = {
     gyroY: true,
     gyroZ: true
   },
-  autoScrollEnabled: true, // Controle para auto-scroll do console
-  lastBaudWarning: null // Timestamp do último aviso de baud incorreto
+  autoScrollEnabled: true // Controle para auto-scroll do console
 };
 
 // Inicializar conexão WebSocket global para receber mensagens de upload
@@ -1477,29 +1476,6 @@ async function connectToSerialWebSocket(port, baudRate) {
 }
 
 /**
- * Detecta se o baud rate está incorreto baseado em caracteres especiais
- */
-function detectIncorrectBaudRate(data) {
-  if (!data || data.length === 0) return false;
-  
-  // Contar caracteres não imprimíveis e especiais
-  let specialChars = 0;
-  let totalChars = data.length;
-  
-  for (let i = 0; i < data.length; i++) {
-    const code = data.charCodeAt(i);
-    // Caracteres fora do range ASCII imprimível (exceto \n, \r, \t)
-    if ((code < 32 || code > 126) && code !== 10 && code !== 13 && code !== 9) {
-      specialChars++;
-    }
-  }
-  
-  // Se mais de 30% dos caracteres são especiais, provavelmente baud errado
-  const specialRatio = specialChars / totalChars;
-  return specialRatio > 0.3;
-}
-
-/**
  * Processa mensagens do WebSocket
  */
 function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConnection = null) {
@@ -1524,10 +1500,14 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       console.log(`🔄 Baud rate alterado: ${data.oldBaudRate} → ${data.newBaudRate}`);
       serialMonitorState.baudRate = data.newBaudRate;
       showSerialNotification(`🔄 Baud rate alterado para ${data.newBaudRate}`, 'info');
-      // Atualizar seletor visual
+      // Atualizar seletores visuais
       const baudSelect = document.getElementById('baud-rate-select');
       if (baudSelect) {
         baudSelect.value = data.newBaudRate;
+      }
+      const baudConsoleSelect = document.getElementById('baud-rate-console-select');
+      if (baudConsoleSelect) {
+        baudConsoleSelect.value = data.newBaudRate;
       }
       break;
     
@@ -1537,27 +1517,13 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
       break;
       
     case 'serial_data':
-      // Dados recebidos da ESP32 (agora inclui dados brutos mesmo com baud incorreto)
+      // Dados recebidos da ESP32
       const receivedData = data.data;
       const timestamp = new Date(data.timestamp).toLocaleTimeString();
       
       console.log(`📡 Dados ESP32 recebidos: ${receivedData}`);
       
-      // Detectar se baud rate pode estar incorreto (muitos caracteres especiais)
-      if (detectIncorrectBaudRate(receivedData)) {
-        // Mostrar aviso visual uma vez a cada 5 segundos
-        if (!serialMonitorState.lastBaudWarning || 
-            Date.now() - serialMonitorState.lastBaudWarning > 5000) {
-          showSerialNotification(
-            '⚠️ Caracteres inválidos detectados! O baud rate pode estar incorreto. ' +
-            'Tente trocar usando o botão 🔄 ao lado do seletor de baud rate.',
-            'warning'
-          );
-          serialMonitorState.lastBaudWarning = Date.now();
-        }
-      }
-      
-      // Adicionar ao console com formatação inteligente
+      // Adicionar ao console (mostrar todos os dados, incluindo caracteres especiais)
       addFormattedConsoleMessage(receivedData, timestamp);
       
       // Manter apenas últimas 500 mensagens
@@ -3023,13 +2989,23 @@ function updateUploadProgressBar(message) {
   const progressFill = document.getElementById('upload-progress-fill');
   const progressText = document.getElementById('upload-progress-text');
   
+  // Também atualizar barra de progresso na aba de Upload
+  const progressTabContainer = document.getElementById('upload-progress-tab');
+  const progressFillTab = document.getElementById('upload-progress-fill-tab');
+  const progressLabel = document.getElementById('upload-progress-label');
+  const progressPercentage = document.getElementById('upload-progress-percentage');
+  
   if (!progressContainer || !progressFill || !progressText) {
     return;
   }
   
-  // Mostrar container no primeiro progresso
+  // Mostrar containers no primeiro progresso
   if (progressContainer.style.display === 'none') {
     progressContainer.style.display = 'block';
+  }
+  
+  if (progressTabContainer && progressTabContainer.style.display === 'none') {
+    progressTabContainer.style.display = 'block';
   }
   
   // Extrair percentual do texto - Arduino CLI mostra formato: "Writing at 0x... (XX%)"
@@ -3038,9 +3014,23 @@ function updateUploadProgressBar(message) {
   if (percentMatch) {
     const percent = parseInt(percentMatch[1]);
     
-    // Atualizar largura da barra
+    // Atualizar largura da barra antiga
     progressFill.style.width = `${percent}%`;
     progressText.textContent = `${percent}%`;
+    
+    // Atualizar nova barra de progresso na aba de Upload
+    if (progressFillTab && progressPercentage) {
+      progressFillTab.style.width = `${percent}%`;
+      progressPercentage.textContent = `${percent}%`;
+      
+      // Remover classes anteriores e adicionar classe de uploading
+      progressFillTab.classList.remove('progress-compiling', 'progress-uploading', 'progress-complete', 'progress-error');
+      progressFillTab.classList.add('progress-uploading');
+      
+      if (progressLabel) {
+        progressLabel.textContent = '📤 Fazendo upload...';
+      }
+    }
     
     // Remover classes de estado anteriores
     progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
@@ -3054,14 +3044,31 @@ function updateUploadProgressBar(message) {
       progressFill.classList.add('progress-end');
     } else {
       progressFill.classList.add('progress-complete');
-      // Ocultar após 2 segundos quando completar
+      
+      // Atualizar para completo na nova barra
+      if (progressFillTab && progressLabel) {
+        progressFillTab.classList.remove('progress-uploading');
+        progressFillTab.classList.add('progress-complete');
+        progressLabel.textContent = '✅ Upload concluído!';
+      }
+      
+      // Ocultar após 3 segundos quando completar
       setTimeout(() => {
         if (progressContainer) {
           progressContainer.style.display = 'none';
           progressFill.style.width = '0%';
           progressText.textContent = '0%';
         }
-      }, 2000);
+        if (progressTabContainer) {
+          progressTabContainer.style.display = 'none';
+          if (progressFillTab) {
+            progressFillTab.style.width = '0%';
+            progressFillTab.classList.remove('progress-compiling', 'progress-uploading', 'progress-complete', 'progress-error');
+          }
+          if (progressPercentage) progressPercentage.textContent = '0%';
+          if (progressLabel) progressLabel.textContent = 'Preparando...';
+        }
+      }, 3000);
     }
   }
   
@@ -3071,15 +3078,48 @@ function updateUploadProgressBar(message) {
     progressText.textContent = '10% - Compilando...';
     progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
     progressFill.classList.add('progress-start');
+    
+    // Atualizar nova barra
+    if (progressFillTab && progressLabel && progressPercentage) {
+      progressFillTab.style.width = '10%';
+      progressPercentage.textContent = '10%';
+      progressLabel.textContent = '⚙️ Compilando código...';
+      progressFillTab.classList.remove('progress-uploading', 'progress-complete', 'progress-error');
+      progressFillTab.classList.add('progress-compiling');
+    }
   } else if (message.includes('Linking') || message.includes('Vinculando')) {
     progressFill.style.width = '15%';
     progressText.textContent = '15% - Linkando...';
+    
+    // Atualizar nova barra
+    if (progressFillTab && progressLabel && progressPercentage) {
+      progressFillTab.style.width = '15%';
+      progressPercentage.textContent = '15%';
+      progressLabel.textContent = '🔗 Linkando bibliotecas...';
+    }
   } else if (message.includes('Connecting') || message.includes('Conectando')) {
     progressFill.style.width = '20%';
     progressText.textContent = '20% - Conectando...';
+    
+    // Atualizar nova barra
+    if (progressFillTab && progressLabel && progressPercentage) {
+      progressFillTab.style.width = '20%';
+      progressPercentage.textContent = '20%';
+      progressLabel.textContent = '🔌 Conectando à ESP32...';
+      progressFillTab.classList.remove('progress-compiling');
+      progressFillTab.classList.add('progress-uploading');
+    }
   } else if (message.includes('Uploading') && !percentMatch) {
     progressFill.style.width = '25%';
     progressText.textContent = '25% - Iniciando upload...';
+    
+    // Atualizar nova barra
+    if (progressFillTab && progressLabel && progressPercentage) {
+      progressFillTab.style.width = '25%';
+      progressPercentage.textContent = '25%';
+      progressLabel.textContent = '📤 Iniciando upload...';
+      progressFillTab.classList.add('progress-uploading');
+    }
   }
 }
 
@@ -3090,6 +3130,12 @@ function resetUploadProgressBar() {
   const progressContainer = document.getElementById('upload-progress');
   const progressFill = document.getElementById('upload-progress-fill');
   const progressText = document.getElementById('upload-progress-text');
+  
+  // Também resetar barra de progresso na aba de Upload
+  const progressTabContainer = document.getElementById('upload-progress-tab');
+  const progressFillTab = document.getElementById('upload-progress-fill-tab');
+  const progressLabel = document.getElementById('upload-progress-label');
+  const progressPercentage = document.getElementById('upload-progress-percentage');
   
   if (progressContainer) {
     progressContainer.style.display = 'none';
@@ -3102,6 +3148,24 @@ function resetUploadProgressBar() {
   
   if (progressText) {
     progressText.textContent = '0%';
+  }
+  
+  // Resetar nova barra de progresso
+  if (progressTabContainer) {
+    progressTabContainer.style.display = 'none';
+  }
+  
+  if (progressFillTab) {
+    progressFillTab.style.width = '0%';
+    progressFillTab.classList.remove('progress-compiling', 'progress-uploading', 'progress-complete', 'progress-error');
+  }
+  
+  if (progressLabel) {
+    progressLabel.textContent = 'Preparando...';
+  }
+  
+  if (progressPercentage) {
+    progressPercentage.textContent = '0%';
   }
 }
 
@@ -3391,8 +3455,6 @@ function updateChartLegend() {
 
 // Console Functions
 function updateConsoleTab() {
-  console.log('💬 Atualizando aba Console...');
-  
   const consoleOutput = document.getElementById('console-output');
   const arduinoConsole = document.getElementById('arduino-console');
   
@@ -3400,38 +3462,24 @@ function updateConsoleTab() {
   const consoleElements = [consoleOutput, arduinoConsole].filter(el => el);
   
   if (consoleElements.length > 0 && serialMonitorState.consoleHistory.length > 0) {
-    const consoleText = serialMonitorState.consoleHistory.join('\n');
+    const consoleText = serialMonitorState.consoleHistory.join('');
     
     consoleElements.forEach(element => {
-      // Se o console está vazio, remover placeholder
-      const emptyPlaceholder = element.querySelector('.serial-console-empty');
-      if (emptyPlaceholder) {
-        emptyPlaceholder.style.display = 'none';
-      }
-      
-      // Console simples - texto puro, igual ao Arduino IDE
+      // Console simples - texto puro com caracteres especiais visíveis
+      // Usar textContent para preservar todos os caracteres, incluindo caracteres especiais
       element.textContent = consoleText;
       
-      // Auto-scroll para o final - sempre forçar quando há novos dados
-      requestAnimationFrame(() => {
-        element.scrollTop = element.scrollHeight;
-      });
+      // Auto-scroll para o final
+      if (serialMonitorState.autoScrollEnabled) {
+        requestAnimationFrame(() => {
+          element.scrollTop = element.scrollHeight;
+        });
+      }
     });
   } else if (consoleElements.length > 0) {
-    // Console vazio - mostrar placeholder
+    // Console vazio
     consoleElements.forEach(element => {
-      const emptyPlaceholder = element.querySelector('.serial-console-empty');
-      if (emptyPlaceholder) {
-        emptyPlaceholder.style.display = 'block';
-      } else if (element.classList.contains('serial-console-content')) {
-        element.innerHTML = `
-          <div class="serial-console-empty">
-            <div class="serial-console-icon">📡</div>
-            <div class="serial-console-message">Console Serial</div>
-            <div class="serial-console-hint">Conecte a uma porta serial para ver os dados</div>
-          </div>
-        `;
-      }
+      element.textContent = '';
     });
   }
 }
@@ -6209,10 +6257,77 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   });
   
+  // Botão de aplicar baud rate no console
+  const applyBaudConsoleBtn = document.getElementById('apply-baud-console');
+  const baudRateConsoleSelect = document.getElementById('baud-rate-console-select');
+  
+  if (applyBaudConsoleBtn && baudRateConsoleSelect) {
+    applyBaudConsoleBtn.addEventListener('click', async function() {
+      console.log('🔄 Botão aplicar baud rate do console clicado');
+      
+      // Verificar se já está conectado
+      if (!serialMonitorState.isConnected || !serialMonitorState.websocket) {
+        showSerialNotification('⚠️ Não há conexão ativa. Use o botão "Conectar" primeiro.', 'warning');
+        return;
+      }
+      
+      const newBaudRate = parseInt(baudRateConsoleSelect.value);
+      const currentPort = serialMonitorState.selectedPort;
+      const currentBaudRate = parseInt(serialMonitorState.baudRate);
+      
+      console.log(`🔄 Solicitando troca de baud rate: ${currentBaudRate} → ${newBaudRate}`);
+      
+      if (newBaudRate === currentBaudRate) {
+        showSerialNotification('⚠️ Baud rate já está configurado para ' + newBaudRate, 'warning');
+        return;
+      }
+      
+      try {
+        // Desabilitar botão temporariamente
+        applyBaudConsoleBtn.disabled = true;
+        
+        // Enviar mensagem para trocar baud rate SEM desconectar
+        serialMonitorState.websocket.send(JSON.stringify({
+          type: 'change_baudrate',
+          payload: {
+            port: currentPort,
+            baudRate: newBaudRate
+          }
+        }));
+        
+        showSerialNotification(`🔄 Trocando baud rate para ${newBaudRate}...`, 'info');
+        
+        // Reabilitar botão após 2 segundos
+        setTimeout(() => {
+          applyBaudConsoleBtn.disabled = false;
+        }, 2000);
+        
+      } catch (error) {
+        console.error('❌ Erro ao trocar baud rate:', error);
+        showSerialNotification('❌ Erro ao trocar baud rate: ' + error.message, 'error');
+        applyBaudConsoleBtn.disabled = false;
+      }
+    });
+    
+    // Sincronizar seletor do console com o seletor principal
+    const mainBaudRateSelect = document.getElementById('baud-rate-select');
+    if (mainBaudRateSelect) {
+      mainBaudRateSelect.addEventListener('change', function() {
+        baudRateConsoleSelect.value = this.value;
+      });
+      
+      // Sincronizar na direção oposta também
+      baudRateConsoleSelect.addEventListener('change', function() {
+        mainBaudRateSelect.value = this.value;
+      });
+    }
+  }
+  
   // Clear console buttons (múltiplos IDs para compatibilidade)
   const clearConsoleButtons = [
     document.getElementById('clear-console'),
     document.getElementById('clear-console-btn'),
+    document.getElementById('clear-console-output'),
     document.getElementById('clear-logs')
   ].filter(btn => btn);
   

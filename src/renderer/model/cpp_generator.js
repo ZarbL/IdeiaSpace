@@ -1063,9 +1063,16 @@ Blockly.Cpp['mpu6050_read'] = function(block) {
 
 // Gerador de código para declaração do objeto MPU6050
 Blockly.Cpp['mpu6050_declare_object'] = function(block) {
-  // Gera apenas a declaração do objeto MPU6050
-  var code = 'Adafruit_MPU6050 mpu;\n';
-  return code;
+  // Adicionar includes necessários
+  Blockly.Cpp.includes_['adafruit_mpu6050'] = '#include <Adafruit_MPU6050.h>';
+  Blockly.Cpp.includes_['adafruit_sensor'] = '#include <Adafruit_Sensor.h>';
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  
+  // Adicionar declaração do objeto às definições globais
+  Blockly.Cpp.definitions_['mpu6050_object'] = 'Adafruit_MPU6050 mpu;';
+  
+  // Retornar apenas comentário
+  return '// Objeto MPU6050 declarado\n';
 };
 
 // Gerador de código para inicialização do MPU6050
@@ -1216,9 +1223,15 @@ Blockly.Cpp['bmp180_altitude'] = function(block) {
 
 // Gerador de código para declaração do objeto BH1750
 Blockly.Cpp['bh1750_declare_object'] = function(block) {
-  // Gera a declaração do objeto BH1750
-  var code = 'BH1750 lightMeter;\n';
-  return code;
+  // Adicionar includes necessários
+  Blockly.Cpp.includes_['bh1750'] = '#include <BH1750.h>';
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  
+  // Adicionar declaração do objeto às definições globais
+  Blockly.Cpp.definitions_['bh1750_object'] = 'BH1750 lightMeter;';
+  
+  // Retornar apenas comentário
+  return '// Objeto BH1750 declarado\n';
 };
 
 
@@ -1371,22 +1384,21 @@ Blockly.Cpp['dht_init'] = function(block) {
   var dht_type = block.getFieldValue('TYPE');
   var pin = block.getFieldValue('PIN');
   
-  // Gera o código na sequência dos blocos
-  var code = '';
+  // Adicionar include da biblioteca DHT (se ainda não foi adicionado)
+  Blockly.Cpp.includes_['dht'] = '#include <DHT.h>';
   
-  // Define o tipo de sensor
-  if (dht_type === 'DHT11') {
-    code += '#define DHTTYPE DHT11\n';
-  } else {
-    code += '#define DHTTYPE DHT22\n';
-  }
+  // Adicionar definições globais (ANTES da declaração do objeto)
+  var dhtTypeDefine = dht_type === 'DHT11' ? '#define DHTTYPE DHT11' : '#define DHTTYPE DHT22';
+  var dhtPinDefine = '#define DHTPIN ' + pin;
   
-  // Define o pino e cria o objeto DHT
-  code += '#define DHTPIN ' + pin + '\n';
-  code += 'DHT dht(DHTPIN, DHTTYPE);\n\n';
+  // Adicionar às definições globais (serão colocadas antes do setup/loop)
+  Blockly.Cpp.definitions_['dht_type'] = dhtTypeDefine;
+  Blockly.Cpp.definitions_['dht_pin'] = dhtPinDefine;
+  Blockly.Cpp.definitions_['dht_object'] = 'DHT dht(DHTPIN, DHTTYPE);';
   
-  code += '// Sensor ' + dht_type + ' inicializado no pino ' + pin + '\n';
-  return code;
+  // Retornar apenas um comentário no local onde o bloco foi colocado
+  // O código real já foi adicionado às definições globais
+  return '// Sensor DHT' + dht_type + ' configurado no pino ' + pin + '\n';
 };
 
 /**
@@ -1675,10 +1687,16 @@ Blockly.Cpp['hmc5883_init'] = function(block) {
   var scl_pin = block.getFieldValue('SCL_PIN');
   var sda_pin = block.getFieldValue('SDA_PIN');
   
-  var code = '// Inicialização HMC5883 - Pinos SCL: ' + scl_pin + ', SDA: ' + sda_pin + '\n';
-  //code += 'Wire.begin(' + sda_pin + ', ' + scl_pin + ');\n';
-  code += 'Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);\n';
-  return code;
+  // Adicionar includes necessários
+  Blockly.Cpp.includes_['adafruit_hmc5883'] = '#include <Adafruit_HMC5883_U.h>';
+  Blockly.Cpp.includes_['adafruit_sensor'] = '#include <Adafruit_Sensor.h>';
+  Blockly.Cpp.includes_['wire'] = '#include <Wire.h>';
+  
+  // Adicionar declaração do objeto às definições globais
+  Blockly.Cpp.definitions_['hmc5883_object'] = 'Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);';
+  
+  // Retornar apenas comentário sobre os pinos
+  return '// HMC5883 configurado - Pinos SCL: ' + scl_pin + ', SDA: ' + sda_pin + '\n';
 };
 
 /**
