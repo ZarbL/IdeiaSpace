@@ -2410,12 +2410,56 @@ async function uploadSketch() {
   // Limpar console antes de iniciar
   clearSerialConsole();
   
-  // Resetar e mostrar barra de progresso
+  // Resetar barras de progresso
+  console.log('🔄 Resetando barras de progresso...');
   resetUploadProgressBar();
+  
+  // Mostrar barra de progresso serial (no modal de código)
   const progressContainer = document.getElementById('upload-progress');
+  const progressFill = document.getElementById('upload-progress-fill');
+  const progressText = document.getElementById('upload-progress-text');
+  
+  console.log('🔍 Elementos da barra serial:', {
+    container: progressContainer ? 'encontrado' : 'NÃO encontrado',
+    fill: progressFill ? 'encontrado' : 'NÃO encontrado',
+    text: progressText ? 'encontrado' : 'NÃO encontrado'
+  });
+  
   if (progressContainer) {
     progressContainer.style.display = 'block';
+    console.log('✅ Barra de progresso serial exibida (display=block)');
+    console.log('   Computed display:', window.getComputedStyle(progressContainer).display);
+  } else {
+    console.error('❌ Container upload-progress não encontrado no DOM!');
   }
+  
+  // Mostrar barra de progresso na aba de Upload
+  const progressTabContainer = document.getElementById('upload-progress-tab');
+  const progressFillTab = document.getElementById('upload-progress-fill-tab');
+  
+  console.log('🔍 Elementos da barra da aba:', {
+    container: progressTabContainer ? 'encontrado' : 'NÃO encontrado',
+    fill: progressFillTab ? 'encontrado' : 'NÃO encontrado'
+  });
+  
+  if (progressTabContainer) {
+    progressTabContainer.style.display = 'block';
+    console.log('✅ Barra de progresso da aba exibida (display=block)');
+    console.log('   Computed display:', window.getComputedStyle(progressTabContainer).display);
+  } else {
+    console.error('❌ Container upload-progress-tab não encontrado no DOM!');
+  }
+  
+  // ==================== MOSTRAR BARRA NO HEADER ====================
+  const headerProgress = document.getElementById('header-upload-progress');
+  
+  if (headerProgress) {
+    headerProgress.style.display = 'flex';
+    console.log('✅ Barra de progresso do HEADER exibida (display=flex)');
+  } else {
+    console.error('❌ Container header-upload-progress não encontrado no DOM!');
+  }
+  // ==================================================================
   
   // Desabilitar botões
   const uploadBtnModal = document.getElementById('upload-btn');
@@ -2431,7 +2475,9 @@ async function uploadSketch() {
     uploadBtnMain.innerHTML = '<span class="btn-icon">⏳</span><span>Uploading...</span>';
   }
   
+  console.log('🔄 Chamando updateProgress(0) para inicializar barras...');
   updateProgress(0);
+  console.log('✅ updateProgress(0) executado');
   
   // Verificar se backend está rodando
   addToSerialConsole(`🔧 Status do backend: ${backendState.isRunning ? 'Rodando' : 'Parado'}`);
@@ -2762,10 +2808,11 @@ function reEnableUploadButtons(modalBtn, mainBtn) {
     mainBtn.innerHTML = '<span class="btn-icon">📤</span><span>Upload Código</span>';
   }
   
-  // Ocultar barra de progresso após 2 segundos
+  // Ocultar barra de progresso após 3 segundos
   setTimeout(() => {
+    console.log('⏱️ Ocultando barras de progresso após 3 segundos...');
     resetUploadProgressBar();
-  }, 2000);
+  }, 3000);
 }
 
 // Função para detectar bibliotecas necessárias no código
@@ -2946,32 +2993,134 @@ async function installEsp32Core() {
 
 // Função para mostrar status do upload em tempo real
 function updateProgress(percent, status = '') {
-  const progressFill = document.querySelector('.progress-fill');
-  const progressText = document.querySelector('.progress-text');
-  const progressStatus = document.querySelector('.progress-status');
+  console.log(`📊 updateProgress chamado: ${percent}% - ${status || 'sem status'}`);
   
+  // Barra de progresso serial (no modal de código)
+  const progressFill = document.getElementById('upload-progress-fill');
+  const progressText = document.getElementById('upload-progress-text');
+  
+  // Barra de progresso na aba de Upload
+  const progressFillTab = document.getElementById('upload-progress-fill-tab');
+  const progressLabel = document.getElementById('upload-progress-label');
+  const progressPercentage = document.getElementById('upload-progress-percentage');
+  
+  // ==================== BARRA NO HEADER (PRINCIPAL) ====================
+  const headerProgressFill = document.getElementById('header-progress-fill');
+  const headerProgressText = document.getElementById('header-progress-text');
+  const headerProgressPercent = document.getElementById('header-progress-percent');
+  // ======================================================================
+  
+  console.log('🔍 Elementos encontrados:', {
+    progressFill: !!progressFill,
+    progressText: !!progressText,
+    progressFillTab: !!progressFillTab,
+    progressLabel: !!progressLabel,
+    progressPercentage: !!progressPercentage,
+    headerProgressFill: !!headerProgressFill,
+    headerProgressText: !!headerProgressText,
+    headerProgressPercent: !!headerProgressPercent
+  });
+  
+  // Atualizar barra serial
   if (progressFill) {
-    progressFill.style.width = `${percent}%`;
+    progressFill.style.width = `${Math.max(5, percent)}%`; // Mínimo 5% para visibilidade
     
-    // Mudança de cor baseada no progresso
-    if (percent < 30) {
-      progressFill.style.background = '#3498db'; // Azul - início
-    } else if (percent < 70) {
-      progressFill.style.background = '#f39c12'; // Laranja - meio
+    // Remover classes anteriores
+    progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
+    
+    // Adicionar classe baseada no progresso
+    if (percent < 25) {
+      progressFill.classList.add('progress-start');
+    } else if (percent < 75) {
+      progressFill.classList.add('progress-middle');
     } else if (percent < 100) {
-      progressFill.style.background = '#e74c3c'; // Vermelho - crítico
+      progressFill.classList.add('progress-end');
     } else {
-      progressFill.style.background = '#27ae60'; // Verde - sucesso
+      progressFill.classList.add('progress-complete');
     }
   }
   
   if (progressText) {
-    progressText.textContent = `${Math.round(percent)}%`;
+    progressText.textContent = status ? `${Math.round(percent)}% - ${status}` : `${Math.round(percent)}%`;
   }
   
-  if (progressStatus && status) {
-    progressStatus.textContent = status;
+  // Atualizar barra na aba de Upload
+  if (progressFillTab) {
+    progressFillTab.style.width = `${Math.max(5, percent)}%`;
+    
+    // Remover classes anteriores
+    progressFillTab.classList.remove('progress-compiling', 'progress-uploading', 'progress-complete', 'progress-error');
+    
+    // Adicionar classe baseada no progresso
+    if (percent < 50) {
+      progressFillTab.classList.add('progress-compiling');
+    } else if (percent < 100) {
+      progressFillTab.classList.add('progress-uploading');
+    } else {
+      progressFillTab.classList.add('progress-complete');
+    }
   }
+  
+  if (progressPercentage) {
+    progressPercentage.textContent = `${Math.round(percent)}%`;
+  }
+  
+  if (progressLabel && status) {
+    progressLabel.textContent = status;
+  } else if (progressLabel) {
+    // Status padrão baseado no progresso
+    if (percent < 10) {
+      progressLabel.textContent = '🔄 Iniciando...';
+    } else if (percent < 50) {
+      progressLabel.textContent = '⚙️ Compilando código...';
+    } else if (percent < 100) {
+      progressLabel.textContent = '📤 Fazendo upload...';
+    } else {
+      progressLabel.textContent = '✅ Upload concluído!';
+    }
+  }
+  
+  // ==================== ATUALIZAR BARRA NO HEADER (PRINCIPAL) ====================
+  if (headerProgressFill) {
+    headerProgressFill.style.width = `${Math.max(3, percent)}%`;
+    console.log(`✅ Barra HEADER atualizada: ${percent}%`);
+    
+    // Remover classes anteriores
+    headerProgressFill.classList.remove('compiling', 'uploading', 'complete', 'error');
+    
+    // Adicionar classe baseada no progresso
+    if (percent < 30) {
+      headerProgressFill.classList.add('compiling');
+    } else if (percent < 100) {
+      headerProgressFill.classList.add('uploading');
+    } else {
+      headerProgressFill.classList.add('complete');
+    }
+  }
+  
+  if (headerProgressPercent) {
+    headerProgressPercent.textContent = `${Math.round(percent)}%`;
+  }
+  
+  if (headerProgressText && status) {
+    headerProgressText.textContent = status;
+  } else if (headerProgressText) {
+    // Status padrão baseado no progresso
+    if (percent < 10) {
+      headerProgressText.textContent = 'Iniciando...';
+    } else if (percent < 30) {
+      headerProgressText.textContent = 'Compilando...';
+    } else if (percent < 50) {
+      headerProgressText.textContent = 'Linkando...';
+    } else if (percent < 70) {
+      headerProgressText.textContent = 'Conectando...';
+    } else if (percent < 100) {
+      headerProgressText.textContent = 'Uploading...';
+    } else {
+      headerProgressText.textContent = 'Concluído!';
+    }
+  }
+  // ================================================================================
 }
 
 /**
@@ -2996,10 +3145,21 @@ function updateUploadProgressBar(message) {
   // Mostrar containers no primeiro progresso
   if (progressContainer.style.display === 'none') {
     progressContainer.style.display = 'block';
+    // Definir estado inicial visível
+    progressFill.style.width = '5%';
+    progressText.textContent = '0% - Iniciando...';
+    progressFill.classList.add('progress-start');
   }
   
   if (progressTabContainer && progressTabContainer.style.display === 'none') {
     progressTabContainer.style.display = 'block';
+    // Definir estado inicial visível para a barra da aba
+    if (progressFillTab && progressLabel && progressPercentage) {
+      progressFillTab.style.width = '5%';
+      progressPercentage.textContent = '0%';
+      progressLabel.textContent = '🔄 Iniciando...';
+      progressFillTab.classList.add('progress-compiling');
+    }
   }
   
   // Extrair percentual do texto - Arduino CLI mostra formato: "Writing at 0x... (XX%)"
@@ -3161,6 +3321,30 @@ function resetUploadProgressBar() {
   if (progressPercentage) {
     progressPercentage.textContent = '0%';
   }
+  
+  // ==================== RESETAR BARRA NO HEADER ====================
+  const headerProgress = document.getElementById('header-upload-progress');
+  const headerProgressFill = document.getElementById('header-progress-fill');
+  const headerProgressText = document.getElementById('header-progress-text');
+  const headerProgressPercent = document.getElementById('header-progress-percent');
+  
+  if (headerProgress) {
+    headerProgress.style.display = 'none';
+  }
+  
+  if (headerProgressFill) {
+    headerProgressFill.style.width = '0%';
+    headerProgressFill.classList.remove('compiling', 'uploading', 'complete', 'error');
+  }
+  
+  if (headerProgressText) {
+    headerProgressText.textContent = 'Aguardando...';
+  }
+  
+  if (headerProgressPercent) {
+    headerProgressPercent.textContent = '0%';
+  }
+  // ==================================================================
 }
 
 // Função para resetar interface de upload
