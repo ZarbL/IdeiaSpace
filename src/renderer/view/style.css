@@ -1,4 +1,4 @@
-f:root {
+:root {
   /* Tema claro do VS Code */
   --bg-primary: #ffffff;
   --bg-secondary: #f3f3f3;
@@ -803,6 +803,99 @@ button#generate-btn:hover {
   border-right: 3px solid var(--accent-pink) !important;
   color: var(--text-primary) !important;
   padding: 15px !important;
+}
+
+/* Estilos específicos para modo CLARO do Blockly Toolbox */
+.blocklyFlyoutBackground {
+  fill: #f3f3f3 !important;
+}
+
+.blocklyTreeLabel {
+  color: #3c3c3c !important;
+}
+
+.blocklyTreeRow:hover {
+  background-color: #e0e0e0 !important;
+}
+
+.blocklyWidgetDiv {
+  background-color: #ffffff !important;
+  color: #3c3c3c !important;
+}
+
+.blocklyDropDownDiv {
+  background-color: #f3f3f3 !important;
+  color: #3c3c3c !important;
+  border: 1px solid #cccccc !important;
+}
+
+.blocklyDropDownContent {
+  background-color: #f3f3f3 !important;
+  color: #3c3c3c !important;
+}
+
+.blocklyDropDownArrow {
+  fill: #3c3c3c !important;
+}
+
+/* Garantir fundo branco para workspace em modo claro */
+.blockly-area {
+  background-color: #ffffff !important;
+}
+
+.blocklyMainWorkspace {
+  background-color: #ffffff !important;
+}
+
+.blockly-area svg.blocklySvg {
+  background-color: #ffffff !important;
+}
+
+.blockly-area .blocklySvg .blocklyMainBackground {
+  fill: #ffffff !important;
+}
+
+/* Dropdown menu items modo claro */
+.blocklyDropDownDiv .blocklyMenuItem {
+  background-color: #f3f3f3 !important;
+  color: #3c3c3c !important;
+}
+
+.blocklyDropDownDiv .blocklyMenuItem:hover {
+  background-color: #e0e0e0 !important;
+}
+
+/* Scrollbar modo claro */
+.blocklyScrollbarBackground {
+  fill: #f3f3f3 !important;
+}
+
+.blocklyScrollbarHandle {
+  fill: #cccccc !important;
+}
+
+.blocklyScrollbarHandle:hover {
+  fill: #999999 !important;
+}
+
+/* Texto dos blocos modo claro - garantir legibilidade */
+.blocklyText {
+  fill: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.blocklyFieldDropdown .blocklyText {
+  fill: #000000 !important;
+}
+
+/* Input fields modo claro */
+.blocklyEditableText {
+  fill: #000000 !important;
+}
+
+.blocklyEditableText > rect {
+  fill: #ffffff !important;
+  stroke: #cccccc !important;
 }
 
 /* Estilos gerais melhorados */
@@ -2370,33 +2463,6 @@ g.blocklyBlock[data-type*="dht"] > rect,
   gap: 20px;
 }
 
-.connection-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #dc3545;
-}
-
-.connection-status.connected .status-dot {
-  background: #28a745;
-}
-
-.status-text {
-  color: #495057;
-  font-weight: 500;
-}
-
 /* ==================== BARRA DE PROGRESSO NO HEADER ==================== */
 .header-upload-progress {
   display: flex !important;
@@ -2670,18 +2736,12 @@ g.blocklyBlock[data-type*="dht"] > rect,
 
 .modal-status-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 12px 24px;
   background: #ffffff;
   border-bottom: 1px solid #e9ecef;
-  min-height: 60px;
-}
-
-.status-bar-left {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+  min-height: auto;
 }
 
 .status-bar-right {
@@ -2689,44 +2749,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-}
-
-.status-bar-item {
-  display: flex;
-  align-items: center;
-}
-
-.connection-indicator.compact {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-}
-
-.connection-indicator.compact .indicator-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #dc3545;
-}
-
-.connection-indicator.compact .indicator-dot.online {
-  background: #28a745;
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.connection-indicator.compact .indicator-dot.warning {
-  background: #ffc107;
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.connection-indicator.compact .indicator-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: #495057;
+  width: auto;
 }
 
 @keyframes pulse-glow {
@@ -2789,15 +2812,6 @@ g.blocklyBlock[data-type*="dht"] > rect,
 .dark-mode .modal-status-bar {
   background: #252525;
   border-bottom-color: #3a3a3a;
-}
-
-.dark-mode .connection-indicator.compact {
-  background: #1e1e1e;
-  border-color: #3a3a3a;
-}
-
-.dark-mode .connection-indicator.compact .indicator-text {
-  color: #b0b0b0;
 }
 
 .dark-mode .modal-main-content {
@@ -2868,15 +2882,6 @@ body.dark-mode .tab-content *[class*="title"] {
   color: #ffffff !important;
   opacity: 1 !important;
   filter: brightness(1) !important;
-}
-
-.dark-mode .connection-indicator {
-  background: #2a2a2a;
-  border-color: #3a3a3a;
-}
-
-.dark-mode .indicator-text {
-  color: #b0b0b0;
 }
 
 /* Content Dark Mode */
@@ -3091,39 +3096,6 @@ body.dark-mode .tab-content *[class*="title"] {
   border-color: rgba(255, 255, 255, 0.4) !important;
 }
 /* ====================================================================== */
-
-.connection-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.indicator-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #dc3545;
-}
-
-.indicator-dot.online {
-  background: #28a745;
-}
-
-.indicator-dot.warning {
-  background: #ffc107;
-  animation: pulse-opacity 1.5s ease-in-out infinite alternate;
-}
-
-.indicator-text {
-  color: #495057;
-  font-weight: 500;
-  font-size: 14px;
-}
 
 /* Form groups - estilo base */
 .form-group {
@@ -4900,13 +4872,6 @@ body.dark-mode .upload-section h4 {
   border: 1px solid #28a745;
 }
 
-.status-disconnected {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  border: 1px solid #dc3545;
-}
-
-/* .status-dot - duplicata removida (já definido em linha 2384) */
 
 /* Data display section */
 .data-display {
@@ -5812,10 +5777,59 @@ body.dark-mode .upload-section h4 {
     flex-wrap: wrap;
   }
   
+  /* Serial Plotter: tamanho fixo e menor em telas pequenas */
   .plotter-chart-container,
   #serial-plotter-chart {
-    height: 300px;
-    min-height: 250px;
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+  }
+  
+  .plotter-chart {
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+  }
+  
+  .plotter-canvas {
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+  }
+  
+  .plotter-chart-overlay {
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+  }
+}
+
+/* Telas muito pequenas (tablets em modo retrato e celulares) */
+@media (max-width: 768px) {
+  /* Serial Plotter: tamanho ainda menor e fixo */
+  .plotter-chart-container,
+  #serial-plotter-chart {
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
+  }
+  
+  .plotter-chart {
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
+  }
+  
+  .plotter-canvas {
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
+  }
+  
+  .plotter-chart-overlay {
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
   }
 }
 

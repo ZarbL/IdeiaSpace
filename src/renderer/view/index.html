@@ -141,10 +141,6 @@
           </div>
         </div>
         <div class="modal-header-right">
-          <div class="connection-status" id="arduino-connection-status">
-            <span class="status-dot"></span>
-            <span class="status-text">Disconnected</span>
-          </div>
           <button id="arduino-cli-close" class="modal-close-modern">×</button>
         </div>
       </header>
@@ -170,26 +166,8 @@
         </button>
       </nav>
 
-      <!-- Barra de Status e Controles Fixos -->
+      <!-- Barra de Controles e Progresso -->
       <div class="modal-status-bar">
-        <div class="status-bar-left">
-          <!-- Backend Status -->
-          <div class="status-bar-item">
-            <div class="connection-indicator compact" id="backend-status-indicator">
-              <span class="indicator-dot offline"></span>
-              <span class="indicator-text" data-translate-key="backendOffline">Backend Offline</span>
-            </div>
-          </div>
-          
-          <!-- WebSocket Status -->
-          <div class="status-bar-item">
-            <div class="connection-indicator compact" id="ws-status-indicator">
-              <span class="indicator-dot offline"></span>
-              <span class="indicator-text">WebSocket Offline</span>
-            </div>
-          </div>
-        </div>
-        
         <div class="status-bar-right">
           <!-- Backend Controls -->
           <button id="start-backend-btn" class="status-bar-btn start">
