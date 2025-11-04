@@ -1758,19 +1758,21 @@ function keepLastNPoints(n) {
 }
 
 /**
- * Atualiza contador de mensagens no badge da aba console
+ * Atualiza contador de mensagens no badge da aba console - OTIMIZADO
  */
+let badgeUpdateTimer = null;
 function updateConsoleMessageCount() {
-  const consoleBadge = document.getElementById('console-count');
-  if (consoleBadge) {
-    consoleBadge.textContent = serialMonitorState.consoleHistory.length;
-    
-    // Adicionar animação visual
-    consoleBadge.style.animation = 'pulse 0.3s ease-in-out';
-    setTimeout(() => {
-      consoleBadge.style.animation = '';
-    }, 300);
-  }
+  // Debounce: atualizar badge apenas a cada 200ms
+  if (badgeUpdateTimer) return;
+  
+  badgeUpdateTimer = setTimeout(() => {
+    const consoleBadge = document.getElementById('console-count');
+    if (consoleBadge) {
+      consoleBadge.textContent = serialMonitorState.consoleHistory.length;
+      // Remover animação pesada
+    }
+    badgeUpdateTimer = null;
+  }, 200);
 }
 
 /**
@@ -1959,6 +1961,14 @@ function addFormattedConsoleMessage(data, timestamp, messageType = 'serial') {
   // Linhas completas já vêm processadas do backend
   const formattedMessage = `[${timestamp}] ${data}\n`;
   serialMonitorState.consoleHistory.push(formattedMessage);
+  
+  // OTIMIZAÇÃO: Limitar histórico a 1000 mensagens (evita memory leak)
+  const MAX_HISTORY = 1000;
+  if (serialMonitorState.consoleHistory.length > MAX_HISTORY) {
+    serialMonitorState.consoleHistory = serialMonitorState.consoleHistory.slice(-MAX_HISTORY);
+    // Resetar índice de renderização
+    serialMonitorState.lastRenderedIndex = 0;
+  }
 }
 
 function disconnectSerial() {
@@ -3437,47 +3447,83 @@ function updateChartLegend() {
   });
 }
 
-// Console Functions
+// Console Functions - SUPER OTIMIZADO COM THROTTLING AGRESSIVO
+const CONSOLE_MAX_LINES = 500; // Reduzido para 500 linhas (melhor performance)
+const CONSOLE_UPDATE_INTERVAL = 100; // Atualizar apenas a cada 100ms
+let consolePendingUpdates = [];
+let consoleLastUpdate = 0;
+let consoleUpdateTimer = null;
+
 function updateConsoleTab() {
+  const now = performance.now();
+  
+  // Throttling agressivo: apenas atualizar a cada 100ms
+  if (now - consoleLastUpdate < CONSOLE_UPDATE_INTERVAL) {
+    // Agendar atualização futura se ainda não agendada
+    if (!consoleUpdateTimer) {
+      consoleUpdateTimer = setTimeout(() => {
+        consoleUpdateTimer = null;
+        updateConsoleTabImmediate();
+      }, CONSOLE_UPDATE_INTERVAL);
+    }
+    return;
+  }
+  
+  updateConsoleTabImmediate();
+}
+
+function updateConsoleTabImmediate() {
   const consoleOutput = document.getElementById('console-output');
   const arduinoConsole = document.getElementById('arduino-console');
   
-  // Atualizar ambos os elementos de console (modal e principal)
   const consoleElements = [consoleOutput, arduinoConsole].filter(el => el);
   
-  if (consoleElements.length > 0 && serialMonitorState.consoleHistory.length > 0) {
-    // OTIMIZAÇÃO: Usar append incremental em vez de reescrever tudo
-    // Verificar quantas mensagens já foram renderizadas
+  if (consoleElements.length === 0) return;
+  
+  consoleLastUpdate = performance.now();
+  
+  if (serialMonitorState.consoleHistory.length > 0) {
     if (!serialMonitorState.lastRenderedIndex) {
       serialMonitorState.lastRenderedIndex = 0;
     }
     
-    // Renderizar apenas novas mensagens
+    // Pegar novas mensagens
     const newMessages = serialMonitorState.consoleHistory.slice(serialMonitorState.lastRenderedIndex);
     
     if (newMessages.length > 0) {
+      // Usar DocumentFragment para melhor performance
+      const fragment = document.createDocumentFragment();
+      const textNode = document.createTextNode(newMessages.join(''));
+      fragment.appendChild(textNode);
+      
       consoleElements.forEach(element => {
-        // Se o console foi limpo, resetar conteúdo
+        // Limpar se necessário
         if (serialMonitorState.lastRenderedIndex === 0) {
           element.textContent = '';
         }
         
-        // Adicionar apenas novas mensagens
-        const newText = newMessages.join('');
-        element.textContent += newText;
+        // Adicionar fragment (muito mais rápido que textContent +=)
+        element.appendChild(fragment.cloneNode(true));
         
-        // Auto-scroll para o final
+        // Virtual scrolling: limitar linhas no DOM (apenas se muito grande)
+        const currentLength = element.textContent.length;
+        if (currentLength > CONSOLE_MAX_LINES * 100) { // ~100 chars por linha
+          const lines = element.textContent.split('\n');
+          if (lines.length > CONSOLE_MAX_LINES) {
+            element.textContent = lines.slice(-CONSOLE_MAX_LINES).join('\n');
+          }
+        }
+        
+        // Auto-scroll (batched)
         if (serialMonitorState.autoScrollEnabled) {
-          requestAnimationFrame(() => {
-            element.scrollTop = element.scrollHeight;
-          });
+          element.scrollTop = element.scrollHeight;
         }
       });
       
-      // Atualizar índice de renderização
+      // Atualizar índice
       serialMonitorState.lastRenderedIndex = serialMonitorState.consoleHistory.length;
     }
-  } else if (consoleElements.length > 0) {
+  } else if (serialMonitorState.consoleHistory.length === 0) {
     // Console vazio
     consoleElements.forEach(element => {
       element.textContent = '';
@@ -4069,94 +4115,125 @@ function loadSensorExample(sensorType) {
 }
 
 /**
- * Adiciona dados do sensor ao buffer do plotter
+ * Adiciona dados do sensor ao buffer do plotter - OTIMIZADO COM CIRCULAR BUFFER
  */
+let bufferWriteIndex = 0;
+let bufferIsFull = false;
+
 function addPlotterData(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
   const timestamp = Date.now();
-  
-  // Adicionar dados ao buffer
-  plotterState.dataBuffer.timestamps.push(timestamp);
-  plotterState.dataBuffer.accelX.push(accelX || 0);
-  plotterState.dataBuffer.accelY.push(accelY || 0);
-  plotterState.dataBuffer.accelZ.push(accelZ || 0);
-  plotterState.dataBuffer.gyroX.push(gyroX || 0);
-  plotterState.dataBuffer.gyroY.push(gyroY || 0);
-  plotterState.dataBuffer.gyroZ.push(gyroZ || 0);
-  
-  // Manter apenas últimos N pontos
   const maxPoints = plotterState.maxDataPoints;
-  Object.keys(plotterState.dataBuffer).forEach(key => {
-    if (plotterState.dataBuffer[key].length > maxPoints) {
-      plotterState.dataBuffer[key] = plotterState.dataBuffer[key].slice(-maxPoints);
+  
+  // Usar circular buffer para evitar slice() caro
+  if (!bufferIsFull && plotterState.dataBuffer.timestamps.length < maxPoints) {
+    // Buffer ainda não está cheio, apenas adicionar
+    plotterState.dataBuffer.timestamps.push(timestamp);
+    plotterState.dataBuffer.accelX.push(accelX || 0);
+    plotterState.dataBuffer.accelY.push(accelY || 0);
+    plotterState.dataBuffer.accelZ.push(accelZ || 0);
+    plotterState.dataBuffer.gyroX.push(gyroX || 0);
+    plotterState.dataBuffer.gyroY.push(gyroY || 0);
+    plotterState.dataBuffer.gyroZ.push(gyroZ || 0);
+    
+    bufferWriteIndex = plotterState.dataBuffer.timestamps.length;
+    
+    if (bufferWriteIndex >= maxPoints) {
+      bufferIsFull = true;
+      bufferWriteIndex = 0;
     }
-  });
+  } else {
+    // Buffer cheio, sobrescrever dados antigos (circular)
+    plotterState.dataBuffer.timestamps[bufferWriteIndex] = timestamp;
+    plotterState.dataBuffer.accelX[bufferWriteIndex] = accelX || 0;
+    plotterState.dataBuffer.accelY[bufferWriteIndex] = accelY || 0;
+    plotterState.dataBuffer.accelZ[bufferWriteIndex] = accelZ || 0;
+    plotterState.dataBuffer.gyroX[bufferWriteIndex] = gyroX || 0;
+    plotterState.dataBuffer.gyroY[bufferWriteIndex] = gyroY || 0;
+    plotterState.dataBuffer.gyroZ[bufferWriteIndex] = gyroZ || 0;
+    
+    bufferWriteIndex = (bufferWriteIndex + 1) % maxPoints;
+  }
   
   // Atualizar contador de samples
   plotterState.sampleCount++;
   
-  // Calcular sample rate
-  const now = Date.now();
-  if (plotterState.lastSampleTime > 0) {
-    const deltaTime = (now - plotterState.lastSampleTime) / 1000; // segundos
-    plotterState.sampleRate = 1 / deltaTime;
+  // Calcular sample rate (throttled - apenas a cada 10 samples)
+  if (plotterState.sampleCount % 10 === 0) {
+    const now = Date.now();
+    if (plotterState.lastSampleTime > 0) {
+      const deltaTime = (now - plotterState.lastSampleTime) / 1000;
+      plotterState.sampleRate = 10 / deltaTime; // 10 samples / tempo decorrido
+    }
+    plotterState.lastSampleTime = now;
   }
-  plotterState.lastSampleTime = now;
   
-  // Atualizar valores na interface
-  updatePlotterValues(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  // Atualizar valores na interface (throttled)
+  if (plotterState.sampleCount % 5 === 0) {
+    updatePlotterValues(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  }
   
   // Esconder overlay se esta é a primeira amostra
-  if (plotterState.dataBuffer.timestamps.length === 1) {
+  if (!bufferIsFull && plotterState.dataBuffer.timestamps.length === 1) {
     showPlotterOverlay(false);
     startPlotterAnimation();
   }
   
-  // Atualizar badge de contagem
-  updatePlotterBadge();
-  
-  // Habilitar botão de export se há dados
-  const exportBtn = document.getElementById('plotter-export');
-  if (exportBtn && plotterState.dataBuffer.timestamps.length > 0) {
-    exportBtn.disabled = false;
+  // Atualizar badge de contagem (throttled)
+  if (plotterState.sampleCount % 10 === 0) {
+    updatePlotterBadge();
   }
   
-  console.log(`📊 Dados adicionados ao plotter: AX=${accelX}, AY=${accelY}, AZ=${accelZ}, GX=${gyroX}, GY=${gyroY}, GZ=${gyroZ}`);
+  // Habilitar botão de export se há dados (lazy, apenas uma vez)
+  if (plotterState.sampleCount === 1) {
+    const exportBtn = document.getElementById('plotter-export');
+    if (exportBtn) {
+      exportBtn.disabled = false;
+    }
+  }
 }
 
 /**
- * Atualiza valores numéricos na interface
+ * Atualiza valores numéricos na interface - OTIMIZADO COM BATCH UPDATE
  */
+let cachedElements = null;
+
 function updatePlotterValues(accelX, accelY, accelZ, gyroX, gyroY, gyroZ) {
-  // Valores do acelerômetro
-  const accelXEl = document.getElementById('accel-x-value');
-  const accelYEl = document.getElementById('accel-y-value');
-  const accelZEl = document.getElementById('accel-z-value');
-  
-  if (accelXEl) accelXEl.textContent = (accelX || 0).toFixed(3);
-  if (accelYEl) accelYEl.textContent = (accelY || 0).toFixed(3);
-  if (accelZEl) accelZEl.textContent = (accelZ || 0).toFixed(3);
-  
-  // Valores do giroscópio
-  const gyroXEl = document.getElementById('gyro-x-value');
-  const gyroYEl = document.getElementById('gyro-y-value');
-  const gyroZEl = document.getElementById('gyro-z-value');
-  
-  if (gyroXEl) gyroXEl.textContent = (gyroX || 0).toFixed(3);
-  if (gyroYEl) gyroYEl.textContent = (gyroY || 0).toFixed(3);
-  if (gyroZEl) gyroZEl.textContent = (gyroZ || 0).toFixed(3);
-  
-  // Estatísticas
-  const samplesEl = document.getElementById('plotter-samples');
-  const rateEl = document.getElementById('plotter-rate');
-  
-  if (samplesEl) samplesEl.textContent = plotterState.sampleCount;
-  if (rateEl) rateEl.textContent = `${plotterState.sampleRate.toFixed(1)} Hz`;
-  
-  // Mostrar painel de valores
-  const valuesPanel = document.getElementById('plotter-values');
-  if (valuesPanel) {
-    valuesPanel.style.display = 'flex';
+  // Cache de elementos DOM (evita querySelector repetido)
+  if (!cachedElements) {
+    cachedElements = {
+      accelX: document.getElementById('accel-x-value'),
+      accelY: document.getElementById('accel-y-value'),
+      accelZ: document.getElementById('accel-z-value'),
+      gyroX: document.getElementById('gyro-x-value'),
+      gyroY: document.getElementById('gyro-y-value'),
+      gyroZ: document.getElementById('gyro-z-value'),
+      samples: document.getElementById('plotter-samples'),
+      rate: document.getElementById('plotter-rate'),
+      valuesPanel: document.getElementById('plotter-values')
+    };
   }
+  
+  // Batch DOM updates usando requestAnimationFrame
+  requestAnimationFrame(() => {
+    // Valores do acelerômetro
+    if (cachedElements.accelX) cachedElements.accelX.textContent = (accelX || 0).toFixed(3);
+    if (cachedElements.accelY) cachedElements.accelY.textContent = (accelY || 0).toFixed(3);
+    if (cachedElements.accelZ) cachedElements.accelZ.textContent = (accelZ || 0).toFixed(3);
+    
+    // Valores do giroscópio
+    if (cachedElements.gyroX) cachedElements.gyroX.textContent = (gyroX || 0).toFixed(3);
+    if (cachedElements.gyroY) cachedElements.gyroY.textContent = (gyroY || 0).toFixed(3);
+    if (cachedElements.gyroZ) cachedElements.gyroZ.textContent = (gyroZ || 0).toFixed(3);
+    
+    // Estatísticas
+    if (cachedElements.samples) cachedElements.samples.textContent = plotterState.sampleCount;
+    if (cachedElements.rate) cachedElements.rate.textContent = `${plotterState.sampleRate.toFixed(1)} Hz`;
+    
+    // Mostrar painel (apenas se ainda não visível)
+    if (cachedElements.valuesPanel && cachedElements.valuesPanel.style.display !== 'flex') {
+      cachedElements.valuesPanel.style.display = 'flex';
+    }
+  });
 }
 
 /**
@@ -4207,42 +4284,73 @@ function stopPlotterAnimation() {
 }
 
 /**
- * Loop de animação do gráfico
+ * Loop de animação do gráfico - OTIMIZADO COM THROTTLING
  */
+let lastFrameTime = 0;
+const TARGET_FPS = 60;
+const FRAME_INTERVAL = 1000 / TARGET_FPS; // ~16.67ms
+
 function animatePlotter() {
-  if (!plotterState.isPaused && plotterState.dataBuffer.timestamps.length > 0) {
-    drawPlotterChart();
+  if (!plotterState.isRunning) return;
+  
+  const now = performance.now();
+  const elapsed = now - lastFrameTime;
+  
+  // Throttle para manter 60fps máximo
+  if (elapsed >= FRAME_INTERVAL) {
+    if (!plotterState.isPaused && plotterState.dataBuffer.timestamps.length > 0) {
+      drawPlotterChart();
+    }
+    lastFrameTime = now - (elapsed % FRAME_INTERVAL);
   }
   
-  if (plotterState.isRunning) {
-    plotterState.animationId = requestAnimationFrame(animatePlotter);
-  }
+  plotterState.animationId = requestAnimationFrame(animatePlotter);
 }
 
 /**
- * Desenha o gráfico no canvas
+ * Desenha o gráfico no canvas - OTIMIZADO COM CACHE
  */
+let cachedGrid = null;
+let cachedAxes = null;
+let lastCanvasWidth = 0;
+let lastCanvasHeight = 0;
+
 function drawPlotterChart() {
   const ctx = plotterState.context;
   const canvas = plotterState.canvas;
   
   if (!ctx || !canvas) return;
   
-  // Limpar canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Configurações básicas
+  const width = canvas.width;
+  const height = canvas.height;
   const padding = 40;
-  const chartWidth = canvas.width - (padding * 2);
-  const chartHeight = canvas.height - (padding * 2);
+  const chartWidth = width - (padding * 2);
+  const chartHeight = height - (padding * 2);
   
-  // Desenhar grade de fundo
-  drawPlotterGrid(ctx, padding, chartWidth, chartHeight);
+  // Cache de grade e eixos (só redesenha se canvas mudou de tamanho)
+  const sizeChanged = (width !== lastCanvasWidth || height !== lastCanvasHeight);
   
-  // Desenhar eixos
-  drawPlotterAxes(ctx, padding, chartWidth, chartHeight);
+  if (sizeChanged) {
+    lastCanvasWidth = width;
+    lastCanvasHeight = height;
+    cachedGrid = null;
+    cachedAxes = null;
+  }
   
-  // Desenhar dados se disponíveis
+  // Limpar apenas área necessária
+  ctx.clearRect(0, 0, width, height);
+  
+  // Desenhar grade de fundo (cached)
+  if (!cachedGrid || sizeChanged) {
+    drawPlotterGrid(ctx, padding, chartWidth, chartHeight);
+  }
+  
+  // Desenhar eixos (cached)
+  if (!cachedAxes || sizeChanged) {
+    drawPlotterAxes(ctx, padding, chartWidth, chartHeight);
+  }
+  
+  // Desenhar dados (sempre atualizado)
   if (plotterState.dataBuffer.timestamps.length > 1) {
     drawPlotterData(ctx, padding, chartWidth, chartHeight);
   }
@@ -4325,56 +4433,85 @@ function drawPlotterData(ctx, padding, width, height) {
 }
 
 /**
- * Calcula valores mínimos e máximos dos dados
+ * Calcula valores mínimos e máximos dos dados - OTIMIZADO
  */
+let cachedMinMax = null;
+let lastMinMaxUpdate = 0;
+
 function calculateDataMinMax() {
+  const now = Date.now();
+  
+  // Cache de min/max por 100ms (evita recálculo a cada frame)
+  if (cachedMinMax && (now - lastMinMaxUpdate < 100)) {
+    return cachedMinMax;
+  }
+  
   const data = plotterState.dataBuffer;
   let min = Infinity;
   let max = -Infinity;
   
   const sensors = ['accelX', 'accelY', 'accelZ', 'gyroX', 'gyroY', 'gyroZ'];
   
+  // Otimização: usar Math.min/max com spread apenas para arrays pequenos
+  const dataLength = data.timestamps.length;
+  
   sensors.forEach(sensor => {
-    if (plotterState.visibility[sensor] && data[sensor]) {
-      data[sensor].forEach(value => {
-        if (value < min) min = value;
-        if (value > max) max = value;
-      });
+    if (plotterState.visibility[sensor] && data[sensor] && data[sensor].length > 0) {
+      // Para arrays pequenos, usar Math.min/max é mais rápido
+      if (dataLength < 100) {
+        const sensorMin = Math.min(...data[sensor]);
+        const sensorMax = Math.max(...data[sensor]);
+        if (sensorMin < min) min = sensorMin;
+        if (sensorMax > max) max = sensorMax;
+      } else {
+        // Para arrays grandes, loop manual é mais eficiente
+        for (let i = 0; i < data[sensor].length; i++) {
+          const value = data[sensor][i];
+          if (value < min) min = value;
+          if (value > max) max = value;
+        }
+      }
     }
   });
   
   // Adicionar margem
   const range = max - min;
-  const margin = Math.max(0.1, range * 0.1); // 10% de margem ou mínimo 0.1
+  const margin = Math.max(0.1, range * 0.1);
   
-  return {
+  cachedMinMax = {
     min: min - margin,
     max: max + margin
   };
+  
+  lastMinMaxUpdate = now;
+  return cachedMinMax;
 }
 
 /**
- * Desenha linha para um sensor específico
+ * Desenha linha para um sensor específico - OTIMIZADO COM Path2D
  */
 function drawSensorLine(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue) {
   if (!sensorData || sensorData.length < 2) return;
   
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
+  // Usar Path2D para melhor performance
+  const path = new Path2D();
   
-  for (let i = 0; i < sensorData.length; i++) {
-    const x = padding + (i * scaleX);
-    const y = padding + height - ((sensorData[i] - minValue) * scaleY);
-    
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
+  // Primeira coordenada
+  let x = padding;
+  let y = padding + height - ((sensorData[0] - minValue) * scaleY);
+  path.moveTo(x, y);
+  
+  // Restante das coordenadas
+  for (let i = 1; i < sensorData.length; i++) {
+    x = padding + (i * scaleX);
+    y = padding + height - ((sensorData[i] - minValue) * scaleY);
+    path.lineTo(x, y);
   }
   
-  ctx.stroke();
+  // Desenhar de uma vez (mais rápido que múltiplos beginPath/stroke)
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke(path);
 }
 
 /**

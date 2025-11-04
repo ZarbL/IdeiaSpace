@@ -224,7 +224,7 @@
   "serialConsole": "Console Serial",
   "serialPlotter": "Serial Plotter",
   "boardConfiguration": "Configuração da Placa",
-  "boardType": "Tipo de Placa",
+  "boardType": "Tipo de Satélite",
   "educationalSatellite": "Satélite Educacional",
   "esp32Wrover": "📡 ESP32 WROVER (PSRAM - 460800 bps)",
   "boardHelp": "ESP32 Dev Module: Velocidade alta, ideal para a maioria dos projetos",
