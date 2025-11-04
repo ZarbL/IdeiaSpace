@@ -2038,25 +2038,8 @@ function updateConnectionStatus() {
     readCodeBtn.disabled = !backendState.isRunning;
   }
   
-  // Update connection badge in header
-  const connectionBadge = document.getElementById('arduino-connection-status');
-  if (connectionBadge) {
-    const isConnected = serialMonitorState.isConnected;
-    connectionBadge.className = isConnected ? 'connection-status connected' : 'connection-status';
-    
-    const statusDot = connectionBadge.querySelector('.status-dot');
-    const statusText = connectionBadge.querySelector('.status-text');
-    
-    if (statusDot && statusText) {
-      if (isConnected) {
-        statusDot.className = 'status-dot online';
-        statusText.textContent = `Connected to ${serialMonitorState.selectedPort}`;
-      } else {
-        statusDot.className = 'status-dot';
-        statusText.textContent = 'Disconnected';
-      }
-    }
-  }
+  // Update connection badge in header - REMOVIDO (não temos mais connection status no header)
+  // O elemento arduino-connection-status foi removido do HTML
   
   // Update disconnect button
   if (disconnectBtn) disconnectBtn.disabled = !serialMonitorState.isConnected;
