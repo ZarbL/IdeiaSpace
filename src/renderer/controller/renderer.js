@@ -418,6 +418,21 @@ async function openSerialMonitorModal() {
     // Forçar atualização do status de conexão após verificar backend
     updateConnectionStatus();
     
+    // 🔥 FORÇAR REMOÇÃO DE QUALQUER TEXTO "DISCONNECTED" NO MODAL
+    setTimeout(() => {
+      const modalHeader = modal.querySelector('.modal-header-right');
+      if (modalHeader) {
+        // Remover qualquer elemento que contenha "Disconnected" ou "Desconectado"
+        const allElements = modalHeader.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el.textContent.includes('Disconnected') || el.textContent.includes('Desconectado')) {
+            console.log('🗑️ REMOVENDO elemento com texto Disconnected:', el);
+            el.remove();
+          }
+        });
+      }
+    }, 100);
+    
     // Inicializar Arduino CLI client com URL dinâmica
     if (!window.arduinoCLI) {
       window.arduinoCLI = new ArduinoCLIClient(backendState.baseUrl);
@@ -2028,8 +2043,10 @@ function updateConnectionStatus() {
       statusDiv.className = 'status-indicator status-connected';
       statusDiv.innerHTML = '<div class="status-dot"></div>Conectado';
     } else {
-      statusDiv.className = 'status-indicator status-disconnected';
-      statusDiv.innerHTML = '<div class="status-dot"></div>Desconectado';
+      // LIMPAR completamente o conteúdo quando desconectado
+      statusDiv.className = 'status-indicator';
+      statusDiv.innerHTML = '';
+      statusDiv.style.display = 'none'; // Esconder o elemento
     }
   }
   
@@ -2064,8 +2081,9 @@ function updateConnectionStatus() {
   const statsMessages = document.getElementById('stats-messages');
   
   if (statsStatus) {
+    // REMOVIDO: Não mostrar mais "Desconectado" no stats
     statsStatus.textContent = serialMonitorState.isConnected ? 
-      `Conectado (${serialMonitorState.selectedPort})` : 'Desconectado';
+      `Conectado (${serialMonitorState.selectedPort})` : '';
   }
   
   if (statsMessages) {

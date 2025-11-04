@@ -1418,10 +1418,11 @@ const i18n = {
     }
     
     // Atualizar status de estatísticas
-    const statsStatus = document.getElementById('stats-status');
-    if (statsStatus && (statsStatus.textContent.includes('Desconectado') || statsStatus.textContent.includes('Disconnected'))) {
-      statsStatus.textContent = this.t('disconnected');
-    }
+    // REMOVIDO: Não forçar tradução de "Desconectado" - não queremos mostrar mais esse texto
+    // const statsStatus = document.getElementById('stats-status');
+    // if (statsStatus && (statsStatus.textContent.includes('Desconectado') || statsStatus.textContent.includes('Disconnected'))) {
+    //   statsStatus.textContent = this.t('disconnected');
+    // }
     
     // Atualizar contadores de porta
     this.updatePortCounter();
@@ -1599,7 +1600,8 @@ const i18n = {
   updateConnectionStatus(isConnected) {
     const statsStatus = document.getElementById('stats-status');
     if (statsStatus) {
-      statsStatus.textContent = isConnected ? this.t('connected') : this.t('disconnected');
+      // REMOVIDO: Não mostrar mais "Disconnected" - substituído pela barra de progresso
+      statsStatus.textContent = isConnected ? this.t('connected') : '';
     }
   },
   
