@@ -3658,7 +3658,7 @@ function initializePlotter() {
 }
 
 /**
- * Redimensiona o canvas do plotter - CORRIGIDO LOOP INFINITO
+ * Redimensiona o canvas do plotter - CORRIGIDO LOOP INFINITO E TAMANHO
  */
 let lastCanvasSize = { width: 0, height: 0 };
 
@@ -3671,9 +3671,10 @@ function resizePlotterCanvas() {
   
   const rect = container.getBoundingClientRect();
   
-  // Calcular novo tamanho
-  const newWidth = Math.max(300, Math.floor(rect.width - 20));
-  const newHeight = Math.max(200, Math.floor(rect.height - 20));
+  // Calcular novo tamanho - usar dimensões completas do container
+  // O container já tem padding/margin, não precisa subtrair pixels
+  const newWidth = Math.max(600, Math.floor(rect.width));
+  const newHeight = Math.max(300, Math.floor(rect.height || 300));
   
   // Apenas redimensionar se mudou significativamente (evita loop)
   if (Math.abs(newWidth - lastCanvasSize.width) > 5 || 
@@ -4424,7 +4425,7 @@ function drawPlotterAxes(ctx, padding, width, height) {
 }
 
 /**
- * Desenha os dados dos sensores
+ * Desenha os dados dos sensores com efeito de rolagem (estilo Arduino IDE)
  */
 function drawPlotterData(ctx, padding, width, height) {
   const data = plotterState.dataBuffer;
@@ -4434,7 +4435,15 @@ function drawPlotterData(ctx, padding, width, height) {
   
   // Calcular escalas
   const minMaxValues = calculateDataMinMax();
-  const scaleX = width / Math.max(1, dataLength - 1);
+  
+  // Determinar quantos pontos desenhar na tela
+  // Se o buffer está cheio, desenhar todos os pontos disponíveis
+  // Isso cria o efeito de rolagem quando novos dados chegam
+  const maxVisiblePoints = plotterState.maxDataPoints;
+  const pointsToDraw = Math.min(dataLength, maxVisiblePoints);
+  
+  // Escala X baseada nos pontos visíveis, não no total
+  const scaleX = width / Math.max(1, pointsToDraw - 1);
   const scaleY = height / Math.max(1, minMaxValues.max - minMaxValues.min);
   
   // Desenhar cada série de dados
@@ -4445,7 +4454,15 @@ function drawPlotterData(ctx, padding, width, height) {
     const hasData = data[sensor] && data[sensor].length > 0;
     
     if (isVisible && hasData) {
-      drawSensorLine(ctx, data[sensor], plotterState.colors[sensor], padding, scaleX, scaleY, height, minMaxValues.min);
+      // Se o buffer está usando modo circular (bufferIsFull), precisa reordenar
+      if (bufferIsFull) {
+        // Reordenar dados do circular buffer para desenhar na ordem correta
+        const reorderedData = reorderCircularBuffer(data[sensor], bufferWriteIndex);
+        drawSensorLineScrolling(ctx, reorderedData, plotterState.colors[sensor], padding, scaleX, scaleY, height, minMaxValues.min);
+      } else {
+        // Buffer ainda não está cheio, desenhar normalmente
+        drawSensorLineScrolling(ctx, data[sensor], plotterState.colors[sensor], padding, scaleX, scaleY, height, minMaxValues.min);
+      }
     }
   });
 }
@@ -4475,22 +4492,34 @@ function calculateDataMinMax() {
   
   sensors.forEach(sensor => {
     if (plotterState.visibility[sensor] && data[sensor] && data[sensor].length > 0) {
+      // Obter dados na ordem correta (considerando circular buffer)
+      let sensorData = data[sensor];
+      if (bufferIsFull && bufferWriteIndex > 0) {
+        sensorData = reorderCircularBuffer(data[sensor], bufferWriteIndex);
+      }
+      
       // Para arrays pequenos, usar Math.min/max é mais rápido
       if (dataLength < 100) {
-        const sensorMin = Math.min(...data[sensor]);
-        const sensorMax = Math.max(...data[sensor]);
+        const sensorMin = Math.min(...sensorData);
+        const sensorMax = Math.max(...sensorData);
         if (sensorMin < min) min = sensorMin;
         if (sensorMax > max) max = sensorMax;
       } else {
         // Para arrays grandes, loop manual é mais eficiente
-        for (let i = 0; i < data[sensor].length; i++) {
-          const value = data[sensor][i];
+        for (let i = 0; i < sensorData.length; i++) {
+          const value = sensorData[i];
           if (value < min) min = value;
           if (value > max) max = value;
         }
       }
     }
   });
+  
+  // Fallback se não encontrou nenhum valor válido
+  if (min === Infinity || max === -Infinity) {
+    min = -10;
+    max = 10;
+  }
   
   // Adicionar margem
   const range = max - min;
@@ -4506,9 +4535,28 @@ function calculateDataMinMax() {
 }
 
 /**
- * Desenha linha para um sensor específico - OTIMIZADO COM Path2D
+ * Reordena os dados do circular buffer para visualização linear
+ * Coloca os dados mais antigos primeiro e os mais recentes por último
  */
-function drawSensorLine(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue) {
+function reorderCircularBuffer(dataArray, writeIndex) {
+  if (!dataArray || dataArray.length === 0) return [];
+  
+  // Se writeIndex é 0, o buffer já está na ordem correta
+  if (writeIndex === 0) return dataArray;
+  
+  // Dividir o array em duas partes e recombinar
+  // Parte antiga: de writeIndex até o fim
+  // Parte nova: do início até writeIndex-1
+  const olderData = dataArray.slice(writeIndex);
+  const newerData = dataArray.slice(0, writeIndex);
+  
+  return [...olderData, ...newerData];
+}
+
+/**
+ * Desenha linha para um sensor específico com suporte a rolagem - OTIMIZADO COM Path2D
+ */
+function drawSensorLineScrolling(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue) {
   if (!sensorData || sensorData.length < 2) return;
   
   // Usar Path2D para melhor performance
@@ -4530,6 +4578,14 @@ function drawSensorLine(ctx, sensorData, color, padding, scaleX, scaleY, height,
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke(path);
+}
+
+/**
+ * Desenha linha para um sensor específico - OTIMIZADO COM Path2D (DEPRECATED - usar drawSensorLineScrolling)
+ */
+function drawSensorLine(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue) {
+  // Redirect para a nova função
+  drawSensorLineScrolling(ctx, sensorData, color, padding, scaleX, scaleY, height, minValue);
 }
 
 /**

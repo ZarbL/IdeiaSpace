@@ -3142,6 +3142,11 @@ body.dark-mode .tab-content *[class*="title"] {
   display: block;
 }
 
+/* Altura específica para a tab do plotter sem afetar outras tabs */
+.tab-content[data-tab="plotter"] {
+  min-height: 500px;
+}
+
 .content-header {
   display: flex;
   align-items: center;
@@ -4194,7 +4199,8 @@ body.dark-mode .upload-section h4 {
   border-radius: 8px;
   margin-bottom: 16px;
   overflow: hidden;
-  max-height: 400px;
+  min-height: 400px;
+  height: 400px;
   /* GPU Acceleration */
   transform: translateZ(0);
   will-change: contents;
@@ -4203,8 +4209,8 @@ body.dark-mode .upload-section h4 {
 
 .plotter-chart {
   width: 100%;
-  height: 300px;
-  max-height: 300px;
+  height: 400px;
+  min-height: 400px;
   position: relative;
   background: #fafafa;
   overflow: hidden;
@@ -4354,6 +4360,20 @@ body.dark-mode .upload-section h4 {
   width: 100%;
   height: 300px;
   margin-bottom: 20px;
+}
+
+/* Serial Tab Content - Prevenir crescimento excessivo */
+.serial-tab-content[data-tab="console"] {
+  max-height: fit-content;
+}
+
+/* Serial Console Panel - Limitar altura */
+.serial-console-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 520px;
+  overflow: hidden;
 }
 
 /* Console styles - Container alternativo para Serial Tab */
@@ -4876,9 +4896,11 @@ body.dark-mode .upload-section h4 {
   border-radius: 8px;
   overflow: hidden;
   height: 400px;
+  min-height: 400px;
   max-height: 400px;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   /* Performance */
   contain: layout style;
   will-change: auto; /* Remover will-change desnecessário */
@@ -5405,7 +5427,7 @@ body.dark-mode .upload-section h4 {
 .plotter-canvas {
   width: 100%;
   height: 100%;
-  max-height: 400px;
+  min-height: 400px;
   display: block;
 }
 
@@ -5415,7 +5437,7 @@ body.dark-mode .upload-section h4 {
   left: 0;
   width: 100%;
   height: 100%;
-  max-height: 400px;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
