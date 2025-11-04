@@ -2461,22 +2461,24 @@ g.blocklyBlock[data-type*="dht"] > rect,
   display: flex;
   align-items: center;
   gap: 20px;
+  position: relative;
+  z-index: 50;
 }
 
 /* ==================== BARRA DE PROGRESSO NO HEADER ==================== */
 .header-upload-progress {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  padding: 8px 16px !important;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border: 2px solid #667eea !important;
-  border-radius: 8px !important;
-  min-width: 280px !important;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
-  animation: headerSlideIn 0.3s ease-out !important;
-  z-index: 100 !important;
-  position: relative !important;
+  /* display: flex - controlado por JavaScript */
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  min-width: 280px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  animation: headerSlideIn 0.3s ease-out;
+  z-index: 100;
+  position: relative;
 }
 
 @keyframes headerSlideIn {

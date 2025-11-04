@@ -2428,6 +2428,8 @@ async function uploadSketch() {
   
   if (progressContainer) {
     progressContainer.style.display = 'block';
+    progressContainer.style.visibility = 'visible';
+    progressContainer.style.opacity = '1';
     console.log('✅ Barra de progresso serial exibida (display=block)');
     console.log('   Computed display:', window.getComputedStyle(progressContainer).display);
   } else {
@@ -2445,6 +2447,8 @@ async function uploadSketch() {
   
   if (progressTabContainer) {
     progressTabContainer.style.display = 'block';
+    progressTabContainer.style.visibility = 'visible';
+    progressTabContainer.style.opacity = '1';
     console.log('✅ Barra de progresso da aba exibida (display=block)');
     console.log('   Computed display:', window.getComputedStyle(progressTabContainer).display);
   } else {
@@ -2456,7 +2460,24 @@ async function uploadSketch() {
   
   if (headerProgress) {
     headerProgress.style.display = 'flex';
+    headerProgress.style.visibility = 'visible';
+    headerProgress.style.opacity = '1';
     console.log('✅ Barra de progresso do HEADER exibida (display=flex)');
+    console.log('   Computed display:', window.getComputedStyle(headerProgress).display);
+    console.log('   Computed visibility:', window.getComputedStyle(headerProgress).visibility);
+    
+    // Verificar novamente após 100ms para confirmar que ainda está visível
+    setTimeout(() => {
+      const currentDisplay = window.getComputedStyle(headerProgress).display;
+      console.log('🔍 Verificação após 100ms - Display:', currentDisplay);
+      if (currentDisplay === 'none') {
+        console.error('⚠️ ALERTA: Barra foi OCULTADA após ser exibida!');
+        // Forçar visibilidade novamente
+        headerProgress.style.display = 'flex';
+        headerProgress.style.visibility = 'visible';
+        console.log('🔧 Barra forçada a ficar visível novamente');
+      }
+    }, 100);
   } else {
     console.error('❌ Container header-upload-progress não encontrado no DOM!');
   }
