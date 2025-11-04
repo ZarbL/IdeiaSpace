@@ -2679,6 +2679,61 @@ g.blocklyBlock[data-type*="dht"] > rect,
   border-bottom-color: #3a3a3a;
 }
 
+/* Títulos de seções no dark mode - MÁXIMA ESPECIFICIDADE */
+.dark-mode .values-section-title,
+.dark-mode .plotter-values-section-title {
+  color: #00d9ff !important; /* Cyan claro para contraste */
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+}
+
+.dark-mode .upload-card-title {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .plotter-chart-title {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Títulos genéricos dentro do modal no dark mode - ALTA PRIORIDADE */
+body.dark-mode .arduino-modal-container h3,
+body.dark-mode .arduino-modal-container h4,
+body.dark-mode .arduino-modal-container h5,
+body.dark-mode .tab-content h3,
+body.dark-mode .tab-content h4,
+body.dark-mode .tab-content h5,
+body.dark-mode .upload-section h3,
+body.dark-mode .upload-section h4,
+body.dark-mode .console-section h3,
+body.dark-mode .plotter-section h3 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  opacity: 1 !important;
+}
+
+/* Títulos específicos com cores de destaque */
+body.dark-mode .serial-upload-controls-title,
+body.dark-mode .serial-logs-title {
+  color: #00d9ff !important;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
+}
+
+/* FORÇA BRUTA - Garantir visibilidade de TODOS os títulos no dark mode */
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5 {
+  color: #e8e8e8 !important;
+}
+
+/* Títulos dentro do modal têm prioridade máxima */
+body.dark-mode .arduino-modal-container *[class*="title"],
+body.dark-mode .tab-content *[class*="title"] {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  filter: brightness(1) !important;
+}
+
 .dark-mode .connection-indicator {
   background: #2a2a2a;
   border-color: #3a3a3a;
@@ -3843,6 +3898,13 @@ g.blocklyBlock[data-type*="dht"] > rect,
   text-shadow: 0 2px 10px rgba(232, 0, 116, 0.3);
 }
 
+/* DARK MODE - Forçar cor de títulos em TODAS as abas */
+body.dark-mode .upload-section h3,
+body.dark-mode .upload-section h4 {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
 .upload-controls {
   background: linear-gradient(145deg, var(--bg-secondary), rgba(37, 37, 38, 0.9));
   padding: 25px;
@@ -4340,17 +4402,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   max-height: 50px;
 }
 
-.console-input {
-  flex: 1;
-  padding: 6px 10px;
-  background-color: var(--bg-terminal);
-  color: var(--text-primary);
-  border: 1px solid var(--accent-cyan);
-  border-radius: 6px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  height: 34px;
-}
+/* .console-input - duplicata removida (já definido em linha 3452) */
 
 .send-btn {
   padding: 6px 16px;
@@ -4549,13 +4601,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   border: 1px solid #dc3545;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: currentColor;
-  animation: pulse-opacity 2s infinite;
-}
+/* .status-dot - duplicata removida (já definido em linha 2384) */
 
 /* Data display section */
 .data-display {
@@ -5382,23 +5428,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
   display: none;
 }
 
-.plotter-chart-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #343a40;
-}
-
-.plotter-chart-message {
-  font-size: 16px;
-  margin-bottom: 15px;
-}
-
-.plotter-chart-legend {
-  font-size: 12px;
-  color: #6c757d;
-  line-height: 1.4;
-}
+/* Duplicatas removidas - estilos já definidos anteriormente */
 
 /* Valores Atuais - Simplified */
 .values-section {

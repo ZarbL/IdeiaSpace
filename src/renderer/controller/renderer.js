@@ -3658,20 +3658,38 @@ function initializePlotter() {
 }
 
 /**
- * Redimensiona o canvas do plotter
+ * Redimensiona o canvas do plotter - CORRIGIDO LOOP INFINITO
  */
+let lastCanvasSize = { width: 0, height: 0 };
+
 function resizePlotterCanvas() {
   const canvas = plotterState.canvas;
   if (!canvas) return;
   
   const container = canvas.parentElement;
+  if (!container) return;
+  
   const rect = container.getBoundingClientRect();
   
-  // Definir tamanho baseado no container
-  canvas.width = rect.width - 20; // Padding
-  canvas.height = rect.height - 20;
+  // Calcular novo tamanho
+  const newWidth = Math.max(300, Math.floor(rect.width - 20));
+  const newHeight = Math.max(200, Math.floor(rect.height - 20));
   
-  console.log(`📏 Canvas redimensionado: ${canvas.width}x${canvas.height}`);
+  // Apenas redimensionar se mudou significativamente (evita loop)
+  if (Math.abs(newWidth - lastCanvasSize.width) > 5 || 
+      Math.abs(newHeight - lastCanvasSize.height) > 5) {
+    
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    lastCanvasSize = { width: newWidth, height: newHeight };
+    
+    // Invalidar cache de grade/eixos
+    cachedGrid = null;
+    cachedAxes = null;
+    
+    console.log(`📏 Canvas redimensionado: ${canvas.width}x${canvas.height}`);
+  }
 }
 
 /**
@@ -6631,15 +6649,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     resizeObserver.observe(chartContainer);
   }
   
-  // Initialize plotter resize observer
+  // Initialize plotter resize observer - CORRIGIDO
   const plotterContainer = document.querySelector('.plotter-chart-container');
   if (plotterContainer && window.ResizeObserver) {
+    let resizeTimeout = null;
+    
     const plotterResizeObserver = new ResizeObserver(entries => {
-      if (serialMonitorState.currentTab === 'plotter') {
-        setTimeout(() => {
-          resizePlotterCanvas();
-        }, 100);
-      }
+      if (serialMonitorState.currentTab !== 'plotter') return;
+      
+      // Debounce para evitar chamadas excessivas
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      
+      resizeTimeout = setTimeout(() => {
+        resizePlotterCanvas();
+        resizeTimeout = null;
+      }, 150);
     });
     
     plotterResizeObserver.observe(plotterContainer);
