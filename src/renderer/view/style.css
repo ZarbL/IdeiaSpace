@@ -2551,6 +2551,7 @@ g.blocklyBlock[data-type*="dht"] > rect,
 
 .status-bar-right {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 }
@@ -3021,6 +3022,8 @@ body.dark-mode .tab-content *[class*="title"] {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  width: 100%;
+  flex-basis: 100%;
 }
 
 .progress-info {
