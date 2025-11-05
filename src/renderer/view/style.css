@@ -3133,62 +3133,105 @@ body.dark-mode .upload-section h4 {
 }
 
 .plotter-current-values {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 2px solid #475569;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .plotter-values-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #1e293b;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #ffffff;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .plotter-values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
 
 .plotter-values-section {
-  background: white;
-  border-radius: 6px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #2d3748, #3d4a5c);
+  border-radius: 10px;
+  padding: 16px;
+  border: 2px solid #4a5568;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.plotter-values-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: #64748b;
 }
 
 .plotter-values-section-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #4a5568;
+  padding-bottom: 8px;
 }
 
 .plotter-values-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .plotter-value-item {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.plotter-value-item:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .plotter-value-item span:first-child {
   font-weight: 600;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .plotter-value-item span:last-child {
   font-family: 'Courier New', monospace;
-  color: #1e293b;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode - já está escuro por padrão, mas forçar */
+.dark-mode .plotter-current-values {
+  background: linear-gradient(135deg, #1e293b, #334155) !important;
+  border-color: #475569 !important;
+}
+
+.dark-mode .plotter-values-section {
+  background: linear-gradient(135deg, #2d3748, #3d4a5c) !important;
+  border-color: #4a5568 !important;
+}
+
+.dark-mode .plotter-values-title,
+.dark-mode .plotter-values-section-title,
+.dark-mode .plotter-value-item span:last-child {
+  color: #ffffff !important;
 }
 
 /* Serial Plotter styles (Legacy) */
@@ -3333,6 +3376,93 @@ body.dark-mode .upload-section h4 {
   max-height: 520px;
   overflow: hidden;
 }
+
+/* ==================== BARRA DE PROGRESSO SERIAL (Modal) ==================== */
+.serial-upload-progress {
+  margin: 15px 0;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  border: 2px solid #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.serial-progress-bar {
+  width: 100%;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.serial-progress-fill {
+  height: 100%;
+  width: 0%;
+  min-width: 3%;
+  background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+  border-radius: 12px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+}
+
+.serial-progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.serial-progress-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Estados da barra serial */
+.serial-progress-fill.progress-start {
+  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+}
+
+.serial-progress-fill.progress-middle {
+  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.6);
+}
+
+.serial-progress-fill.progress-end {
+  background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%);
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.6);
+}
+
+.serial-progress-fill.progress-complete {
+  background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+  box-shadow: 0 0 15px rgba(39, 174, 96, 0.6);
+}
+
+.dark-mode .serial-upload-progress {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+}
+/* ============================================================================ */
 
 /* Console styles - Container alternativo para Serial Tab */
 .serial-tab-content .console-container {
