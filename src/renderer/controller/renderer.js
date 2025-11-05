@@ -1151,11 +1151,11 @@ function updateBackendUI() {
     
     if (backendState.isStarting) {
       startBtn.classList.add('loading');
-      startBtn.querySelector('.btn-text').textContent = 'Iniciando...';
+      startBtn.querySelector('.btn-text').textContent = 'Iniciando Missão...';
       startBtn.querySelector('.btn-icon').textContent = '⏳';
     } else {
       startBtn.classList.remove('loading');
-      startBtn.querySelector('.btn-text').textContent = 'Iniciar Backend';
+      startBtn.querySelector('.btn-text').textContent = 'Iniciar Missão';
       startBtn.querySelector('.btn-icon').textContent = '🚀';
     }
   }
@@ -1165,11 +1165,11 @@ function updateBackendUI() {
     
     if (backendState.isStopping) {
       stopBtn.classList.add('loading');
-      stopBtn.querySelector('.btn-text').textContent = 'Parando...';
+      stopBtn.querySelector('.btn-text').textContent = 'Abortando Missão...';
       stopBtn.querySelector('.btn-icon').textContent = '⏳';
     } else {
       stopBtn.classList.remove('loading');
-      stopBtn.querySelector('.btn-text').textContent = 'Parar Backend';
+      stopBtn.querySelector('.btn-text').textContent = 'Abortar Missão';
       stopBtn.querySelector('.btn-icon').textContent = '🛑';
     }
   }
@@ -1471,7 +1471,7 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
         second: '2-digit'
       });
       
-      console.log(`📡 [${timeString}] Dados ESP32 recebidos: ${receivedData}`);
+      console.log(`📡 [${timeString}] Dados do Satélite Educacional recebidos: ${receivedData}`);
       
       // Adicionar ao console com horário
       addFormattedConsoleMessage(receivedData, timeString);
@@ -1548,10 +1548,10 @@ function handleSerialWebSocketMessage(data, resolveConnection = null, rejectConn
 }
 
 /**
- * Solicita dados existentes da ESP32
+ * Solicita dados existentes do Satélite Educacional
  */
 function requestESP32Data() {
-  console.log('📡 Solicitando dados existentes da ESP32...');
+  console.log('📡 Solicitando dados existentes do Satélite Educacional...');
   
   if (!serialMonitorState.websocket || !serialMonitorState.isConnected) {
     console.warn('⚠️ Não conectado à porta serial');
@@ -1575,7 +1575,7 @@ function requestESP32Data() {
   });
   
   // Mostrar mensagem no console
-  serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] 🤖 Solicitando dados da ESP32...\n`);
+  serialMonitorState.consoleHistory.push(`[${new Date().toLocaleTimeString()}] 🤖 Solicitando dados do Satélite Educacional...\n`);
   updateConsoleTab();
 }
 
@@ -2138,11 +2138,11 @@ function compileSketch() {
 }
 
 /**
- * Lê o código da ESP32 sem necessidade de upload
+ * Lê o código do Satélite Educacional sem necessidade de upload
  * Apenas valida se o backend está rodando
  */
 function readESP32Code() {
-  console.log('📖 Lendo código da ESP32...');
+  console.log('📖 Lendo código do Satélite Educacional...');
   
   // Verificar se o backend está rodando
   if (!backendState.isRunning) {
@@ -2538,7 +2538,7 @@ async function uploadSketch() {
       // Conectando: lento
       progressPhase = 'connect';
       increment = 0.2 + Math.random() * 0.2; // 0.2-0.4% por vez
-      message = 'Conectando à ESP32...';
+      message = 'Conectando ao Satélite Educacional...';
     } else if (simulatedProgress < 98) {
       // Upload: variável (simula transferência de dados)
       progressPhase = 'upload';
@@ -2687,11 +2687,11 @@ async function uploadSketch() {
     }
     
     // Conectar ao Arduino CLI para upload
-    updateUploadStatus('🔄 Compilando código para ESP32...', 40);
-    showSerialNotification('📤 Fazendo upload para ESP32...', 'info');
+    updateUploadStatus('🔄 Compilando código para o Satélite Educacional...', 40);
+    showSerialNotification('📤 Fazendo upload para o Satélite Educacional...', 'info');
     
     // Fazer upload real usando Arduino CLI
-    updateUploadStatus('📤 Enviando código para ESP32...', 60);
+    updateUploadStatus('📤 Enviando código para o Satélite Educacional...', 60);
     const uploadUrl = `${backendState.baseUrl}/api/arduino/upload`;
     addToSerialConsole(`📤 Enviando para: ${uploadUrl}`);
     
@@ -2731,7 +2731,7 @@ async function uploadSketch() {
     if (result.success) {
       addToSerialConsole('✅ Compilação bem-sucedida!');
       addToSerialConsole('📤 Upload concluído!');
-      addToSerialConsole('🔄 Reiniciando ESP32...');
+      addToSerialConsole('🔄 Reiniciando Satélite Educacional...');
       addToSerialConsole('=== UPLOAD FINALIZADO COM SUCESSO ===');
       addToSerialConsole('');
       addToSerialConsole('📡 Iniciando monitoramento serial...');
@@ -2775,8 +2775,8 @@ async function uploadSketch() {
       const errorText = result.error || result.message || '';
       if (errorText.includes('Wrong boot mode') || errorText.includes('0x13')) {
         addToSerialConsole('');
-        addToSerialConsole('🔄 PROBLEMA: ESP32 em modo de execução (0x13)');
-        addToSerialConsole('   A ESP32 precisa estar em MODO DE DOWNLOAD');
+        addToSerialConsole('🔄 PROBLEMA: Satélite Educacional em modo de execução (0x13)');
+        addToSerialConsole('   O Satélite Educacional precisa estar em MODO DE DOWNLOAD');
         addToSerialConsole('');
         addToSerialConsole('📋 SOLUÇÃO AUTOMÁTICA:');
         addToSerialConsole('   ✓ O sistema tentou reset automático via DTR/RTS');
@@ -2794,9 +2794,9 @@ async function uploadSketch() {
         addToSerialConsole('   BOOT: ████████████████░░░░░░░  (segure → solte depois)');
         addToSerialConsole('   EN:   ░░░░░░██░░░░░░░░░░░░░░  (pressione rápido)');
         addToSerialConsole('');
-        addToSerialConsole('🎯 A ESP32 entrará em modo download (LED pode mudar)');
+        addToSerialConsole('🎯 O Satélite Educacional entrará em modo download (LED pode mudar)');
         addToSerialConsole('');
-        showSerialNotification('❌ ESP32 precisa estar em modo boot! Veja console', 'error');
+        showSerialNotification('❌ Satélite Educacional precisa estar em modo boot! Veja console', 'error');
       }
       
       // Mostrar detalhes específicos se disponível
@@ -2814,7 +2814,7 @@ async function uploadSketch() {
             if (result.availablePorts && result.availablePorts.length > 0) {
               addToSerialConsole(`   📋 Portas disponíveis: ${result.availablePorts.map(p => p.address).join(', ')}`);
             }
-            addToSerialConsole('   💡 Verifique se a ESP32 está conectada');
+            addToSerialConsole('   💡 Verifique se o Satélite Educacional está conectado');
             break;
           default:
             addToSerialConsole(`   ❓ Erro de pré-requisito: ${result.prerequisiteFailed}`);
@@ -2846,16 +2846,16 @@ async function uploadSketch() {
       
       // Sugestões específicas baseadas no tipo de erro
       if (result.message.includes('Porta') || result.message.includes('port')) {
-        addToSerialConsole('   1. Verifique se a ESP32 está conectada via USB');
+        addToSerialConsole('   1. Verifique se o Satélite Educacional está conectado via USB');
         addToSerialConsole('   2. Experimente uma porta USB diferente');
-        addToSerialConsole('   3. Reinicie a ESP32 (botão RESET)');
+        addToSerialConsole('   3. Reinicie o Satélite Educacional (botão RESET)');
       } else if (result.message.includes('ESP32') || result.message.includes('core')) {
         addToSerialConsole('   1. Verifique conexão com a internet');
         addToSerialConsole('   2. Tente instalar ESP32 core manualmente');
         addToSerialConsole('   3. Reinicie o backend');
       } else {
-        addToSerialConsole('   1. Verifique se a ESP32 está em modo de programação');
-        addToSerialConsole('   2. Pressione BOOT + RESET na ESP32');
+        addToSerialConsole('   1. Verifique se o Satélite Educacional está em modo de programação');
+        addToSerialConsole('   2. Pressione BOOT + RESET no Satélite Educacional');
         addToSerialConsole('   3. Tente novamente');
       }
       
@@ -2902,7 +2902,7 @@ async function uploadSketch() {
     addToSerialConsole('');
     addToSerialConsole('🔧 Soluções possíveis:');
     addToSerialConsole('   1. Verificar se o backend está rodando');
-    addToSerialConsole('   2. Verificar se a ESP32 está conectada');
+    addToSerialConsole('   2. Verificar se o Satélite Educacional está conectado');
     addToSerialConsole('   3. Tentar reiniciar o backend');
     
     // Mostrar erro na barra de progresso
@@ -3284,7 +3284,7 @@ function updateProgress(percent, status = '', isError = false) {
       } else if (percent < 45) {
         modalProgressText.textContent = 'Linkando bibliotecas...';
       } else if (percent < 55) {
-        modalProgressText.textContent = 'Conectando à ESP32...';
+        modalProgressText.textContent = 'Conectando ao Satélite Educacional...';
       } else if (percent < 98) {
         modalProgressText.textContent = 'Fazendo upload...';
       } else if (percent < 100) {
@@ -3458,7 +3458,7 @@ function updateUploadProgressBar(message) {
     if (progressFillTab && progressLabel && progressPercentage) {
       progressFillTab.style.width = '20%';
       progressPercentage.textContent = '20%';
-      progressLabel.textContent = '🔌 Conectando à ESP32...';
+      progressLabel.textContent = '🔌 Conectando ao Satélite Educacional...';
       progressFillTab.classList.remove('progress-compiling');
       progressFillTab.classList.add('progress-uploading');
     }

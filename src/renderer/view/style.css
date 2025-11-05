@@ -1022,7 +1022,6 @@ button:focus, input:focus, textarea:focus {
   gap: 6px;
   color: #00ff00;
   font-size: 12px;
-  width: 100%;
 }
 
 .terminal-bracket {
@@ -1032,14 +1031,11 @@ button:focus, input:focus, textarea:focus {
 
 /* Barra de progresso ASCII */
 .terminal-progress-bar {
-  flex: 1;
   height: 16px;
   background: #000;
   border: 1px solid #333;
   position: relative;
-  min-width: 500px;
-  max-width: 100%;
-  width: 100%;
+  width: 450px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
   line-height: 16px;
@@ -1324,6 +1320,22 @@ button:focus, input:focus, textarea:focus {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Loading state - sem animação */
+.status-bar-btn.loading {
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.status-bar-btn.loading .btn-icon {
+  display: inline-flex;
+  animation: none;
+}
+
+.status-bar-btn.loading .btn-text {
+  display: inline-block;
+  animation: none;
 }
 
 /* Dark Mode - Status Bar */
@@ -1785,9 +1797,10 @@ body.dark-mode .tab-content *[class*="title"] {
   opacity: 0.9;
 }
 
+/* Sem animação - emoji e texto ficam estáticos */
 .backend-btn.loading .btn-icon {
-  display: inline-block;
-  animation: spin 1s linear infinite;
+  display: inline-flex;
+  animation: none;
 }
 
 .backend-btn.loading .btn-text {
@@ -1833,7 +1846,7 @@ body.dark-mode .tab-content *[class*="title"] {
 
 .progress-label::before {
   content: '⚙️';
-  animation: spin 2s linear infinite;
+  animation: none;
 }
 
 .progress-percentage {
@@ -4166,7 +4179,7 @@ body.dark-mode .upload-section h4 {
   border: 3px solid rgba(0, 207, 229, 0.3);
   border-radius: 50%;
   border-top-color: var(--accent-cyan);
-  animation: spin 1s linear infinite;
+  animation: none;
 }
 
 @keyframes spin {
