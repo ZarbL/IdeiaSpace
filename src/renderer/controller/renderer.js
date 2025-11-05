@@ -2501,20 +2501,71 @@ async function uploadSketch() {
   updateProgress(0, 'Preparando upload...');
   console.log('✅ updateProgress(0) executado');
   
-  // ==================== SIMULADOR DE PROGRESSO AGRESSIVO ====================
-  // Este simulador garante que a barra apareça mesmo se o backend não enviar progresso
+  // ==================== SIMULADOR DE PROGRESSO INTELIGENTE ====================
+  // Simula progresso realista com diferentes velocidades por fase
   let simulatedProgress = 0;
-  const progressSimulator = setInterval(() => {
-    if (simulatedProgress < 95) {
-      simulatedProgress += 2;
-      updateProgress(simulatedProgress, `Processando... (${simulatedProgress}%)`);
-      console.log(`🎭 SIMULADOR: ${simulatedProgress}%`);
-    }
-  }, 800); // Incrementa 2% a cada 800ms
+  let progressPhase = 'init'; // init, compile, link, connect, upload
+  let lastRealProgress = 0; // Armazena último progresso real recebido
   
-  // Guardar o intervalo para poder limpar depois
+  const progressSimulator = setInterval(() => {
+    // Se recebeu progresso real maior que simulado, atualizar base
+    if (window.lastRealUploadProgress && window.lastRealUploadProgress > simulatedProgress) {
+      simulatedProgress = window.lastRealUploadProgress;
+      lastRealProgress = window.lastRealUploadProgress;
+      console.log(`📊 Progresso REAL recebido: ${simulatedProgress.toFixed(1)}%`);
+    }
+    
+    // Determinar fase e velocidade baseado no progresso atual
+    let increment = 0;
+    let message = '';
+    
+    if (simulatedProgress < 10) {
+      // Fase inicial: lento
+      progressPhase = 'init';
+      increment = 0.3 + Math.random() * 0.2; // 0.3-0.5% por vez
+      message = 'Inicializando upload...';
+    } else if (simulatedProgress < 35) {
+      // Compilação: médio
+      progressPhase = 'compile';
+      increment = 0.4 + Math.random() * 0.3; // 0.4-0.7% por vez
+      message = 'Compilando código...';
+    } else if (simulatedProgress < 45) {
+      // Linkando: rápido
+      progressPhase = 'link';
+      increment = 0.6 + Math.random() * 0.4; // 0.6-1.0% por vez
+      message = 'Linkando bibliotecas...';
+    } else if (simulatedProgress < 55) {
+      // Conectando: lento
+      progressPhase = 'connect';
+      increment = 0.2 + Math.random() * 0.2; // 0.2-0.4% por vez
+      message = 'Conectando à ESP32...';
+    } else if (simulatedProgress < 98) {
+      // Upload: variável (simula transferência de dados)
+      progressPhase = 'upload';
+      increment = 0.3 + Math.random() * 0.5; // 0.3-0.8% por vez
+      message = 'Fazendo upload...';
+    } else {
+      // Próximo de completar: muito lento
+      increment = 0.1;
+      message = 'Finalizando...';
+    }
+    
+    // Incrementar progresso
+    simulatedProgress += increment;
+    
+    // Limitar a 99.5% se não houver confirmação de conclusão
+    if (simulatedProgress > 99.5) {
+      simulatedProgress = 99.5;
+    }
+    
+    updateProgress(simulatedProgress, message);
+    console.log(`🎭 SIMULADOR [${progressPhase}]: ${simulatedProgress.toFixed(1)}%`);
+  }, 1200); // Atualiza a cada 1.2 segundos (mais lento e suave)
+  
+  // Guardar o intervalo e controles
   window.uploadProgressSimulator = progressSimulator;
-  console.log('🎭 SIMULADOR DE PROGRESSO INICIADO');
+  window.lastRealUploadProgress = 0; // Armazena progresso real
+  console.log('🎭 SIMULADOR DE PROGRESSO INTELIGENTE INICIADO');
   // ========================================================================
   
   // Verificar se backend está rodando
@@ -2689,17 +2740,19 @@ async function uploadSketch() {
       if (window.uploadProgressSimulator) {
         clearInterval(window.uploadProgressSimulator);
         window.uploadProgressSimulator = null;
-        console.log('🎭 SIMULADOR DE PROGRESSO PARADO');
+        console.log('🎭 SIMULADOR DE PROGRESSO PARADO - Upload concluído!');
       }
       
-      updateProgress(100, 'Upload concluído!');
+      // Forçar 100% exato
+      window.lastRealUploadProgress = 100;
+      updateProgress(100.0, 'Upload concluído com sucesso!');
       
       // Completar barra de progresso
       const progressFill = document.getElementById('upload-progress-fill');
       const progressText = document.getElementById('upload-progress-text');
       if (progressFill && progressText) {
         progressFill.style.width = '100%';
-        progressText.textContent = '100% - Concluído!';
+        progressText.textContent = '100.0% - Concluído!';
         progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end');
         progressFill.classList.add('progress-complete');
       }
@@ -3064,7 +3117,16 @@ async function installEsp32Core() {
 
 // Função para mostrar status do upload em tempo real
 function updateProgress(percent, status = '', isError = false) {
-  console.log(`📊 updateProgress chamado: ${percent}% - ${status || 'sem status'} - Erro: ${isError}`);
+  // Garantir que percent é número e formatar com 1 casa decimal
+  percent = parseFloat(percent);
+  if (isNaN(percent)) percent = 0;
+  
+  // Armazenar último progresso real (para o simulador não sobrescrever)
+  if (!isError && percent > 0) {
+    window.lastRealUploadProgress = Math.max(window.lastRealUploadProgress || 0, percent);
+  }
+  
+  console.log(`📊 updateProgress: ${percent.toFixed(1)}% - ${status || 'sem status'} - Erro: ${isError}`);
   
   // Barra de progresso serial (no modal de código)
   const progressFill = document.getElementById('upload-progress-fill');
@@ -3081,20 +3143,9 @@ function updateProgress(percent, status = '', isError = false) {
   const modalProgressPercent = document.getElementById('modal-progress-percent');
   // =======================================================================
   
-  console.log('🔍 Elementos encontrados:', {
-    progressFill: !!progressFill,
-    progressText: !!progressText,
-    progressFillTab: !!progressFillTab,
-    progressLabel: !!progressLabel,
-    progressPercentage: !!progressPercentage,
-    modalProgressBar: !!modalProgressBar,
-    modalProgressText: !!modalProgressText,
-    modalProgressPercent: !!modalProgressPercent
-  });
-  
   // Atualizar barra serial
   if (progressFill) {
-    progressFill.style.width = `${Math.max(5, percent)}%`; // Mínimo 5% para visibilidade
+    progressFill.style.width = `${Math.max(3, percent).toFixed(1)}%`; // Usa float
     
     // Remover classes anteriores
     progressFill.classList.remove('progress-start', 'progress-middle', 'progress-end', 'progress-complete');
@@ -3112,12 +3163,12 @@ function updateProgress(percent, status = '', isError = false) {
   }
   
   if (progressText) {
-    progressText.textContent = status ? `${Math.round(percent)}% - ${status}` : `${Math.round(percent)}%`;
+    progressText.textContent = status ? `${percent.toFixed(1)}% - ${status}` : `${percent.toFixed(1)}%`;
   }
   
   // Atualizar barra na aba de Upload
   if (progressFillTab) {
-    progressFillTab.style.width = `${Math.max(5, percent)}%`;
+    progressFillTab.style.width = `${Math.max(3, percent).toFixed(1)}%`;
     
     // Remover classes anteriores
     progressFillTab.classList.remove('progress-compiling', 'progress-uploading', 'progress-complete', 'progress-error');
@@ -3133,7 +3184,7 @@ function updateProgress(percent, status = '', isError = false) {
   }
   
   if (progressPercentage) {
-    progressPercentage.textContent = `${Math.round(percent)}%`;
+    progressPercentage.textContent = `${percent.toFixed(1)}%`;
   }
   
   if (progressLabel && status) {
@@ -3142,10 +3193,16 @@ function updateProgress(percent, status = '', isError = false) {
     // Status padrão baseado no progresso
     if (percent < 10) {
       progressLabel.textContent = '🔄 Iniciando...';
-    } else if (percent < 50) {
+    } else if (percent < 35) {
       progressLabel.textContent = '⚙️ Compilando código...';
-    } else if (percent < 100) {
+    } else if (percent < 45) {
+      progressLabel.textContent = '🔗 Linkando...';
+    } else if (percent < 55) {
+      progressLabel.textContent = '🔌 Conectando...';
+    } else if (percent < 98) {
       progressLabel.textContent = '📤 Fazendo upload...';
+    } else if (percent < 100) {
+      progressLabel.textContent = '⏳ Finalizando...';
     } else {
       progressLabel.textContent = '✅ Upload concluído!';
     }
@@ -3177,23 +3234,39 @@ function updateProgress(percent, status = '', isError = false) {
   // Criar barra ASCII (caracteres █ para preenchido, ░ para vazio)
   if (modalProgressBar) {
     const barLength = 40; // 40 caracteres de largura
-    const filledLength = Math.round((percent / 100) * barLength);
+    
+    // Usar float para cálculo mais preciso
+    const exactFilled = (percent / 100) * barLength;
+    const filledLength = Math.floor(exactFilled);
     const emptyLength = barLength - filledLength;
     
     let asciiBar = '';
     
     // Caractere de progresso muda baseado no estado
     let fillChar = '█';
+    let partialChar = '▌'; // Meio-bloco para progresso parcial
+    
     if (isError) {
       fillChar = '▓'; // Erro usa padrão diferente
+      partialChar = '▒';
     } else if (percent >= 100) {
       fillChar = '█'; // Completo
     }
     
-    asciiBar = fillChar.repeat(filledLength) + '░'.repeat(emptyLength);
+    // Adicionar blocos completos
+    asciiBar = fillChar.repeat(filledLength);
+    
+    // Adicionar bloco parcial se houver fração
+    const fraction = exactFilled - filledLength;
+    if (fraction > 0.3 && filledLength < barLength && percent < 100) {
+      asciiBar += partialChar;
+      asciiBar += '░'.repeat(emptyLength - 1);
+    } else {
+      asciiBar += '░'.repeat(emptyLength);
+    }
     
     modalProgressBar.setAttribute('data-progress', asciiBar);
-    console.log(`📊 Barra ASCII: [${asciiBar}] ${percent}%`);
+    console.log(`📊 Barra ASCII: [${asciiBar}] ${percent.toFixed(1)}%`);
   }
   
   // Atualizar texto
@@ -3206,23 +3279,25 @@ function updateProgress(percent, status = '', isError = false) {
       // Status padrão baseado no progresso
       if (percent < 10) {
         modalProgressText.textContent = 'Iniciando upload...';
-      } else if (percent < 30) {
+      } else if (percent < 35) {
         modalProgressText.textContent = 'Compilando código...';
-      } else if (percent < 50) {
+      } else if (percent < 45) {
         modalProgressText.textContent = 'Linkando bibliotecas...';
-      } else if (percent < 70) {
+      } else if (percent < 55) {
         modalProgressText.textContent = 'Conectando à ESP32...';
-      } else if (percent < 100) {
+      } else if (percent < 98) {
         modalProgressText.textContent = 'Fazendo upload...';
+      } else if (percent < 100) {
+        modalProgressText.textContent = 'Finalizando...';
       } else {
         modalProgressText.textContent = 'Upload concluído com sucesso!';
       }
     }
   }
   
-  // Atualizar porcentagem
+  // Atualizar porcentagem COM FLOAT (1 casa decimal)
   if (modalProgressPercent) {
-    modalProgressPercent.textContent = `${Math.round(percent)}%`;
+    modalProgressPercent.textContent = `${percent.toFixed(1)}%`;
   }
   
   // Auto-ocultar após completar ou erro
@@ -3284,6 +3359,13 @@ function updateUploadProgressBar(message) {
   
   if (percentMatch) {
     const percent = parseInt(percentMatch[1]);
+    
+    // *** IMPORTANTE: Atualizar progresso real para o simulador respeitar ***
+    window.lastRealUploadProgress = Math.max(window.lastRealUploadProgress || 0, percent);
+    console.log(`📡 Progresso REAL do backend: ${percent}%`);
+    
+    // Atualizar barra terminal principal com progresso real
+    updateProgress(percent, `Transferindo dados (${percent}%)...`, false);
     
     // Atualizar largura da barra antiga
     progressFill.style.width = `${percent}%`;
