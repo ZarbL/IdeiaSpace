@@ -883,21 +883,21 @@ button:focus, input:focus, textarea:focus {
   display: flex;
 }
 
-/* Container do Modal - Simples e rápido */
+/* Container do Modal - Tela Cheia */
 .arduino-modal-container {
   position: relative;
-  width: 95%;
-  height: 90%;
-  max-width: 1400px;
-  max-height: 900px;
+  width: 98%;
+  height: 96%;
+  max-width: none;
+  max-height: none;
   background: #f8f9fa;
   z-index: 10001;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  border: 1px solid #dee2e6;
+  border: 2px solid #dee2e6;
 }
 
 /* Header Limpo e Simples */
@@ -957,138 +957,159 @@ button:focus, input:focus, textarea:focus {
   z-index: 50;
 }
 
-/* ==================== BARRA DE PROGRESSO NO HEADER ==================== */
-.header-upload-progress {
-  /* display: flex - controlado por JavaScript */
+/* ==================== BARRA DE PROGRESSO - REMOVIDA (agora só no modal) ==================== */
+
+/* �️ BARRA DE PROGRESSO ESTILO TERMINAL (OLD-SCHOOL) */
+.modal-upload-progress {
+  display: none;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: 2px solid #667eea;
-  border-radius: 8px;
-  min-width: 280px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  animation: headerSlideIn 0.3s ease-out;
-  z-index: 100;
-  position: relative;
+  gap: 4px;
+  padding: 10px 20px;
+  background: #1e1e1e;
+  border-bottom: 1px solid #333;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
 }
 
-@keyframes headerSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* LÓGICA AGRESSIVA: Forçar visibilidade quando ativo */
+.modal-upload-progress.active {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
-.header-progress-info {
+.modal-upload-progress.uploading {
+  display: flex !important;
+}
+
+/* Linha de texto do terminal */
+.terminal-progress-line {
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: space-between;
+  color: #0f0;
 }
 
-.header-progress-icon {
-  font-size: 16px;
-  animation: headerBounce 1.5s ease-in-out infinite;
+.terminal-prompt {
+  color: #00ff00;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
 }
 
-@keyframes headerBounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-3px) scale(1.1); }
-}
-
-.header-progress-text {
+.terminal-progress-text {
+  color: #00ff00;
   flex: 1;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.header-progress-percent {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 2px 8px;
-  border-radius: 4px;
-  min-width: 45px;
-  text-align: center;
+/* Estado de erro */
+.modal-upload-progress.error .terminal-prompt,
+.modal-upload-progress.error .terminal-progress-text {
+  color: #ff0000;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
 }
 
-.header-progress-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* Estado de sucesso */
+.modal-upload-progress.success .terminal-prompt,
+.modal-upload-progress.success .terminal-progress-text {
+  color: #00ffff;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
 }
 
-.header-progress-fill {
-  height: 100%;
-  width: 0%;
-  min-width: 3%;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
-  border-radius: 3px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* Container da barra ASCII */
+.terminal-progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #00ff00;
+  font-size: 12px;
+}
+
+.terminal-bracket {
+  color: #888;
+  font-weight: bold;
+}
+
+/* Barra de progresso ASCII */
+.terminal-progress-bar {
+  flex: 1;
+  height: 16px;
+  background: #000;
+  border: 1px solid #333;
   position: relative;
+  min-width: 300px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 16px;
+  color: #00ff00;
+  padding: 0 2px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
 }
 
-.header-progress-fill::before {
-  content: '';
+/* Texto ASCII dentro da barra */
+.terminal-progress-bar::before {
+  content: attr(data-progress);
   position: absolute;
+  left: 2px;
   top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.5) 50%,
-    transparent 100%
-  );
-  animation: headerShimmer 1.5s infinite;
+  color: #00ff00;
+  text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+  z-index: 1;
 }
 
-@keyframes headerShimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+/* Porcentagem */
+.terminal-percent {
+  color: #00ff00;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: right;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
 }
 
-/* Estados da barra no header */
-.header-progress-fill.compiling {
-  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
-  box-shadow: 0 0 10px rgba(255, 193, 7, 0.6);
+/* Estado de erro na barra */
+.modal-upload-progress.error .terminal-progress-bar-container,
+.modal-upload-progress.error .terminal-percent {
+  color: #ff0000;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
 }
 
-.header-progress-fill.uploading {
-  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
-  box-shadow: 0 0 10px rgba(52, 152, 219, 0.6);
+.modal-upload-progress.error .terminal-progress-bar::before {
+  color: #ff0000;
+  text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
 }
 
-.header-progress-fill.complete {
-  background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
-  box-shadow: 0 0 10px rgba(39, 174, 96, 0.6);
+/* Estado de sucesso na barra */
+.modal-upload-progress.success .terminal-progress-bar-container,
+.modal-upload-progress.success .terminal-percent {
+  color: #00ffff;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
 }
 
-.header-progress-fill.error {
-  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
-  box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+.modal-upload-progress.success .terminal-progress-bar::before {
+  color: #00ffff;
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.5);
 }
 
-/* Dark mode */
-.dark-mode .header-upload-progress {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+/* Animação de piscada para erro */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.3; }
+}
+
+.modal-upload-progress.error {
+  animation: blink 0.8s ease-in-out infinite;
+}
+
+/* Dark mode mantém o mesmo estilo terminal */
+.dark-mode .modal-upload-progress {
+  background: #0a0a0a;
+  border-bottom-color: #222;
+}
+
+.dark-mode .modal-upload-progress.active,
+.dark-mode .modal-upload-progress.uploading {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 /* ==================================================================== */
 
@@ -4171,6 +4192,12 @@ body.dark-mode .upload-section h4 {
   .side-panel { width: 350px; }
   .code-box { font-size: 13px; padding: 15px; }
   .arduino-cli-content { width: 95%; max-width: 800px; }
+  
+  /* Modal Arduino em telas médias */
+  .arduino-modal-container {
+    width: 96%;
+    height: 94%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -4207,6 +4234,18 @@ body.dark-mode .upload-section h4 {
   .examples-grid { grid-template-columns: 1fr; }
   
   .modal-content { width: 95%; margin: 10% auto; }
+  
+  /* Modal Arduino em telas pequenas */
+  .arduino-modal-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+  
+  .arduino-modal-overlay {
+    padding: 0;
+  }
 }
 
 @media (max-width: 480px) {

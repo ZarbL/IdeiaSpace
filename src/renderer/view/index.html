@@ -16,18 +16,6 @@
     <img src="../../assets/logo-light.png" id="logoImg" class="logo" alt="Logo Ideia">
     <h1 id="pageTitle" data-translate-key="pageTitle">Ferramenta de Programação de Missão </h1>
     
-    <!-- Barra de Progresso do Upload no Header -->
-    <div class="header-upload-progress" id="header-upload-progress" style="display: none;">
-      <div class="header-progress-info">
-        <span class="header-progress-icon">📤</span>
-        <span class="header-progress-text" id="header-progress-text">Preparando...</span>
-        <span class="header-progress-percent" id="header-progress-percent">0%</span>
-      </div>
-      <div class="header-progress-bar">
-        <div class="header-progress-fill" id="header-progress-fill"></div>
-      </div>
-    </div>
-    
     <div class="header-buttons">
       <div class="language-selector">
         <button id="languageToggle" class="language-button tooltip" data-tooltip-key="languageTooltip">
@@ -157,6 +145,20 @@
           <button id="arduino-cli-close" class="modal-close-modern">×</button>
         </div>
       </header>
+
+      <!-- Barra de Progresso do Upload no Modal (Estilo Terminal) -->
+      <div class="modal-upload-progress" id="modal-upload-progress" style="display: none;">
+        <div class="terminal-progress-line">
+          <span class="terminal-prompt">[UPLOAD]</span>
+          <span class="terminal-progress-text" id="modal-progress-text">Preparando upload...</span>
+        </div>
+        <div class="terminal-progress-bar-container">
+          <span class="terminal-bracket">[</span>
+          <div class="terminal-progress-bar" id="modal-progress-bar-ascii"></div>
+          <span class="terminal-bracket">]</span>
+          <span class="terminal-percent" id="modal-progress-percent">0%</span>
+        </div>
+      </div>
 
       <nav class="modal-tabs-clean">
         <button class="tab-btn-clean active" data-tab="upload">

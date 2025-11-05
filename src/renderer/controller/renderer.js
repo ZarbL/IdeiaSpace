@@ -2455,31 +2455,31 @@ async function uploadSketch() {
     console.error('❌ Container upload-progress-tab não encontrado no DOM!');
   }
   
-  // ==================== MOSTRAR BARRA NO HEADER ====================
-  const headerProgress = document.getElementById('header-upload-progress');
+  // ==================== MOSTRAR BARRA TERMINAL NO MODAL ====================
+  const modalProgress = document.getElementById('modal-upload-progress');
   
-  if (headerProgress) {
-    headerProgress.style.display = 'flex';
-    headerProgress.style.visibility = 'visible';
-    headerProgress.style.opacity = '1';
-    console.log('✅ Barra de progresso do HEADER exibida (display=flex)');
-    console.log('   Computed display:', window.getComputedStyle(headerProgress).display);
-    console.log('   Computed visibility:', window.getComputedStyle(headerProgress).visibility);
+  if (modalProgress) {
+    // FORÇAR display com !important via cssText
+    modalProgress.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
+    modalProgress.classList.add('active', 'uploading');
     
-    // Verificar novamente após 100ms para confirmar que ainda está visível
-    setTimeout(() => {
-      const currentDisplay = window.getComputedStyle(headerProgress).display;
-      console.log('🔍 Verificação após 100ms - Display:', currentDisplay);
-      if (currentDisplay === 'none') {
-        console.error('⚠️ ALERTA: Barra foi OCULTADA após ser exibida!');
-        // Forçar visibilidade novamente
-        headerProgress.style.display = 'flex';
-        headerProgress.style.visibility = 'visible';
-        console.log('🔧 Barra forçada a ficar visível novamente');
+    console.log('🖥️ Barra TERMINAL do MODAL ativada');
+    console.log('   Display:', window.getComputedStyle(modalProgress).display);
+    
+    // Verificar múltiplas vezes (simplificado)
+    const checkTerminal = (attempt) => {
+      const currentDisplay = window.getComputedStyle(modalProgress).display;
+      if (currentDisplay === 'none' || currentDisplay === '') {
+        console.error(`⚠️ ALERTA #${attempt}: Re-forçando barra terminal...`);
+        modalProgress.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
+        modalProgress.classList.add('active', 'uploading');
       }
-    }, 100);
+    };
+    
+    setTimeout(() => checkTerminal(1), 100);
+    setTimeout(() => checkTerminal(2), 500);
   } else {
-    console.error('❌ Container header-upload-progress não encontrado no DOM!');
+    console.error('❌ Barra terminal não encontrada!');
   }
   // ==================================================================
   
@@ -2498,13 +2498,35 @@ async function uploadSketch() {
   }
   
   console.log('🔄 Chamando updateProgress(0) para inicializar barras...');
-  updateProgress(0);
+  updateProgress(0, 'Preparando upload...');
   console.log('✅ updateProgress(0) executado');
+  
+  // ==================== SIMULADOR DE PROGRESSO AGRESSIVO ====================
+  // Este simulador garante que a barra apareça mesmo se o backend não enviar progresso
+  let simulatedProgress = 0;
+  const progressSimulator = setInterval(() => {
+    if (simulatedProgress < 95) {
+      simulatedProgress += 2;
+      updateProgress(simulatedProgress, `Processando... (${simulatedProgress}%)`);
+      console.log(`🎭 SIMULADOR: ${simulatedProgress}%`);
+    }
+  }, 800); // Incrementa 2% a cada 800ms
+  
+  // Guardar o intervalo para poder limpar depois
+  window.uploadProgressSimulator = progressSimulator;
+  console.log('🎭 SIMULADOR DE PROGRESSO INICIADO');
+  // ========================================================================
   
   // Verificar se backend está rodando
   addToSerialConsole(`🔧 Status do backend: ${backendState.isRunning ? 'Rodando' : 'Parado'}`);
   
   if (!backendState.isRunning) {
+    // Limpar simulador se backend não estiver rodando
+    if (window.uploadProgressSimulator) {
+      clearInterval(window.uploadProgressSimulator);
+      window.uploadProgressSimulator = null;
+    }
+    
     showSerialNotification('❌ Backend não está rodando! Inicie o backend primeiro.', 'error');
     addToSerialConsole('❌ Backend não está rodando!');
     addToSerialConsole('💡 SOLUÇÃO: Procure o botão "Iniciar Backend" e clique nele');
@@ -2663,7 +2685,14 @@ async function uploadSketch() {
       addToSerialConsole('');
       addToSerialConsole('📡 Iniciando monitoramento serial...');
       
-      updateProgress(100);
+      // PARAR SIMULADOR E COMPLETAR PROGRESSO
+      if (window.uploadProgressSimulator) {
+        clearInterval(window.uploadProgressSimulator);
+        window.uploadProgressSimulator = null;
+        console.log('🎭 SIMULADOR DE PROGRESSO PARADO');
+      }
+      
+      updateProgress(100, 'Upload concluído!');
       
       // Completar barra de progresso
       const progressFill = document.getElementById('upload-progress-fill');
@@ -2784,13 +2813,24 @@ async function uploadSketch() {
       
       addToSerialConsole('');
       addToSerialConsole('❌ UPLOAD FALHOU');
-      addToSerialConsole('   � Verifique os detalhes acima e tente novamente');
+      addToSerialConsole('   💡 Verifique os detalhes acima e tente novamente');
+      
+      // Mostrar erro na barra de progresso terminal
+      updateProgress(100, `ERRO: ${result.message || 'Upload falhou'}`, true);
       
       showSerialNotification('❌ Erro no upload!', 'error');
     }
     
   } catch (error) {
     console.error('❌ Erro no upload:', error);
+    
+    // PARAR SIMULADOR EM CASO DE ERRO
+    if (window.uploadProgressSimulator) {
+      clearInterval(window.uploadProgressSimulator);
+      window.uploadProgressSimulator = null;
+      console.log('🎭 SIMULADOR DE PROGRESSO PARADO (ERRO)');
+    }
+    
     addToSerialConsole('❌ Erro na comunicação com o backend:');
     
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -2811,10 +2851,19 @@ async function uploadSketch() {
     addToSerialConsole('   1. Verificar se o backend está rodando');
     addToSerialConsole('   2. Verificar se a ESP32 está conectada');
     addToSerialConsole('   3. Tentar reiniciar o backend');
+    
+    // Mostrar erro na barra de progresso
+    updateProgress(100, 'ERRO: Falha na comunicação com backend', true);
   } finally {
+    // GARANTIR QUE SIMULADOR SEJA PARADO
+    if (window.uploadProgressSimulator) {
+      clearInterval(window.uploadProgressSimulator);
+      window.uploadProgressSimulator = null;
+      console.log('🎭 SIMULADOR DE PROGRESSO PARADO (FINALLY)');
+    }
+    
     // Reabilitar botões
     reEnableUploadButtons(uploadBtnModal, uploadBtnMain);
-    updateProgress(0);
   }
 }
 
@@ -3014,8 +3063,8 @@ async function installEsp32Core() {
 }
 
 // Função para mostrar status do upload em tempo real
-function updateProgress(percent, status = '') {
-  console.log(`📊 updateProgress chamado: ${percent}% - ${status || 'sem status'}`);
+function updateProgress(percent, status = '', isError = false) {
+  console.log(`📊 updateProgress chamado: ${percent}% - ${status || 'sem status'} - Erro: ${isError}`);
   
   // Barra de progresso serial (no modal de código)
   const progressFill = document.getElementById('upload-progress-fill');
@@ -3026,11 +3075,11 @@ function updateProgress(percent, status = '') {
   const progressLabel = document.getElementById('upload-progress-label');
   const progressPercentage = document.getElementById('upload-progress-percentage');
   
-  // ==================== BARRA NO HEADER (PRINCIPAL) ====================
-  const headerProgressFill = document.getElementById('header-progress-fill');
-  const headerProgressText = document.getElementById('header-progress-text');
-  const headerProgressPercent = document.getElementById('header-progress-percent');
-  // ======================================================================
+  // ==================== BARRA NO MODAL (ESTILO TERMINAL) ====================
+  const modalProgressBar = document.getElementById('modal-progress-bar-ascii');
+  const modalProgressText = document.getElementById('modal-progress-text');
+  const modalProgressPercent = document.getElementById('modal-progress-percent');
+  // =======================================================================
   
   console.log('🔍 Elementos encontrados:', {
     progressFill: !!progressFill,
@@ -3038,9 +3087,9 @@ function updateProgress(percent, status = '') {
     progressFillTab: !!progressFillTab,
     progressLabel: !!progressLabel,
     progressPercentage: !!progressPercentage,
-    headerProgressFill: !!headerProgressFill,
-    headerProgressText: !!headerProgressText,
-    headerProgressPercent: !!headerProgressPercent
+    modalProgressBar: !!modalProgressBar,
+    modalProgressText: !!modalProgressText,
+    modalProgressPercent: !!modalProgressPercent
   });
   
   // Atualizar barra serial
@@ -3102,45 +3151,91 @@ function updateProgress(percent, status = '') {
     }
   }
   
-  // ==================== ATUALIZAR BARRA NO HEADER (PRINCIPAL) ====================
-  if (headerProgressFill) {
-    headerProgressFill.style.width = `${Math.max(3, percent)}%`;
-    console.log(`✅ Barra HEADER atualizada: ${percent}%`);
+  // ==================== ATUALIZAR BARRA ESTILO TERMINAL (MODAL) ====================
+  const modalProgressContainer = document.getElementById('modal-upload-progress');
+  
+  if (modalProgressContainer) {
+    // FORÇAR visibilidade
+    modalProgressContainer.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     
     // Remover classes anteriores
-    headerProgressFill.classList.remove('compiling', 'uploading', 'complete', 'error');
+    modalProgressContainer.classList.remove('error', 'success');
+    modalProgressContainer.classList.add('active', 'uploading');
     
-    // Adicionar classe baseada no progresso
-    if (percent < 30) {
-      headerProgressFill.classList.add('compiling');
-    } else if (percent < 100) {
-      headerProgressFill.classList.add('uploading');
+    // Se for erro, adicionar classe de erro
+    if (isError) {
+      modalProgressContainer.classList.add('error');
+      modalProgressContainer.classList.remove('uploading', 'success');
+    } else if (percent >= 100) {
+      modalProgressContainer.classList.add('success');
+      modalProgressContainer.classList.remove('uploading', 'error');
+    }
+    
+    console.log(`🖥️ Barra TERMINAL atualizada: ${percent}% - Erro: ${isError}`);
+  }
+  
+  // Criar barra ASCII (caracteres █ para preenchido, ░ para vazio)
+  if (modalProgressBar) {
+    const barLength = 40; // 40 caracteres de largura
+    const filledLength = Math.round((percent / 100) * barLength);
+    const emptyLength = barLength - filledLength;
+    
+    let asciiBar = '';
+    
+    // Caractere de progresso muda baseado no estado
+    let fillChar = '█';
+    if (isError) {
+      fillChar = '▓'; // Erro usa padrão diferente
+    } else if (percent >= 100) {
+      fillChar = '█'; // Completo
+    }
+    
+    asciiBar = fillChar.repeat(filledLength) + '░'.repeat(emptyLength);
+    
+    modalProgressBar.setAttribute('data-progress', asciiBar);
+    console.log(`📊 Barra ASCII: [${asciiBar}] ${percent}%`);
+  }
+  
+  // Atualizar texto
+  if (modalProgressText) {
+    if (isError) {
+      modalProgressText.textContent = status || 'ERRO no upload!';
+    } else if (status) {
+      modalProgressText.textContent = status;
     } else {
-      headerProgressFill.classList.add('complete');
+      // Status padrão baseado no progresso
+      if (percent < 10) {
+        modalProgressText.textContent = 'Iniciando upload...';
+      } else if (percent < 30) {
+        modalProgressText.textContent = 'Compilando código...';
+      } else if (percent < 50) {
+        modalProgressText.textContent = 'Linkando bibliotecas...';
+      } else if (percent < 70) {
+        modalProgressText.textContent = 'Conectando à ESP32...';
+      } else if (percent < 100) {
+        modalProgressText.textContent = 'Fazendo upload...';
+      } else {
+        modalProgressText.textContent = 'Upload concluído com sucesso!';
+      }
     }
   }
   
-  if (headerProgressPercent) {
-    headerProgressPercent.textContent = `${Math.round(percent)}%`;
+  // Atualizar porcentagem
+  if (modalProgressPercent) {
+    modalProgressPercent.textContent = `${Math.round(percent)}%`;
   }
   
-  if (headerProgressText && status) {
-    headerProgressText.textContent = status;
-  } else if (headerProgressText) {
-    // Status padrão baseado no progresso
-    if (percent < 10) {
-      headerProgressText.textContent = 'Iniciando...';
-    } else if (percent < 30) {
-      headerProgressText.textContent = 'Compilando...';
-    } else if (percent < 50) {
-      headerProgressText.textContent = 'Linkando...';
-    } else if (percent < 70) {
-      headerProgressText.textContent = 'Conectando...';
-    } else if (percent < 100) {
-      headerProgressText.textContent = 'Uploading...';
-    } else {
-      headerProgressText.textContent = 'Concluído!';
-    }
+  // Auto-ocultar após completar ou erro
+  if (percent >= 100 || isError) {
+    const hideDelay = isError ? 4000 : 3000; // 4s para erro, 3s para sucesso
+    
+    setTimeout(() => {
+      if (modalProgressContainer) {
+        modalProgressContainer.style.display = 'none';
+        modalProgressContainer.classList.remove('active', 'uploading', 'error', 'success');
+        console.log(`✅ Barra TERMINAL ocultada após ${isError ? 'erro' : 'conclusão'}`);
+      }
+    }, hideDelay);
   }
   // ================================================================================
 }
