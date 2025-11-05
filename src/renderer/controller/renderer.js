@@ -4562,8 +4562,9 @@ function drawPlotterChart() {
     cachedAxes = null;
   }
   
-  // Limpar apenas área necessária
-  ctx.clearRect(0, 0, width, height);
+  // Preencher com fundo preto antes de desenhar
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, width, height);
   
   // Desenhar grade de fundo (cached)
   if (!cachedGrid || sizeChanged) {
@@ -4585,7 +4586,7 @@ function drawPlotterChart() {
  * Desenha grade de fundo
  */
 function drawPlotterGrid(ctx, padding, width, height) {
-  ctx.strokeStyle = '#e9ecef';
+  ctx.strokeStyle = '#2a2a2a';
   ctx.lineWidth = 1;
   
   // Linhas verticais
@@ -4613,7 +4614,7 @@ function drawPlotterGrid(ctx, padding, width, height) {
  * Desenha eixos X e Y
  */
 function drawPlotterAxes(ctx, padding, width, height) {
-  ctx.strokeStyle = '#495057';
+  ctx.strokeStyle = '#4a4a4a';
   ctx.lineWidth = 2;
   
   // Eixo X (horizontal no meio)
@@ -5315,8 +5316,8 @@ function updateSVGChart(container) {
 }
 
 function drawCurrentValues(ctx, sensors, width, height) {
-  ctx.font = '12px Arial';
-  ctx.fillStyle = '#333';
+  ctx.font = 'bold 13px Arial';
+  ctx.fillStyle = '#ffffff';
   
   let y = 20;
   sensors.forEach(sensor => {
