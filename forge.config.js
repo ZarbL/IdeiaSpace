@@ -1,68 +1,85 @@
 module.exports = {
   packagerConfig: {
     name: "IdeiaSpace Mission",
-    icon: 'src/assets/logo-dark.png',
-    asar: {
-      unpack: "*.{node,dll}"
-    },
+    icon: 'assets/logo-dark.png', // Ícone para Windows .ico
+    asar: true, // Empacotar app em ASAR para proteção
     overwrite: true,
-    // Otimizações de memória e performance
-    executableName: "ideiaspace-mission",
-    // Ignorar arquivos desnecessários para reduzir tamanho
+    platform: 'win32', // Apenas Windows
+    arch: 'x64', // Arquitetura 64-bit
+    executableName: "IdeiaSpace-Mission",
+    
+    // CRÍTICO: Backend deve ficar FORA do ASAR
+    extraResources: [
+      {
+        from: 'backend',
+        to: 'backend',
+        filter: [
+          '**/*',
+          '!node_modules/**/*', // Backend não precisa de node_modules empacotado
+          '!arduino-cli/config/downloads/**/*', // Limpar downloads temporários
+          '!arduino-cli/config/tmp/**/*', // Limpar temporários
+          '!arduino-cli/config/data/tmp/**/*',
+          '!**/.DS_Store',
+          '!**/Thumbs.db'
+        ]
+      }
+    ],
+    
+    // Ignorar arquivos desnecessários no ASAR
     ignore: [
       /^\/\.git/,
+      /^\/backend/, // Backend vai para extraResources
       /^\/node_modules\/.*\/test/,
       /^\/node_modules\/.*\/tests/,
       /^\/node_modules\/.*\/\.nyc_output/,
       /^\/node_modules\/.*\/coverage/,
       /^\/node_modules\/.*\/\.github/,
-      /^\/backend\/arduino-cli\/config\/downloads/,
-      /^\/backend\/arduino-cli\/config\/tmp/,
       /^\/out/,
+      /^\/dist/,
       /^\/\.env/,
       /^\/forge\.config\.js/,
       /^\/README\.md/,
       /^\/\.gitignore/,
       /^\/memory-optimization\.md/,
-      /^\/cleanup-arduino-cli\.sh/
+      /^\/cleanup-arduino-cli\.sh/,
+      /^\/script\.js/,
+      /^\/upload\.js/,
+      /^\/env\.example/,
+      /^\/build-prepare\.js/,
+      /^\/\.forge-hooks\.js/
+    ],
+    
+    // Hook pós-cópia para ajustar permissões
+    afterCopy: [
+      (buildPath, electronVersion, platform, arch, callback) => {
+        require('./.forge-hooks').afterCopy(buildPath, electronVersion, platform, arch, callback);
+      }
     ]
   },
   rebuildConfig: {},
   makers: [
+    // Instalador principal para Windows - Squirrel
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: "ideiaspace_mission",
-        authors: "IdeiaSpace",
-        description: "Plataforma de programação em blocos para ensino aeroespacial",
-        iconUrl: "https://ideiaspace.com.br/assets/logo.ico",
-        setupIcon: "./assets/logo.ico"
+        name: "IdeiaSpace_Mission",
+        authors: "IdeiaSpace Team",
+        description: "Plataforma de programação em blocos para ensino aeroespacial - Inclui Arduino CLI e bibliotecas ESP32",
+        exe: "IdeiaSpace-Mission.exe",
+        setupExe: "IdeiaSpace-Mission-Setup.exe",
+        setupIcon: "./assets/logo-dark.ico",
+        loadingGif: "./assets/installing.gif", // Adicione um GIF de instalação se tiver
+        noMsi: true, // Não criar MSI, apenas .exe
+        // Configurações de atualização automática (futuro)
+        remoteReleases: false
       }
     },
+    // ZIP portátil para Windows
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin', 'win32']
-    },
-    {
-      name: '@electron-forge/maker-deb',
+      platforms: ['win32'],
       config: {
-        options: {
-          maintainer: "IdeiaSpace",
-          homepage: "https://ideiaspace.com.br",
-          categories: ["Education", "Development"],
-          description: "Plataforma de programação em blocos para ensino de conceitos aeroespaciais"
-        }
-      }
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {
-        options: {
-          maintainer: "IdeiaSpace",
-          homepage: "https://ideiaspace.com.br",
-          categories: ["Education", "Development"],
-          description: "Plataforma de programação em blocos para ensino de conceitos aeroespaciais"
-        }
+        // Criar versão portátil que não precisa instalação
       }
     }
   ],
@@ -71,12 +88,22 @@ module.exports = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'ideiaspace',
-          name: 'ideiaspace-mission'
+          owner: 'ZarbL', // Seu usuário GitHub
+          name: 'IdeiaSpace' // Nome do repositório
         },
         prerelease: false,
-        draft: true
+        draft: true, // Criar como draft primeiro para você revisar
+        generateReleaseNotes: true
       }
     }
-  ]
+  ],
+  
+  hooks: {
+    // Hook para preparar build
+    generateAssets: async () => {
+      console.log('🔧 Preparando recursos para build...');
+      const prepareBuild = require('./build-prepare');
+      await prepareBuild.prepare();
+    }
+  }
 }; 

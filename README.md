@@ -1,62 +1,132 @@
 # IdeiaSpace Mission
 
-Uma aplicação desktop desenvolvida com Electron que permite programação visual usando Blockly para gerar código C++.
+Uma aplicação desktop desenvolvida com Electron para programação visual de placas ESP32 usando Blockly, com Arduino CLI integrado.
 
 ## 🚀 Visão Geral
 
-O IdeiaSpace Mission é uma ferramenta educacional que combina programação visual com geração de código C++. Usando blocos visuais do Blockly, os usuários podem criar programas C++ de forma intuitiva e visual, ideal para aprendizado de programação.
+O IdeiaSpace Mission é uma ferramenta educacional que combina programação visual com geração de código C++ para ESP32. Usando blocos visuais do Blockly, os usuários podem criar programas para microcontroladores de forma intuitiva, ideal para ensino de conceitos aeroespaciais e programação embarcada.
 
 ### Características Principais
 
 - **Interface Visual Intuitiva**: Programação por blocos usando Blockly
-- **Geração de Código C++**: Código C++ padrão e limpo
+- **Arduino CLI Integrado**: Upload direto para ESP32, sem Arduino IDE
+- **Cores ESP32 Pré-instalados**: Suporte completo para ESP32
+- **9 Bibliotecas Incluídas**: Sensores e displays prontos para usar
+- **100% Offline**: Funciona sem internet após instalação
 - **Aplicação Desktop**: Interface nativa usando Electron
 - **Tempo Real**: Geração de código instantânea
-- **Educacional**: Ideal para ensino de programação
+- **Educacional**: Ideal para ensino de programação e aeroespacial
 
-## 📋 Pré-requisitos
+## � Para Usuários Finais
+
+### Download e Instalação (Windows)
+
+1. Baixe o instalador: **`IdeiaSpace-Mission-Setup.exe`**
+2. Execute o instalador (duplo clique)
+3. Aguarde a instalação (~30 segundos)
+4. Abra do Menu Iniciar: **IdeiaSpace Mission**
+
+**Pronto para usar!** ✨
+
+Não precisa instalar Arduino IDE, drivers ou bibliotecas - tudo está incluído!
+
+---
+
+## 👨‍💻 Para Desenvolvedores
+
+## �📋 Pré-requisitos
 
 - Node.js (versão 16 ou superior)
-- npm ou yarn
+- npm
 - Git
+- Windows 10/11 (para build)
 
-## 🛠️ Instalação
+## 🛠️ Instalação (Desenvolvimento)
 
 1. **Clone o repositório**:
 ```bash
-git clone https://github.com/seu-usuario/ideiaspace-mission.git
-cd ideiaspace-mission
+git clone https://github.com/ZarbL/IdeiaSpace.git
+cd IdeiaSpace
 ```
 
-2. **Instale as dependências**:
+2. **Instale as dependências e configure tudo**:
 ```bash
-npm install
+npm run setup
 ```
+
+Este comando irá:
+- ✅ Instalar dependências do projeto
+- ✅ Instalar dependências do backend
+- ✅ Baixar e configurar Arduino CLI
+- ✅ Instalar cores ESP32
+- ✅ Instalar bibliotecas necessárias
+
+⏱️ **Tempo estimado:** 5-15 minutos (depende da conexão)
 
 3. **Execute em modo de desenvolvimento**:
 ```bash
 npm start
 ```
 
+## 📦 Criar Instalador para Distribuição
+
+### Opção 1: Script Automático (Windows)
+```cmd
+build-windows.bat
+```
+
+### Opção 2: Linha de Comando
+```bash
+npm run build:windows
+```
+
+📁 **Resultado:** `out/make/squirrel.windows/x64/IdeiaSpace-Mission-Setup.exe`
+
+📖 **Documentação completa:** [BUILD.md](./BUILD.md)  
+⚡ **Guia rápido:** [QUICK-BUILD.md](./QUICK-BUILD.md)
+
 ## 🏗️ Estrutura do Projeto
 
 ```
 IdeiaSpace/
-├── assets/                 # Recursos estáticos (logo, imagens)
-├── blocks/                 # Definições dos blocos customizados
-│   └── custom_blocks.js    # Blocos C++ personalizados
-├── generators/             # Geradores de código
-│   └── cpp.js             # Gerador de código C++
-├── .github/               # Configurações do GitHub
-├── index.html             # Interface principal
-├── main.js                # Processo principal do Electron
-├── preload.js             # Script de pré-carregamento
-├── renderer.js            # Processo de renderização
-├── style.css              # Estilos da interface
-├── package.json           # Configurações do projeto
-├── forge.config.js        # Configuração do Electron Forge
-├── README.md              # Este arquivo
-├── DEVELOPMENT.md         # Guia de desenvolvimento
+├── src/
+│   ├── main/                    # Electron main process
+│   │   ├── main.js             # Processo principal
+│   │   └── preload.js          # Preload script
+│   ├── renderer/               # Interface do usuário
+│   │   ├── view/
+│   │   │   ├── index.html      # Interface principal
+│   │   │   └── style.css       # Estilos
+│   │   ├── controller/
+│   │   │   ├── renderer.js     # Lógica da interface
+│   │   │   ├── arduino-cli-client.js
+│   │   │   └── i18n.js         # Internacionalização
+│   │   ├── model/
+│   │   │   ├── blocks.js       # Definições Blockly
+│   │   │   └── cpp_generator.js # Gerador C++
+│   │   └── locales/
+│   │       ├── pt-BR.json      # Português
+│   │       └── en-US.json      # Inglês
+│   └── assets/                 # Logo, ícones
+├── backend/                    # Backend Node.js
+│   ├── arduino-cli/           # Arduino CLI + ESP32 + Libs
+│   │   ├── arduino-cli.exe
+│   │   └── config/
+│   │       ├── data/packages/esp32/
+│   │       └── user/libraries/
+│   ├── server.js              # Servidor HTTP/WebSocket
+│   ├── config.js              # Configurações
+│   ├── auto-setup.js          # Setup automático
+│   └── services/              # Serviços (serial, arduino-cli)
+├── build-prepare.js           # Preparação de build
+├── build-validate.js          # Validação de build
+├── .forge-hooks.js           # Hooks de build
+├── forge.config.js           # Config Electron Forge
+├── package.json              # Dependências e scripts
+├── BUILD.md                  # Documentação de build
+├── QUICK-BUILD.md            # Guia rápido
+└── README.md                 # Este arquivo
+```
 ├── CHANGELOG.md           # Histórico de mudanças
 └── CPP_MODULE.md          # Documentação do módulo C++
 ```

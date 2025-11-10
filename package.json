@@ -24,7 +24,15 @@
     "setup": "npm install && npm run backend:setup",
     "prestart": "npm run backend:check",
     "clean:arduino": "./cleanup-arduino-cli.sh",
-    "optimize": "npm run clean:arduino && npm run start"
+    "optimize": "npm run clean:arduino && npm run start",
+    "build:prepare": "node build-prepare.js",
+    "build:clean": "rimraf out dist build-manifest.json",
+    "build:windows": "npm run build:prepare && npm run make -- --platform=win32 --arch=x64",
+    "build:portable": "npm run build:prepare && electron-builder --win portable",
+    "build:validate": "node build-validate.js",
+    "prebuild": "npm run build:prepare",
+    "postbuild": "echo \"✅ Build concluído! Verifique a pasta 'out' para os instaladores.\"",
+    "postmake": "npm run build:validate"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.2.0",

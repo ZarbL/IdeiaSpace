@@ -12,6 +12,35 @@ class AppConfig {
     this.isWindows = this.platform === 'win32';
     this.isMac = this.platform === 'darwin';
     this.isLinux = this.platform === 'linux';
+    
+    // Detectar se está rodando em ambiente empacotado (produção)
+    this.isPackaged = this.detectPackaged();
+  }
+
+  /**
+   * Detecta se a aplicação está empacotada (Electron)
+   */
+  detectPackaged() {
+    // Em produção, process.resourcesPath existe e é diferente de process.cwd()
+    if (process.resourcesPath) {
+      const isDefaultPath = process.resourcesPath.includes('node_modules');
+      return !isDefaultPath;
+    }
+    return false;
+  }
+
+  /**
+   * Obtém o diretório raiz do backend
+   * Em desenvolvimento: usa __dirname
+   * Em produção: usa process.resourcesPath/backend
+   */
+  getBackendDir() {
+    if (this.isPackaged && process.resourcesPath) {
+      // Em produção, backend está em resources/backend
+      return path.join(process.resourcesPath, 'backend');
+    }
+    // Em desenvolvimento
+    return __dirname;
   }
 
   /**
@@ -41,11 +70,11 @@ class AppConfig {
 
   /**
    * Caminhos do Arduino CLI baseado na plataforma
-   * TUDO RELATIVO para garantir portabilidade completa
+   * ATUALIZADO: Suporta ambiente empacotado
    */
   getArduinoCLIPaths() {
-    const backendDir = path.join(__dirname);
-    const executable = this.isWindows ? 'arduino-cli.exe' : 'arduino-cli';
+    const backendDir = this.getBackendDir(); // Usa método que detecta ambiente
+    const executable = 'arduino-cli.exe'; // Apenas Windows
     
     const arduinoCliBase = path.join(backendDir, 'arduino-cli');
     

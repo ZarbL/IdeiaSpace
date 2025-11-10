@@ -101,6 +101,26 @@ app.on('activate', () => {
 // IPC HANDLERS - ARDUINO CLI BACKEND
 // ============================================================================
 
+/**
+ * Obtém o diretório do backend considerando ambiente empacotado
+ */
+function getBackendDir() {
+  // Detectar se está empacotado
+  const isPackaged = process.resourcesPath && !process.resourcesPath.includes('node_modules');
+  
+  if (isPackaged) {
+    // Em produção: backend está em resources/backend
+    const backendPath = path.join(process.resourcesPath, 'backend');
+    console.log('📦 Modo PRODUÇÃO - Backend em:', backendPath);
+    return backendPath;
+  } else {
+    // Em desenvolvimento
+    const backendPath = path.join(__dirname, '../../backend');
+    console.log('🔧 Modo DESENVOLVIMENTO - Backend em:', backendPath);
+    return backendPath;
+  }
+}
+
 // Iniciar backend
 ipcMain.handle('start-arduino-backend', async () => {
   console.log('🚀 Recebida solicitação para iniciar backend Arduino CLI');
@@ -111,7 +131,7 @@ ipcMain.handle('start-arduino-backend', async () => {
   }
 
   try {
-    const backendDir = path.join(__dirname, '../../backend');
+    const backendDir = getBackendDir(); // Usar função que detecta ambiente
     const serverPath = path.join(backendDir, 'server.js');
     const minimalServerPath = path.join(backendDir, 'minimal-server.js');
     const autoSetupPath = path.join(backendDir, 'auto-setup.js');

@@ -28,6 +28,19 @@ dist/
 build/
 out/
 
+# Build artifacts específicos do Electron Forge
+out/make/
+out/package/
+*.exe
+*.msi
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Manifesto de build
+build-manifest.json
+
 # Arquivos de configuração local
 .env
 .env.local

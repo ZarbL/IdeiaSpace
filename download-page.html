@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdeiaSpace Mission - Download</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 90%;
+            padding: 50px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 50px;
+            font-size: 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .file-info {
+            margin-top: 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .features {
+            text-align: left;
+            margin: 40px 0;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        .features h2 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .features ul {
+            list-style: none;
+        }
+
+        .features li {
+            padding: 10px 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .features li::before {
+            content: "✅ ";
+            margin-right: 10px;
+        }
+
+        .requirements {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .requirements h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .requirements ul {
+            list-style: none;
+            color: #856404;
+        }
+
+        .requirements li {
+            padding: 5px 0;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>IdeiaSpace Mission</h1>
+        <p class="version">Versão 1.0.0 | Windows 10/11 (64-bit)</p>
+        
+        <p>
+            Plataforma educacional de programação visual para ESP32.<br>
+            Aprenda programação de forma intuitiva usando blocos!
+        </p>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Offline</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">9</div>
+                <div class="stat-label">Bibliotecas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Configuração</div>
+            </div>
+        </div>
+
+        <!-- SUBSTITUA A URL ABAIXO PELO SEU LINK DO GITHUB RELEASE -->
+        <a href="https://github.com/ZarbL/IdeiaSpace/releases/download/v1.0.0/IdeiaSpace-Mission-Setup.exe" 
+           class="download-btn"
+           download>
+            📥 Baixar Instalador
+        </a>
+        
+        <div class="file-info">
+            IdeiaSpace-Mission-Setup.exe | ~300 MB
+        </div>
+
+        <div class="features">
+            <h2>✨ O que está incluído:</h2>
+            <ul>
+                <li>Interface de programação visual (Blockly)</li>
+                <li>Arduino CLI integrado</li>
+                <li>Cores ESP32 pré-instalados</li>
+                <li>9 bibliotecas de sensores e displays</li>
+                <li>Upload direto para ESP32 via USB</li>
+                <li>Funcionamento 100% offline</li>
+                <li>Sem necessidade de Arduino IDE</li>
+                <li>Instalação automática em 30 segundos</li>
+            </ul>
+        </div>
+
+        <div class="requirements">
+            <h3>📋 Requisitos do Sistema:</h3>
+            <ul>
+                <li>💻 Windows 10 ou 11 (64-bit)</li>
+                <li>💾 ~1 GB de espaço em disco</li>
+                <li>🔌 Porta USB disponível (para ESP32)</li>
+                <li>🚫 Não precisa de Arduino IDE</li>
+                <li>🌐 Não precisa de internet (após instalação)</li>
+            </ul>
+        </div>
+
+        <div class="features">
+            <h2>🎯 Como instalar:</h2>
+            <ul>
+                <li>Baixe o instalador acima</li>
+                <li>Execute o arquivo IdeiaSpace-Mission-Setup.exe</li>
+                <li>Aguarde ~30 segundos</li>
+                <li>Abra do Menu Iniciar</li>
+                <li>Pronto para usar! 🎉</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>
+                📚 <a href="https://github.com/ZarbL/IdeiaSpace" target="_blank">Documentação</a> | 
+                🐛 <a href="https://github.com/ZarbL/IdeiaSpace/issues" target="_blank">Reportar Bug</a> | 
+                💬 <a href="https://github.com/ZarbL/IdeiaSpace/discussions" target="_blank">Suporte</a>
+            </p>
+            <p style="margin-top: 20px;">
+                Desenvolvido com ❤️ pela equipe IdeiaSpace<br>
+                © 2025 - Licença MIT
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Opcional: Tracking de downloads
+        document.querySelector('.download-btn').addEventListener('click', function() {
+            console.log('Download iniciado!');
+            // Aqui você pode adicionar Google Analytics ou outro tracking
+        });
+    </script>
+</body>
+</html>
