@@ -15,7 +15,9 @@ const execAsync = promisify(exec);
 class SetupVerifier {
   constructor() {
     this.backendDir = __dirname;
-    this.cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+    // Detectar executável correto baseado na plataforma
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    this.cliPath = path.join(this.backendDir, 'arduino-cli', executable);
     this.configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
   }
 
@@ -38,7 +40,7 @@ class SetupVerifier {
       }
     } else {
       console.log('   ❌ NÃO INSTALADO');
-      console.log('   💡 Execute: npm run install-cli\n');
+      console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou reinicie o backend para auto-setup\n');
       allOk = false;
     }
 
@@ -53,12 +55,12 @@ class SetupVerifier {
         console.log(`   ✅ ESP32 Core ${version} instalado\n`);
       } else {
         console.log('   ❌ NÃO INSTALADO');
-        console.log('   💡 Execute: npm run install-esp32\n');
+        console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup na próxima inicialização\n');
         allOk = false;
       }
     } catch (error) {
       console.log('   ❌ Erro ao verificar');
-      console.log('   💡 Execute: npm run install-esp32\n');
+      console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup na próxima inicialização\n');
       allOk = false;
     }
 
@@ -90,11 +92,11 @@ class SetupVerifier {
         console.log(`   ✅ Todas as ${requiredLibs.length} bibliotecas instaladas\n`);
       } else if (installedCount > 0) {
         console.log(`   ⚠️ ${installedCount}/${requiredLibs.length} bibliotecas instaladas`);
-        console.log('   💡 Execute: npm run install-libraries\n');
+        console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup completar\n');
         allOk = false;
       } else {
         console.log(`   ❌ Nenhuma biblioteca instalada`);
-        console.log('   💡 Execute: npm run install-libraries\n');
+        console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup completar\n');
         allOk = false;
       }
     } catch (error) {
@@ -157,10 +159,10 @@ class SetupVerifier {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     if (allOk) {
       console.log('🎉 TUDO OK! Sistema pronto para uso!');
-      console.log('💡 Execute: npm start');
+      console.log('💡 Você pode iniciar o backend pelo aplicativo');
     } else {
       console.log('⚠️ Alguns componentes precisam de atenção');
-      console.log('💡 Execute: npm run setup (para configuração completa)');
+      console.log('💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup automático');
     }
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }

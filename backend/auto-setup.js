@@ -59,11 +59,21 @@ class AutoSetup {
     addLog('🔧 Auto-setup do backend...', 'info');
     addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'info');
 
+    const errors = [];
+    let criticalError = false;
+
     try {
       // SEMPRE validar e corrigir configurações primeiro
       addLog('📋 Etapa 1: Validação de configurações', 'info');
-      await this.validateAndFixConfigs();
-      addLog('', 'info');
+      try {
+        await this.validateAndFixConfigs();
+        addLog('✅ Configurações validadas\n', 'success');
+      } catch (error) {
+        addLog(`❌ ERRO CRÍTICO: ${error.message}\n`, 'error');
+        errors.push({ step: 'config', error: error.message, critical: true });
+        criticalError = true;
+        throw error; // Parar imediatamente se config falhar
+      }
       
       // Verificar se já está configurado (mas ainda assim verificar cores)
       const alreadySetup = await this.isAlreadySetup();
@@ -71,29 +81,77 @@ class AutoSetup {
       if (!alreadySetup) {
         // Auto-instalar dependências se necessário
         addLog('📋 Etapa 2: Verificação de dependências', 'info');
-        await this.autoInstallDependencies();
-        addLog('', 'info');
+        try {
+          await this.autoInstallDependencies();
+          addLog('✅ Dependências instaladas\n', 'success');
+        } catch (error) {
+          addLog(`❌ ERRO CRÍTICO: Falha ao instalar dependências\n`, 'error');
+          addLog(`   Detalhes: ${error.message}\n`, 'error');
+          errors.push({ step: 'dependencies', error: error.message, critical: true });
+          criticalError = true;
+          throw error; // Dependências são críticas!
+        }
         
         // Auto-configurar Arduino CLI se necessário
         addLog('📋 Etapa 3: Configuração do Arduino CLI', 'info');
-        await this.autoSetupArduinoCLI();
-        addLog('', 'info');
+        try {
+          await this.autoSetupArduinoCLI();
+          addLog('✅ Arduino CLI configurado\n', 'success');
+        } catch (error) {
+          addLog(`❌ ERRO CRÍTICO: Falha ao configurar Arduino CLI\n`, 'error');
+          addLog(`   Detalhes: ${error.message}\n`, 'error');
+          errors.push({ step: 'arduino-cli', error: error.message, critical: true });
+          criticalError = true;
+          throw error; // Arduino CLI é crítico!
+        }
+      } else {
+        addLog('✅ Sistema já configurado anteriormente\n', 'info');
       }
       
       // SEMPRE verificar e instalar cores ESP32 (crítico para o funcionamento)
       addLog('📋 Etapa 4: Instalação de cores ESP32', 'info');
-      await this.autoInstallEsp32Cores();
-      addLog('', 'info');
+      try {
+        await this.autoInstallEsp32Cores();
+        addLog('✅ Cores ESP32 instalados\n', 'success');
+      } catch (error) {
+        addLog(`❌ ERRO CRÍTICO: Falha ao instalar cores ESP32\n`, 'error');
+        addLog(`   Detalhes: ${error.message}\n`, 'error');
+        errors.push({ step: 'esp32-cores', error: error.message, critical: true });
+        criticalError = true;
+        throw error; // Cores ESP32 são críticos!
+      }
       
       addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'success');
       addLog('✅ Auto-setup concluído com sucesso!', 'success');
       addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'success');
       
+      // Retornar sucesso
+      process.exit(0);
+      
     } catch (error) {
-      addLog('\n❌ Auto-setup falhou:', 'error');
-      addLog(`Erro: ${error.message}`, 'error');
-      addLog('💡 Execute manualmente: npm run setup', 'info');
+      addLog('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'error');
+      addLog('❌ AUTO-SETUP FALHOU - SISTEMA NÃO FUNCIONAL', 'error');
+      addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'error');
+      addLog(`\n🔴 Erro: ${error.message}`, 'error');
+      addLog(`📍 Stack: ${error.stack}\n`, 'error');
+      
+      if (errors.length > 0) {
+        addLog('📋 Resumo dos erros:', 'error');
+        errors.forEach((err, idx) => {
+          addLog(`   ${idx + 1}. [${err.step}] ${err.error}`, 'error');
+        });
+        addLog('', 'error');
+      }
+      
+      addLog('🔧 AÇÕES NECESSÁRIAS:', 'info');
+      addLog('   1. Verifique sua conexão com a internet', 'info');
+      addLog('   2. Verifique se tem espaço em disco (mínimo 1 GB)', 'info');
+      addLog('   3. Use o script PRIMEIRO-SETUP.bat ou reinicie o backend', 'info');
+      addLog('   4. Verifique os logs acima para detalhes', 'info');
       addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'error');
+      
+      // Sair com código de erro para o main.js detectar
+      process.exit(1);
     }
   }
 
@@ -126,14 +184,66 @@ class AutoSetup {
     const nodeModulesPath = path.join(this.backendDir, 'node_modules');
     
     if (!fs.existsSync(nodeModulesPath)) {
-      console.log('📦 Instalando dependências automaticamente...');
+      addLog('📦 Instalando dependências Node.js...', 'info');
+      addLog('   Isso pode levar alguns minutos...', 'info');
+      this.sendProgress('dependencies', 0, 'Instalando dependências Node.js...');
       
-      try {
-        await execAsync('npm install', { cwd: this.backendDir });
-        console.log('✅ Dependências instaladas.');
-      } catch (error) {
-        throw new Error('Falha na instalação das dependências');
+      const maxRetries = 3;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 1) {
+            addLog(`   🔄 Tentativa ${attempt}/${maxRetries}...`, 'info');
+          }
+          
+          this.sendProgress('dependencies', 20 * attempt, `Instalando dependências (tentativa ${attempt})...`);
+          
+          // CRÍTICO: Verificar se npm está disponível, caso contrário dar instrução clara
+          let npmCommand = 'npm';
+          try {
+            await execAsync('npm --version', { timeout: 5000 });
+          } catch (npmError) {
+            addLog('⚠️ npm não encontrado no sistema!', 'warn');
+            addLog('💡 Esta instalação requer npm instalado no sistema', 'info');
+            addLog('💡 Opções:', 'info');
+            addLog('   1. Instale Node.js de https://nodejs.org/', 'info');
+            addLog('   2. Execute o PRIMEIRO-SETUP.bat após instalar Node.js', 'info');
+            addLog('   3. OU inclua node_modules pré-compilado no build', 'info');
+            throw new Error('npm não disponível. Instale Node.js de https://nodejs.org/ e execute PRIMEIRO-SETUP.bat');
+          }
+          
+          // Usar npm install com timeout generoso
+          const { stdout, stderr } = await execAsync('npm install --prefer-offline --no-audit --no-fund', { 
+            cwd: this.backendDir,
+            timeout: 300000, // 5 minutos
+            maxBuffer: 10 * 1024 * 1024 // 10 MB buffer
+          });
+          
+          if (stdout) addLog(`   ${stdout}`, 'info');
+          
+          // Verificar se node_modules foi criado
+          if (fs.existsSync(nodeModulesPath)) {
+            addLog('✅ Dependências instaladas com sucesso!', 'success');
+            this.sendProgress('dependencies', 100, 'Dependências instaladas!');
+            return; // Sucesso
+          } else {
+            throw new Error('node_modules não foi criado após npm install');
+          }
+          
+        } catch (error) {
+          addLog(`   ⚠️ Tentativa ${attempt} falhou: ${error.message}`, 'error');
+          
+          if (attempt === maxRetries) {
+            throw new Error(`Falha ao instalar dependências após ${maxRetries} tentativas. Erro: ${error.message}. SOLUÇÃO: Instale Node.js de https://nodejs.org/ e execute PRIMEIRO-SETUP.bat`);
+          }
+          
+          // Aguardar antes de tentar novamente
+          addLog('   ⏳ Aguardando 3 segundos antes de tentar novamente...', 'info');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
       }
+    } else {
+      addLog('✅ Dependências já instaladas', 'success');
+      this.sendProgress('dependencies', 100, 'Dependências já instaladas');
     }
   }
 
@@ -149,7 +259,7 @@ class AutoSetup {
         console.log('✅ Arduino CLI configurado.');
       } catch (error) {
         console.log('⚠️ Falha na configuração automática do Arduino CLI');
-        console.log('💡 Execute: npm run install-cli');
+        console.log('💡 Use o script PRIMEIRO-SETUP.bat');
       }
     }
     
@@ -237,7 +347,7 @@ class AutoSetup {
         
       } catch (error) {
         addLog('\n⚠️ Falha na instalação automática do ESP32 core', 'error');
-        addLog('💡 Execute manualmente: npm run install-esp32', 'info');
+        addLog('💡 Use o script PRIMEIRO-SETUP.bat ou reinicie o backend', 'info');
         addLog(`   Erro: ${error.message}`, 'error');
         this.sendProgress('esp32-core', 0, 'Erro na instalação: ' + error.message);
       }

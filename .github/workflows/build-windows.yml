@@ -1,0 +1,56 @@
+name: Build Windows Executable
+
+on:
+  push:
+    tags:
+      - 'v*'  # Dispara quando você criar uma tag (ex: v1.0.0)
+  workflow_dispatch:  # Permite executar manualmente
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Instalar dependências do frontend
+        run: npm install
+      
+      - name: Instalar dependências do backend
+        run: |
+          cd backend
+          npm install
+          cd ..
+      
+      - name: Pré-validação
+        run: node pre-build-check.js
+      
+      - name: Criar build Windows
+        run: npm run make
+      
+      - name: Preparar distribuição
+        run: node prepare-distribution.js
+      
+      - name: Upload do build
+        uses: actions/upload-artifact@v3
+        with:
+          name: IdeiaSpace-Windows-x64
+          path: distribution/
+          retention-days: 30
+      
+      - name: Criar Release (se for tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            out/make/zip/win32/x64/*.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

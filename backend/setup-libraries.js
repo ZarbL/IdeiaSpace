@@ -15,7 +15,9 @@ const execAsync = promisify(exec);
 class LibraryInstaller {
   constructor() {
     this.backendDir = __dirname;
-    this.cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+    // Detectar executável correto baseado na plataforma
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    this.cliPath = path.join(this.backendDir, 'arduino-cli', executable);
     this.configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
     
     // Lista de bibliotecas necessárias para os sensores do projeto
@@ -40,7 +42,7 @@ class LibraryInstaller {
     try {
       // Verificar se Arduino CLI existe
       if (!fs.existsSync(this.cliPath)) {
-        throw new Error('❌ Arduino CLI não encontrado. Execute: npm run backend:setup');
+        throw new Error('❌ Arduino CLI não encontrado. O auto-setup deve instalar automaticamente. Se o problema persistir, use o script PRIMEIRO-SETUP.bat');
       }
 
       // Atualizar índice de bibliotecas
@@ -101,7 +103,7 @@ class LibraryInstaller {
       console.error('\n💡 Possíveis soluções:');
       console.error('   1. Verifique sua conexão com a internet');
       console.error('   2. Tente novamente');
-      console.error('   3. Execute: npm run backend:setup');
+      console.error('   3. Use o script PRIMEIRO-SETUP.bat');
       process.exit(1);
     }
   }

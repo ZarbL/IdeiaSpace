@@ -3,10 +3,42 @@
  * Integra Arduino CLI e comunicação serial para o IdeiaSpace
  */
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const appConfig = require('./config');
+// Tratamento global de erros não capturados
+process.on('uncaughtException', (error) => {
+  console.error('❌ ERRO NÃO CAPTURADO:', error.message);
+  console.error('Stack:', error.stack);
+  
+  // Se for erro de dependência faltando, dar instrução clara
+  if (error.code === 'MODULE_NOT_FOUND') {
+    console.error('\n🔴 ERRO CRÍTICO: Dependência não encontrada!');
+    console.error('💡 SOLUÇÃO:');
+    console.error('   1. Execute o script PRIMEIRO-SETUP.bat');
+    console.error('   2. OU aguarde o auto-setup instalar dependências automaticamente');
+    console.error('   3. Verifique se node_modules existe em backend/\n');
+  }
+  
+  // Não fazer exit para dar chance ao auto-setup de rodar
+  // process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ PROMISE REJEITADA NÃO TRATADA:', reason);
+  console.error('Promise:', promise);
+});
+
+// Tentar importar dependências com tratamento de erro
+let express, cors, path, appConfig;
+try {
+  express = require('express');
+  cors = require('cors');
+  path = require('path');
+  appConfig = require('./config');
+} catch (error) {
+  console.error('❌ ERRO AO IMPORTAR DEPENDÊNCIAS:', error.message);
+  console.error('\n🔴 Dependências do backend não estão instaladas!');
+  console.error('💡 Execute: PRIMEIRO-SETUP.bat ou aguarde o auto-setup\n');
+  process.exit(1);
+}
 
 // Auto-setup e Arduino CLI Service
 const AutoSetup = require('./auto-setup');

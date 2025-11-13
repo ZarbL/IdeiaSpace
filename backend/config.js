@@ -74,7 +74,8 @@ class AppConfig {
    */
   getArduinoCLIPaths() {
     const backendDir = this.getBackendDir(); // Usa método que detecta ambiente
-    const executable = 'arduino-cli.exe'; // Apenas Windows
+    // Detectar executável correto baseado na plataforma
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
     
     const arduinoCliBase = path.join(backendDir, 'arduino-cli');
     

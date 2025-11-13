@@ -15,7 +15,9 @@ const execAsync = promisify(exec);
 class ESP32CoreInstaller {
   constructor(logFunction = null) {
     this.backendDir = __dirname;
-    this.cliPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.exe');
+    // Detectar executável correto baseado na plataforma
+    const executable = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli';
+    this.cliPath = path.join(this.backendDir, 'arduino-cli', executable);
     this.configPath = path.join(this.backendDir, 'arduino-cli', 'arduino-cli.yaml');
     this.log = logFunction || console.log; // Usar função customizada ou console.log
   }
@@ -27,7 +29,7 @@ class ESP32CoreInstaller {
     try {
       // Verificar se Arduino CLI existe
       if (!fs.existsSync(this.cliPath)) {
-        throw new Error('❌ Arduino CLI não encontrado. Execute: npm run backend:setup');
+        throw new Error('❌ Arduino CLI não encontrado. O auto-setup deve instalar automaticamente. Se o problema persistir, use o script PRIMEIRO-SETUP.bat');
       }
 
       // Verificar se ESP32 já está instalado
@@ -73,7 +75,7 @@ class ESP32CoreInstaller {
       this.log('\n💡 Possíveis soluções:');
       this.log('   1. Verifique sua conexão com a internet');
       this.log('   2. Tente novamente (pode ser timeout)');
-      this.log('   3. Execute: npm run backend:setup');
+      this.log('   3. Use o script PRIMEIRO-SETUP.bat');
       throw error; // Re-lançar erro para auto-setup.js capturar
     }
   }

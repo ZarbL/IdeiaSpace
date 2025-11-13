@@ -21,11 +21,22 @@ module.exports = {
           '!config/downloads/**',
           '!data/packages/**',
           '!downloads/**',
-          '!node_modules/**',
+          // NÃO EXCLUIR node_modules! São as dependências necessárias (express, serialport, etc)
+          // Backend precisa de suas dependências para funcionar
           '!test_esp32/**',
           '!**/.DS_Store',
           '!**/Thumbs.db'
         ]
+      },
+      // Script de setup inicial para o usuário
+      {
+        from: 'PRIMEIRO-SETUP.bat',
+        to: 'PRIMEIRO-SETUP.bat'
+      },
+      // Documentação de instalação
+      {
+        from: 'LEIA-ME-INSTALACAO.md',
+        to: 'LEIA-ME-INSTALACAO.md'
       }
     ],
     

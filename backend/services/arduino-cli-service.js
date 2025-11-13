@@ -36,7 +36,7 @@ class ArduinoCLIService {
     console.log(`🔧 Configuração: ${this.configPath}`);
     
     if (!fs.existsSync(this.cliPath)) {
-      throw new Error(`❌ Arduino CLI não encontrado em ${this.cliPath}.\n💡 Execute: npm run install-cli`);
+      throw new Error(`❌ Arduino CLI não encontrado em ${this.cliPath}.\n💡 O auto-setup deve instalar automaticamente. Use PRIMEIRO-SETUP.bat se necessário`);
     }
 
     this.isInitialized = true;

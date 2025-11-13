@@ -31,7 +31,7 @@ class PrerequisitesChecker {
       
       if (this.hasErrors) {
         console.log('\n⚠️ Alguns problemas foram encontrados.');
-        console.log('💡 Execute "npm run backend:setup" para configurar automaticamente.\n');
+        console.log('💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup automático.\n');
         process.exit(1);
       } else if (this.hasCoreIssues) {
         console.log('\n⚠️ Cores ESP32 não estão instalados.');
@@ -44,7 +44,7 @@ class PrerequisitesChecker {
       
     } catch (error) {
       console.error('\n❌ Erro crítico:', error.message);
-      console.error('\n🔧 Execute "npm run backend:setup" para configurar o backend.\n');
+      console.error('\n🔧 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup automático.\n');
       process.exit(1);
     }
   }
@@ -123,7 +123,7 @@ class PrerequisitesChecker {
     
     if (!fs.existsSync(arduinoCliExePath)) {
       console.log('   ❌ Arduino CLI não encontrado');
-      console.log('   💡 Execute: npm run install-cli');
+      console.log('   💡 Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup');
       this.hasErrors = true;
       return;
     }
@@ -135,7 +135,7 @@ class PrerequisitesChecker {
       console.log(`   ✅ Arduino CLI ${version.split(' ')[2] || 'instalado'}`);
     } catch (error) {
       console.log('   ⚠️ Arduino CLI encontrado mas pode ter problemas');
-      console.log('   💡 Execute: npm run install-cli');
+      console.log('   💡 Use o script PRIMEIRO-SETUP.bat para reinstalar');
     }
   }
 

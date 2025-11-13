@@ -124,6 +124,14 @@ function getBackendDir() {
 // Iniciar backend
 ipcMain.handle('start-arduino-backend', async () => {
   console.log('🚀 Recebida solicitação para iniciar backend Arduino CLI');
+  console.log('📍 Informações do ambiente:');
+  console.log(`   - Platform: ${process.platform}`);
+  console.log(`   - Arch: ${process.arch}`);
+  console.log(`   - Node.js: ${process.version}`);
+  console.log(`   - Electron: ${process.versions.electron}`);
+  console.log(`   - execPath: ${process.execPath}`);
+  console.log(`   - resourcesPath: ${process.resourcesPath}`);
+  console.log(`   - isPackaged: ${app.isPackaged}`);
   
   if (backendProcess && !backendProcess.killed) {
     console.log('⚠️ Backend já está rodando');
@@ -132,12 +140,24 @@ ipcMain.handle('start-arduino-backend', async () => {
 
   try {
     const backendDir = getBackendDir(); // Usar função que detecta ambiente
+    console.log(`📂 Diretório do backend: ${backendDir}`);
+    
+    // Verificar se o diretório existe
+    if (!fs.existsSync(backendDir)) {
+      throw new Error(`Diretório do backend não encontrado: ${backendDir}`);
+    }
+    
     const serverPath = path.join(backendDir, 'server.js');
     const minimalServerPath = path.join(backendDir, 'minimal-server.js');
     const autoSetupPath = path.join(backendDir, 'auto-setup.js');
     
+    console.log(`📄 Verificando arquivos:`);
+    console.log(`   - server.js: ${fs.existsSync(serverPath) ? '✅' : '❌'}`);
+    console.log(`   - minimal-server.js: ${fs.existsSync(minimalServerPath) ? '✅' : '❌'}`);
+    console.log(`   - auto-setup.js: ${fs.existsSync(autoSetupPath) ? '✅' : '❌'}`);
+    
     if (!fs.existsSync(serverPath) && !fs.existsSync(minimalServerPath)) {
-      throw new Error('Nenhum servidor backend encontrado');
+      throw new Error(`Nenhum servidor backend encontrado em: ${backendDir}`);
     }
 
     // Verificar se auto-setup precisa ser executado
@@ -184,10 +204,16 @@ ipcMain.handle('start-arduino-backend', async () => {
 
     console.log(`📂 Iniciando backend: ${serverToUse}`);
     
-    backendProcess = spawn('node', [serverToUse], {
+    // CRÍTICO: Usar process.execPath (Node.js do Electron) em vez de 'node' do sistema
+    // Em produção, o usuário não tem Node.js instalado!
+    const nodeExecutable = process.execPath;
+    console.log(`⚙️ Usando Node.js em: ${nodeExecutable}`);
+    
+    backendProcess = spawn(nodeExecutable, [serverToUse], {
       cwd: backendDir,
       stdio: ['pipe', 'pipe', 'pipe'],
-      detached: false
+      detached: false,
+      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' } // Executar como Node puro
     });
 
     backendStatus.running = true;
@@ -274,8 +300,24 @@ ipcMain.handle('start-arduino-backend', async () => {
 
   } catch (error) {
     console.error('❌ Erro ao iniciar backend:', error.message);
+    console.error('Stack trace:', error.stack);
     backendStatus.lastError = error.message;
-    return { success: false, error: error.message };
+    
+    // Criar mensagem de erro mais detalhada
+    let detailedError = error.message;
+    if (error.code === 'ENOENT') {
+      detailedError = `Arquivo não encontrado: ${error.path || 'desconhecido'}. Verifique se o backend foi corretamente empacotado.`;
+    } else if (error.message.includes('node_modules')) {
+      detailedError = `Dependências do backend não encontradas. O auto-setup deve ser executado na primeira inicialização.`;
+    }
+    
+    return { 
+      success: false, 
+      error: detailedError,
+      originalError: error.message,
+      code: error.code,
+      stack: error.stack 
+    };
   }
 });
 
@@ -390,9 +432,14 @@ async function runAutoSetup(autoSetupPath, backendDir) {
   return new Promise((resolve, reject) => {
     console.log('🚀 Iniciando auto-setup...');
     
-    const setupProcess = spawn('node', [autoSetupPath], {
+    // CRÍTICO: Usar process.execPath (Node.js do Electron) em vez de 'node' do sistema
+    const nodeExecutable = process.execPath;
+    console.log(`⚙️ Usando Node.js para setup em: ${nodeExecutable}`);
+    
+    const setupProcess = spawn(nodeExecutable, [autoSetupPath], {
       cwd: backendDir,
-      stdio: 'pipe'
+      stdio: 'pipe',
+      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' } // Executar como Node puro
     });
 
     let output = '';

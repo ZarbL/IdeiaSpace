@@ -262,13 +262,13 @@ class SystemDiagnostic {
 
       console.log('\n🔧 SOLUÇÕES RECOMENDADAS:');
       if (this.issues.some(i => i.includes('Node.js'))) {
-        console.log('   • Instale Node.js 16+ de nodejs.org');
+        console.log('   • Node.js já está embutido no Electron. Se vendo isso, reporte como bug.');
       }
       if (this.issues.some(i => i.includes('Dependências'))) {
-        console.log('   • Execute: npm install');
+        console.log('   • Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup');
       }
       if (this.issues.some(i => i.includes('Arduino CLI'))) {
-        console.log('   • Execute: npm run install-cli');
+        console.log('   • Use o script PRIMEIRO-SETUP.bat ou aguarde o auto-setup');
       }
       if (this.issues.some(i => i.includes('Arquivo ausente'))) {
         console.log('   • Verifique se todos os arquivos do projeto estão presentes');
