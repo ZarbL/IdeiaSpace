@@ -2,23 +2,27 @@ module.exports = {
   packagerConfig: {
     name: "IdeiaSpace Mission",
     icon: 'assets/logo-dark.png', // Ícone para Windows .ico
-    asar: true, // Empacotar app em ASAR para proteção
+    asar: false, // DESABILITADO: Caminhos muito longos no Windows causam erro no ASAR
     overwrite: true,
     platform: 'win32', // Apenas Windows
     arch: 'x64', // Arquitetura 64-bit
     executableName: "IdeiaSpace-Mission",
     
-    // CRÍTICO: Backend deve ficar FORA do ASAR
+    // CRÍTICO: Backend deve ficar FORA do ASAR  
     extraResources: [
       {
         from: 'backend',
         to: 'backend',
         filter: [
           '**/*',
-          '!node_modules/**/*', // Backend não precisa de node_modules empacotado
-          '!arduino-cli/config/downloads/**/*', // Limpar downloads temporários
-          '!arduino-cli/config/tmp/**/*', // Limpar temporários
-          '!arduino-cli/config/data/tmp/**/*',
+          // EXCLUIR packages e downloads (serão baixados na primeira execução)
+          '!arduino-cli/config/**',
+          '!config/data/packages/**',
+          '!config/downloads/**',
+          '!data/packages/**',
+          '!downloads/**',
+          '!node_modules/**',
+          '!test_esp32/**',
           '!**/.DS_Store',
           '!**/Thumbs.db'
         ]
@@ -27,8 +31,13 @@ module.exports = {
     
     // Ignorar arquivos desnecessários no ASAR
     ignore: [
-      /^\/\.git/,
-      /^\/backend/, // Backend vai para extraResources
+      /^\/\.git$/,
+      /^\/\.git\//,
+      /^\/\.github$/,
+      /^\/\.github\//,
+      /^\/backend$/, // Backend vai para extraResources
+      /^\/backend\//, // Backend vai para extraResources
+      /^\/backup/, // Ignorar backup
       /^\/node_modules\/.*\/test/,
       /^\/node_modules\/.*\/tests/,
       /^\/node_modules\/.*\/\.nyc_output/,
@@ -46,6 +55,8 @@ module.exports = {
       /^\/upload\.js/,
       /^\/env\.example/,
       /^\/build-prepare\.js/,
+      /^\/build-validate\.js/,
+      /^\/build-windows\.bat/,
       /^\/\.forge-hooks\.js/
     ],
     
@@ -58,30 +69,29 @@ module.exports = {
   },
   rebuildConfig: {},
   makers: [
-    // Instalador principal para Windows - Squirrel
+    // ZIP portátil para Windows (PRINCIPAL - sem instalação necessária)
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['win32'],
+      config: {}
+    }
+    // Squirrel desabilitado temporariamente devido a problemas com caminhos longos
+    // Será reabilitado quando os packages forem baixados dinamicamente
+    /*
     {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: "IdeiaSpace_Mission",
         authors: "IdeiaSpace Team",
-        description: "Plataforma de programação em blocos para ensino aeroespacial - Inclui Arduino CLI e bibliotecas ESP32",
+        description: "Plataforma de programação em blocos para ensino aeroespacial",
         exe: "IdeiaSpace-Mission.exe",
         setupExe: "IdeiaSpace-Mission-Setup.exe",
         setupIcon: "./assets/logo-dark.ico",
-        loadingGif: "./assets/installing.gif", // Adicione um GIF de instalação se tiver
-        noMsi: true, // Não criar MSI, apenas .exe
-        // Configurações de atualização automática (futuro)
+        noMsi: true,
         remoteReleases: false
       }
-    },
-    // ZIP portátil para Windows
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['win32'],
-      config: {
-        // Criar versão portátil que não precisa instalação
-      }
     }
+    */
   ],
   publishers: [
     {

@@ -34,13 +34,16 @@ class BuildPrepare {
       // 4. Validar bibliotecas
       await this.validateLibraries();
 
-      // 5. Limpar arquivos temporários
+      // 5. Limpar pacotes ESP32 (remover symlinks e arquivos problemáticos)
+      await this.cleanESP32Packages();
+
+      // 6. Limpar arquivos temporários
       await this.cleanTemporaryFiles();
 
-      // 6. Instalar dependências do backend (se necessário)
+      // 7. Instalar dependências do backend (se necessário)
       await this.installBackendDependencies();
 
-      // 7. Gerar manifesto de build
+      // 8. Gerar manifesto de build
       await this.generateBuildManifest();
 
       console.log('\n╔══════════════════════════════════════════════════════════╗');
@@ -122,7 +125,7 @@ class BuildPrepare {
     
     const librariesPath = path.join(
       this.backendDir,
-      'arduino-cli/config/user/libraries'
+      'config/user/libraries'
     );
 
     if (!fs.existsSync(librariesPath)) {
@@ -147,7 +150,7 @@ class BuildPrepare {
     ];
 
     const missingLibs = requiredLibraries.filter(req => 
-      !libraries.some(lib => lib.includes(req.replace('_', ' ')))
+      !libraries.some(lib => lib === req || lib.includes(req))
     );
 
     if (missingLibs.length > 0) {
@@ -159,8 +162,23 @@ class BuildPrepare {
     console.log(`  ✅ ${libraries.length} bibliotecas instaladas`);
   }
 
+  async cleanESP32Packages() {
+    console.log('🔧 [5/8] Limpando pacotes ESP32 (removendo arquivos problemáticos)...');
+    
+    const ESP32Cleaner = require('./clean-esp32-packages');
+    const cleaner = new ESP32Cleaner();
+    
+    try {
+      await cleaner.clean();
+      console.log('  ✅ Pacotes ESP32 limpos');
+    } catch (err) {
+      console.warn('  ⚠️  Aviso ao limpar ESP32:', err.message);
+      // Não falha o build, apenas avisa
+    }
+  }
+
   async cleanTemporaryFiles() {
-    console.log('🧹 [5/7] Limpando arquivos temporários...');
+    console.log('🧹 [6/8] Limpando arquivos temporários...');
     
     const pathsToClean = [
       // Temporários do Arduino CLI
@@ -194,7 +212,7 @@ class BuildPrepare {
   }
 
   async installBackendDependencies() {
-    console.log('📦 [6/7] Verificando dependências do backend...');
+    console.log('📦 [7/8] Verificando dependências do backend...');
     
     const backendNodeModules = path.join(this.backendDir, 'node_modules');
     const backendPackageJson = path.join(this.backendDir, 'package.json');
@@ -214,7 +232,7 @@ class BuildPrepare {
   }
 
   async generateBuildManifest() {
-    console.log('📝 [7/7] Gerando manifesto de build...');
+    console.log('📝 [8/8] Gerando manifesto de build...');
     
     const packageJson = require('./package.json');
     

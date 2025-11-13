@@ -41,6 +41,12 @@ out/package/
 # Manifesto de build
 build-manifest.json
 
+# Backups temporários do build
+.build-backup-temp/
+*_data_backup/
+*_config_data_backup/
+*_backend_data_backup/
+
 # Arquivos de configuração local
 .env
 .env.local
